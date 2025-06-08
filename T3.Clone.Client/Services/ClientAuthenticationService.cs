@@ -14,13 +14,22 @@ public class ClientAuthenticationService
 
     public async Task<UserDto?> GetCurrentUser()
     {
-        var response = await _httpClient.GetAsync("api/authentication/user");
-        if (!response.IsSuccessStatusCode)
+        try
         {
+            var response = await _httpClient.GetAsync("api/authentication/user");
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var user = await response.Content.ReadFromJsonAsync<UserDto>();
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching current user (likely not logged in): {ex.Message}");
             return null;
         }
-
-        var user = await response.Content.ReadFromJsonAsync<UserDto>();
-        return user;
     }
 }

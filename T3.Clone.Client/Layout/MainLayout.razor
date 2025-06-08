@@ -1,48 +1,59 @@
-﻿@inherits LayoutComponentBase
+﻿@using T3.Clone.Dtos.User
+@inherits LayoutComponentBase
+@inject ClientAuthenticationService ClientAuthenticationService
+@inject IJSRuntime JSRuntime
 
 <MyMudThemeProvider />
 <MudSnackbarProvider />
 
-<div class="app-layout">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">T3</div>
-            <h1 class="app-title">T3.Clone</h1>
+<CascadingValue Value="User" Name="User">
+    <MudDrawer
+        @bind-Open="@_drawerOpen"
+        Elevation="0"
+        ClipMode="DrawerClipMode.Always"
+        Variant="@(_isMobile ? DrawerVariant.Temporary : DrawerVariant.Responsive)"
+        Class="drawer-custom">
+        <div class="sidebar-region sidebar-header">
+            <h3>T3.Clone</h3>
         </div>
-        
-        <button class="new-chat-btn" @onclick="StartNewChat">
-            <span class="icon">💬</span> New Chat
-        </button>
-        
-        <div class="chat-history">
-            <h3 class="section-title">Recent Chats</h3>
-            <div class="chat-item active">
-                <span class="chat-icon">💭</span> Welcome Chat
-            </div>
-            <div class="chat-item">
-                <span class="chat-icon">🤖</span> AI Assistant Help
-            </div>
-            <div class="chat-item">
-                <span class="chat-icon">📝</span> Code Review
-            </div>
-            <div class="chat-item">
-                <span class="chat-icon">💡</span> Project Ideas
-            </div>
-        </div>
-        
-        <div class="sidebar-footer">
-            <LoginDisplay />
-        </div>
-    </div>
 
-    <main class="main-content">
-        @Body
-    </main>
-</div>
+        <div class="history-region">
+            <ChatHistory/>
+        </div>
+
+        <div class="login-section">
+            <LoginDisplay/>
+        </div>
+    </MudDrawer>
+    <MudMainContent Class="pt-0 px-0">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-0">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</CascadingValue>
 
 @code {
+    private bool _drawerOpen = true;
+    private bool _isMobile = false;
+
+    private UserDto? User;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await ClientAuthenticationService.GetCurrentUser();
+        _isMobile = await IsMobileDevice();
+        _drawerOpen = !_isMobile; // Open drawer on desktop, closed on mobile
+    }
+
+    private async Task<bool> IsMobileDevice()
+    {
+        var width = await JSRuntime.InvokeAsync<int>("getWindowWidth");
+        return width < 768;
+    }
+
     private void StartNewChat()
     {
         // TODO: Implement new chat functionality
     }
+
 }

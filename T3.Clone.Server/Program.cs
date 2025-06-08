@@ -17,6 +17,18 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddCors(x =>
+{
+    x.AddPolicy("AllowFrontend",
+        corsBuilder =>
+        {
+            corsBuilder.WithOrigins(builder.Configuration.GetValue<string[]>("Appsettings:AllowedOrigins") ?? Array.Empty<string>())
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCascadingAuthenticationState();
@@ -116,6 +128,8 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions()

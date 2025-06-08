@@ -1,22 +1,56 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using T3.Clone.Client.Services
+@using T3.Clone.Dtos.User
 @inject NavigationManager Navigation
 @inject AppsettingsService AppsettingsService
 
-<button class="sign-in-btn" @onclick="Login">
-    <span class="icon">👤</span>
-    <span>Sign In</span>
-</button>
+@if (User == null)
+{
+    <MudButton
+        StartIcon="@Icons.Material.Filled.Login"
+        Variant="Variant.Filled"
+        Color="Color.Primary"
+        Size="Size.Medium"
+        OnClick="Login"
+        Class="login-button"
+    >
+        Log In
+    </MudButton>
+}
+else
+{
+    <div class="profile-section">
+        <MudAvatar
+            Color="Color.Primary"
+            Size="Size.Medium"
+        >
+            <MudImage
+                Src="@GetProfilePictureUrl(User)"
+            />
+        </MudAvatar>
+        <MudText>
+            @User.UserName
+        </MudText>
+    </div>
+}
 
 @code{
+    [CascadingParameter] public UserDto? User { get; set; }
+
 
     public void Login()
     {
         Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Login", true);
     }
-    
+
     public void BeginLogOut()
     {
         Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Logout", true);
     }
+
+    private string? GetProfilePictureUrl(UserDto user)
+    {
+        return $"{AppsettingsService.ServerUrl}/api/Authentication/profilePicture";
+    }
+
 }
