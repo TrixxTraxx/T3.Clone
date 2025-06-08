@@ -1,27 +1,23 @@
 @using T3.Clone.Client.Caches
 @inject ThreadSyncService ThreadSyncService
+@inject NavigationManager NavigationManager
+@implements IDisposable
 
-<MudButton
-    StartIcon="@Icons.Material.Filled.Add"
-    Variant="Variant.Filled"
-    Size="Size.Large"
-    Color="Color.Primary"
-    Class="new-chat-button"
->
-    New Chat
-</MudButton>
-
-<MudNavMenu>
-    @foreach(var cache in threads)
-    {
-        <MudNavLink Href="@($"/chat/{cache.Thread.Id}")" Match="NavLinkMatch.Prefix">
-            <MudText>@cache.Thread.Title</MudText>
-        </MudNavLink>
-    }
-</MudNavMenu>
+<div class="chat-history-container">
+    <div class="new-chat-section">
+        <NewChatButton OnClick="StartNewChat" />
+    </div>
+    
+    <div class="threads-scroll-section">
+        <ThreadNavigation Threads="threads" 
+                          CurrentThreadId="currentThreadId" 
+                          OnThreadSelected="OnThreadSelected" />
+    </div>
+</div>
 
 @code {
     private List<ThreadCache> threads = new List<ThreadCache>();
+    private int? currentThreadId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,6 +26,48 @@
             threads = caches;
             StateHasChanged();
         });
+
+        // Listen to navigation changes
+        NavigationManager.LocationChanged += OnLocationChanged;
+        
+        // Set initial thread ID
+        UpdateCurrentThreadId();
     }
 
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        UpdateCurrentThreadId();
+        StateHasChanged();
+    }
+
+    private void UpdateCurrentThreadId()
+    {
+        var uri = NavigationManager.Uri;
+        var segments = uri.Split('/');
+        
+        if (segments.Length >= 2 && segments[^2] == "chat" && int.TryParse(segments[^1], out int threadId))
+        {
+            currentThreadId = threadId;
+        }
+        else
+        {
+            currentThreadId = null;
+        }
+    }
+
+    private void StartNewChat()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void OnThreadSelected(int threadId)
+    {
+        // Navigation is handled by the href in ThreadNavigation
+        // This can be used for additional logic if needed
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 }

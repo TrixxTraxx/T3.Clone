@@ -1,0 +1,97 @@
+.hypermodern-new-chat-btn {
+    width: 100%;
+    margin-bottom: 12px;
+    height: 52px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--mud-palette-text-primary);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.hypermodern-new-chat-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.hypermodern-new-chat-btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, 
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 70%, white) 50%,
+        var(--mud-palette-primary) 100%);
+    border-radius: 18px;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
+.hypermodern-new-chat-btn:hover {
+    transform: translateY(-2px);
+    border-color: transparent;
+    color: white;
+    box-shadow: 
+        0 8px 25px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hypermodern-new-chat-btn:hover::before {
+    opacity: 1;
+}
+
+.hypermodern-new-chat-btn:hover::after {
+    opacity: 1;
+}
+
+.hypermodern-new-chat-btn:active {
+    transform: translateY(0);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+}
+
+.hypermodern-new-chat-btn:hover .btn-icon {
+    transform: scale(1.1);
+}
+
+.btn-text {
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+} 

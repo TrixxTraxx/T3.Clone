@@ -1,0 +1,163 @@
+.login-button {
+    width: 100% !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    letter-spacing: 0.02em;
+    text-transform: none !important;
+    background: linear-gradient(135deg, 
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 85%, white) 100%) !important;
+    box-shadow: 
+        0 8px 25px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        0 3px 10px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 20%, white) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        transparent 100%);
+    transition: left 0.5s ease;
+}
+
+.login-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        0 12px 35px color-mix(in srgb, var(--mud-palette-primary) 35%, transparent),
+        0 5px 15px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.login-button:hover::before {
+    left: 100%;
+}
+
+.login-button:active {
+    transform: translateY(0) scale(1);
+}
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 20px 16px;
+    border-radius: 20px;
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-surface) 70%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-surface) 40%, transparent) 100%),
+        radial-gradient(circle at 70% 30%, 
+            color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%, 
+            transparent 70%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.profile-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        color-mix(in srgb, var(--mud-palette-primary) 50%, transparent) 20%, 
+        color-mix(in srgb, var(--mud-palette-primary) 70%, transparent) 50%,
+        color-mix(in srgb, var(--mud-palette-primary) 50%, transparent) 80%,
+        transparent 100%);
+}
+
+.profile-section::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        transparent 100%);
+}
+
+.profile-section:hover {
+    transform: translateY(-3px) scale(1.02);
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-surface) 80%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-surface) 50%, transparent) 100%),
+        radial-gradient(circle at 70% 30%, 
+            color-mix(in srgb, var(--mud-palette-primary) 12%, transparent) 0%, 
+            transparent 70%);
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 20%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+}
+
+::deep .profile-section .mud-avatar {
+    border: 3px solid color-mix(in srgb, var(--mud-palette-primary) 40%, transparent) !important;
+    box-shadow: 
+        0 8px 25px color-mix(in srgb, var(--mud-palette-primary) 20%, transparent),
+        0 2px 8px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-section:hover ::deep .mud-avatar {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 60%, transparent) !important;
+    box-shadow: 
+        0 12px 35px color-mix(in srgb, var(--mud-palette-primary) 30%, transparent),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: scale(1.05);
+}
+
+::deep .profile-section .mud-text {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--mud-palette-text-primary) !important;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    line-height: 1.3;
+    transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section:hover ::deep .mud-text {
+    color: color-mix(in srgb, var(--mud-palette-primary) 80%, white) !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 10px color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+}

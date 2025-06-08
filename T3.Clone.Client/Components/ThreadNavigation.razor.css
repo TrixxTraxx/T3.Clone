@@ -1,0 +1,144 @@
+.thread-navigation {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.thread-nav-link {
+    display: block;
+    text-decoration: none;
+    border-radius: 14px;
+    padding: 16px 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-surface) 70%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-surface) 40%, transparent) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 12%, transparent);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+}
+
+.thread-nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.15) 50%, 
+        transparent 100%);
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+
+.thread-nav-link:hover {
+    transform: translateX(8px) scale(1.02);
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-primary) 18%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-primary) 10%, transparent) 100%);
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+    box-shadow: 
+        0 12px 30px color-mix(in srgb, var(--mud-palette-primary) 35%, transparent),
+        0 4px 15px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+}
+
+.thread-nav-link:hover::before {
+    left: 100%;
+}
+
+.thread-nav-link.active {
+    transform: translateX(8px) scale(1.02);
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-primary) 28%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-primary) 18%, transparent) 100%);
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 45%, transparent);
+    box-shadow: 
+        0 6px 15px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent),
+        0 2px 6px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+}
+
+.thread-nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 4px;
+    background: linear-gradient(180deg,
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 80%, white) 50%,
+        var(--mud-palette-primary) 100%);
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 0 6px color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+}
+
+.thread-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.thread-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: var(--mud-palette-text-secondary);
+    transition: all 0.3s ease;
+}
+
+.thread-nav-link:hover .thread-icon {
+    color: color-mix(in srgb, var(--mud-palette-primary) 85%, white);
+    transform: scale(1.1);
+}
+
+.thread-nav-link.active .thread-icon {
+    color: var(--mud-palette-primary);
+    transform: scale(1.1);
+}
+
+.thread-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.thread-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mud-palette-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.thread-nav-link:hover .thread-title {
+    color: color-mix(in srgb, var(--mud-palette-primary) 85%, white);
+    font-weight: 700;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--mud-palette-primary) 40%, transparent);
+}
+
+.thread-nav-link.active .thread-title {
+    color: var(--mud-palette-primary);
+    font-weight: 700;
+    text-shadow: 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+} 
