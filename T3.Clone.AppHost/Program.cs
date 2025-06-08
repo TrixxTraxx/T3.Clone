@@ -1,10 +1,16 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+var database = builder.AddSqlServer("t3CloneSqlserver", port: 1433)
+    .WithDataVolume("T3CloneDataVolume");
+
 var cache = builder.AddRedis("cache");
 
-var apiService = builder.AddProject<Projects.T3_Clone_ApiService>("apiservice");
+var apiService = builder
+    .AddProject<Projects.T3_Clone_Server>("apiservice")
+    .WithReference(database)
+    .WaitFor(database);
 
-builder.AddProject<Projects.T3_Clone_Web>("webfrontend")
+builder.AddProject<Projects.T3_Clone_Client>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(cache)
     .WaitFor(cache)

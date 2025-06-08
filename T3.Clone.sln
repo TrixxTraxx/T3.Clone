@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.AppHost", "T3.Clone.AppHost\T3.Clone.AppHost.csproj", "{10DED4D6-85DB-4B34-9B06-B533A0006DEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Client", "T3.Clone.Client\T3.Clone.Client.csproj", "{5A2A0375-B084-4866-837A-EC0004FDD12D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Dtos", "T3.Clone.Dtos\T3.Clone.Dtos.csproj", "{C694EB1A-F8C5-46DA-A604-E237CE070CCA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Server", "T3.Clone.Server\T3.Clone.Server.csproj", "{9332C87B-DEA9-489A-B375-39B371402D73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.ServiceDefaults", "T3.Clone.ServiceDefaults\T3.Clone.ServiceDefaults.csproj", "{3FAE83C6-496B-4C90-ADAF-F6392A439F16}"
+EndProject
+Global
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{10DED4D6-85DB-4B34-9B06-B533A0006DEA}.Configuration|Any CPU.ActiveCfg = Configuration|Any CPU
+		{10DED4D6-85DB-4B34-9B06-B533A0006DEA}.Configuration|Any CPU.Build.0 = Configuration|Any CPU
+		{5A2A0375-B084-4866-837A-EC0004FDD12D}.Configuration|Any CPU.ActiveCfg = Configuration|Any CPU
+		{5A2A0375-B084-4866-837A-EC0004FDD12D}.Configuration|Any CPU.Build.0 = Configuration|Any CPU
+		{C694EB1A-F8C5-46DA-A604-E237CE070CCA}.Configuration|Any CPU.ActiveCfg = Configuration|Any CPU
+		{C694EB1A-F8C5-46DA-A604-E237CE070CCA}.Configuration|Any CPU.Build.0 = Configuration|Any CPU
+		{9332C87B-DEA9-489A-B375-39B371402D73}.Configuration|Any CPU.ActiveCfg = Configuration|Any CPU
+		{9332C87B-DEA9-489A-B375-39B371402D73}.Configuration|Any CPU.Build.0 = Configuration|Any CPU
+		{3FAE83C6-496B-4C90-ADAF-F6392A439F16}.Configuration|Any CPU.ActiveCfg = Configuration|Any CPU
+		{3FAE83C6-496B-4C90-ADAF-F6392A439F16}.Configuration|Any CPU.Build.0 = Configuration|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Configuration|Any CPU = Configuration|Any CPU
+	EndGlobalSection
+EndGlobal

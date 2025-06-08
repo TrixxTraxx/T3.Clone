@@ -9,16 +9,19 @@
         <Nullable>enable</Nullable>
         <IsAspireHost>true</IsAspireHost>
         <UserSecretsId>4a388097-c743-4ecd-bfeb-83b15991cb7b</UserSecretsId>
+        <Configurations>Debug;Release;Configuration</Configurations>
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\T3.Clone.ApiService\T3.Clone.ApiService.csproj"/>
-        <ProjectReference Include="..\T3.Clone.Web\T3.Clone.Web.csproj"/>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.0" />
+        <PackageReference Include="Aspire.Hosting.Redis" Version="9.3.0" />
+        <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.3.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0"/>
-        <PackageReference Include="Aspire.Hosting.Redis" Version="9.1.0"/>
+      <ProjectReference Include="..\T3.Clone.Client\T3.Clone.Client.csproj" />
+      <ProjectReference Include="..\T3.Clone.Server\T3.Clone.Server.csproj" />
     </ItemGroup>
 
 </Project>
