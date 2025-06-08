@@ -1,0 +1,138 @@
+/* Syntax Highlighting Styles */
+
+/* Keywords */
+.keyword {
+    color: #569cd6;
+    font-weight: 600;
+}
+
+/* Types */
+.type {
+    color: #4ec9b0;
+    font-weight: 500;
+}
+
+/* Strings */
+.string {
+    color: #ce9178;
+}
+
+/* Comments */
+.comment {
+    color: #6a9955;
+    font-style: italic;
+}
+
+/* HTML Tags */
+.html-tag {
+    color: #92c5f8;
+}
+
+/* CSS Properties */
+.css-property {
+    color: #9cdcfe;
+}
+
+/* CSS Colors */
+.css-color {
+    color: #d7ba7d;
+}
+
+/* JSON */
+.json-key {
+    color: #9cdcfe;
+}
+
+.json-string {
+    color: #ce9178;
+}
+
+.json-value {
+    color: #b5cea8;
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+    .keyword {
+        color: #569cd6;
+    }
+    
+    .type {
+        color: #4ec9b0;
+    }
+    
+    .string {
+        color: #ce9178;
+    }
+    
+    .comment {
+        color: #6a9955;
+    }
+    
+    .html-tag {
+        color: #92c5f8;
+    }
+    
+    .css-property {
+        color: #9cdcfe;
+    }
+    
+    .css-color {
+        color: #d7ba7d;
+    }
+    
+    .json-key {
+        color: #9cdcfe;
+    }
+    
+    .json-string {
+        color: #ce9178;
+    }
+    
+    .json-value {
+        color: #b5cea8;
+    }
+}
+
+/* Light theme adjustments */
+@media (prefers-color-scheme: light) {
+    .keyword {
+        color: #0000ff;
+    }
+    
+    .type {
+        color: #2b91af;
+    }
+    
+    .string {
+        color: #a31515;
+    }
+    
+    .comment {
+        color: #008000;
+    }
+    
+    .html-tag {
+        color: #800000;
+    }
+    
+    .css-property {
+        color: #ff0000;
+    }
+    
+    .css-color {
+        color: #0000ff;
+    }
+    
+    .json-key {
+        color: #0451a5;
+    }
+    
+    .json-string {
+        color: #a31515;
+    }
+    
+    .json-value {
+        color: #09885a;
+    }
+} 

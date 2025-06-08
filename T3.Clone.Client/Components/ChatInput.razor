@@ -1,0 +1,63 @@
+@using T3.Clone.Client.Models
+@inject IJSRuntime JSRuntime
+
+<div class="chat-input-wrapper">
+    <div class="input-container">
+        <MudPaper Class="pa-4" Elevation="2">
+            <div class="d-flex align-center gap-3">
+                <MudTextField @bind-Value="messageText" 
+                             Label="Type your message..." 
+                             Variant="Variant.Outlined"
+                             Lines="1"
+                             AutoGrow="true"
+                             MaxLines="5"
+                             OnKeyDown="HandleKeyDown"
+                             Disabled="IsLoading"
+                             Class="flex-grow-1"
+                             Immediate="true" />
+                
+                <MudIconButton Icon="Icons.Material.Filled.Send" 
+                              Color="Color.Primary"
+                              Size="Size.Large"
+                              OnClick="SendMessage"
+                              Disabled="IsLoading || string.IsNullOrWhiteSpace(messageText)" />
+            </div>
+            
+            @if (IsLoading)
+            {
+                <div class="mt-2">
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                    <MudText Typo="Typo.caption" Class="mt-1" Align="Align.Center">Sending message...</MudText>
+                </div>
+            }
+        </MudPaper>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<(string message, List<ChatAttachment> attachments)> OnSendMessage { get; set; }
+    [Parameter] public EventCallback<ChatAttachment> OnAttachmentAdded { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+
+    private string messageText = "";
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey && !e.CtrlKey)
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(messageText) || IsLoading) return;
+
+        var message = messageText.Trim();
+        
+        // Clear the input
+        messageText = "";
+        
+        await OnSendMessage.InvokeAsync((message, new List<ChatAttachment>()));
+    }
+} 

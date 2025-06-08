@@ -1,0 +1,289 @@
+@using T3.Clone.Client.Caches
+@using T3.Clone.Dtos.Messages
+@using T3.Clone.Client.Models
+@inject IJSRuntime JSRuntime
+
+<div class="chat-message @GetMessageClasses()">
+    <div class="message-header">
+        <div class="message-info">
+            <MudIcon Icon="@GetMessageIcon()" Size="Size.Small" Color="@GetMessageIconColor()" />
+            <MudText Typo="Typo.caption" Class="message-author">@GetMessageAuthor()</MudText>
+            <MudText Typo="Typo.caption" Class="message-time">@Message.Message.CreatedAt.ToString("HH:mm")</MudText>
+        </div>
+        
+        @if (HasBranches())
+        {
+            <div class="branch-controls">
+                <MudIconButton Icon="Icons.Material.Filled.CallSplit" 
+                              Size="Size.Small" 
+                              Color="Color.Primary"
+                              title="@($"This message has {GetBranchCount()} branches")"
+                              OnClick="ToggleBranchSelector" />
+                @if (showBranchSelector)
+                {
+                    <MudMenu>
+                        <ActivatorContent>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                Branch @(GetCurrentBranchIndex() + 1) of @GetBranchCount()
+                            </MudChip>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @for (int i = 0; i < GetBranchCount(); i++)
+                            {
+                                var branchIndex = i;
+                                var branchMessage = GetBranchMessage(branchIndex);
+                                <MudMenuItem OnClick="() => SelectBranch(branchMessage.Message.Id)">
+                                    <div class="branch-option">
+                                        <MudText Typo="Typo.body2">Branch @(branchIndex + 1)</MudText>
+                                        <MudText Typo="Typo.caption" Class="branch-preview">
+                                            @GetMessagePreview(GetMessageContent(branchMessage.Message))
+                                        </MudText>
+                                    </div>
+                                </MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                }
+            </div>
+        }
+        
+        <div class="message-actions">
+            <MudIconButton Icon="Icons.Material.Filled.ContentCopy" 
+                          Size="Size.Small" 
+                          OnClick="CopyMessage"
+                          title="Copy message" />
+            @if (IsAssistantMessage())
+            {
+                <MudIconButton Icon="Icons.Material.Filled.Refresh" 
+                              Size="Size.Small" 
+                              OnClick="() => OnRegenerateMessage.InvokeAsync(Message.Message.Id)"
+                              title="Regenerate response" />
+            }
+        </div>
+    </div>
+
+    <div class="message-content">
+        @if (HasAttachments())
+        {
+            <div class="message-attachments">
+                @foreach (var attachment in GetAttachments())
+                {
+                    <AttachmentDisplay Attachment="@attachment" />
+                }
+            </div>
+        }
+
+        <div class="message-text">
+            @if (ContainsCodeBlocks(GetMessageContent(Message.Message)))
+            {
+                @((MarkupString)RenderContentWithSyntaxHighlighting(GetMessageContent(Message.Message)))
+            }
+            else
+            {
+                <MudText Typo="Typo.body1" Class="message-body">
+                    @((MarkupString)FormatMessageContent(GetMessageContent(Message.Message)))
+                </MudText>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public MessageTreeDto? MessageTree { get; set; }
+    [Parameter] public bool IsCurrentBranch { get; set; }
+    [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
+    [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+
+    private bool showBranchSelector = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ContainsCodeBlocks(GetMessageContent(Message.Message)))
+        {
+            await JSRuntime.InvokeVoidAsync("highlightCodeBlocks");
+        }
+    }
+
+    private string GetMessageContent(MessageDto message)
+    {
+        // If it's a user message, return the Text, otherwise return ModelResponse
+        return IsUserMessage() ? message.Text : message.ModelResponse;
+    }
+
+    private string GetMessageClasses()
+    {
+        var classes = new List<string> { "message" };
+        
+        if (IsUserMessage())
+            classes.Add("user-message");
+        else
+            classes.Add("assistant-message");
+
+        if (IsCurrentBranch)
+            classes.Add("current-branch");
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetMessageIcon()
+    {
+        return IsUserMessage() ? Icons.Material.Filled.Person : Icons.Material.Filled.SmartToy;
+    }
+
+    private Color GetMessageIconColor()
+    {
+        return IsUserMessage() ? Color.Primary : Color.Secondary;
+    }
+
+    private string GetMessageAuthor()
+    {
+        return IsUserMessage() ? "You" : "Assistant";
+    }
+
+    private bool IsUserMessage()
+    {
+        // A message is from the user if it has Text but no ModelResponse
+        return !string.IsNullOrEmpty(Message.Message.Text) && string.IsNullOrEmpty(Message.Message.ModelResponse);
+    }
+
+    private bool IsAssistantMessage()
+    {
+        // A message is from the assistant if it has ModelResponse
+        return !string.IsNullOrEmpty(Message.Message.ModelResponse);
+    }
+
+    private bool HasBranches()
+    {
+        if (MessageTree == null) return false;
+        
+        var branches = MessageTree.Messages.Values
+            .Where(m => m.Message.PreviousMessageId == Message.Message.PreviousMessageId && 
+                       m.Message.Id != Message.Message.Id)
+            .ToList();
+            
+        return branches.Any();
+    }
+
+    private int GetBranchCount()
+    {
+        if (MessageTree == null) return 1;
+        
+        var branches = MessageTree.Messages.Values
+            .Where(m => m.Message.PreviousMessageId == Message.Message.PreviousMessageId)
+            .ToList();
+            
+        return branches.Count;
+    }
+
+    private int GetCurrentBranchIndex()
+    {
+        if (MessageTree == null) return 0;
+        
+        var branches = MessageTree.Messages.Values
+            .Where(m => m.Message.PreviousMessageId == Message.Message.PreviousMessageId)
+            .OrderBy(m => m.Message.CreatedAt)
+            .ToList();
+            
+        return branches.FindIndex(b => b.Message.Id == Message.Message.Id);
+    }
+
+    private MessageCache GetBranchMessage(int branchIndex)
+    {
+        if (MessageTree == null) return Message;
+        
+        var branches = MessageTree.Messages.Values
+            .Where(m => m.Message.PreviousMessageId == Message.Message.PreviousMessageId)
+            .OrderBy(m => m.Message.CreatedAt)
+            .ToList();
+            
+        return branchIndex < branches.Count ? branches[branchIndex] : Message;
+    }
+
+    private void ToggleBranchSelector()
+    {
+        showBranchSelector = !showBranchSelector;
+    }
+
+    private async Task SelectBranch(int messageId)
+    {
+        showBranchSelector = false;
+        await OnBranchSelected.InvokeAsync(messageId);
+    }
+
+    private async Task CopyMessage()
+    {
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", GetMessageContent(Message.Message));
+    }
+
+    private string GetMessagePreview(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return "Empty message";
+        
+        var preview = content.Length > 50 ? content[..50] + "..." : content;
+        return preview.Replace("\n", " ").Replace("\r", " ");
+    }
+
+    private bool HasAttachments()
+    {
+        return Message.Message.AttachmentIds.Any();
+    }
+
+    private List<ChatAttachment> GetAttachments()
+    {
+        // TODO: Load actual attachments based on AttachmentIds
+        return new List<ChatAttachment>();
+    }
+
+    private bool ContainsCodeBlocks(string content)
+    {
+        return content.Contains("```") || content.Contains("`");
+    }
+
+    private string RenderContentWithSyntaxHighlighting(string content)
+    {
+        // Process code blocks for syntax highlighting
+        var result = content;
+        
+        // Handle fenced code blocks (```)
+        var codeBlockPattern = @"```(\w+)?\n(.*?)\n```";
+        var matches = System.Text.RegularExpressions.Regex.Matches(content, codeBlockPattern, 
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        
+        foreach (System.Text.RegularExpressions.Match match in matches)
+        {
+            var language = match.Groups[1].Value;
+            var code = match.Groups[2].Value;
+            var highlightedCode = $@"<div class=""code-block"">
+                <div class=""code-header"">
+                    <span class=""code-language"">{language}</span>
+                    <button class=""copy-code-btn"" onclick=""copyCode(this)"">Copy</button>
+                </div>
+                <pre><code class=""language-{language}"">{System.Web.HttpUtility.HtmlEncode(code)}</code></pre>
+            </div>";
+            
+            result = result.Replace(match.Value, highlightedCode);
+        }
+        
+        // Handle inline code (`)
+        var inlineCodePattern = @"`([^`]+)`";
+        result = System.Text.RegularExpressions.Regex.Replace(result, inlineCodePattern, 
+            "<code class=\"inline-code\">$1</code>");
+        
+        return result;
+    }
+
+    private string FormatMessageContent(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return string.Empty;
+        
+        // Convert newlines to HTML breaks
+        var formatted = content.Replace("\n", "<br/>");
+        
+        // Basic markdown-style formatting
+        formatted = System.Text.RegularExpressions.Regex.Replace(formatted, @"\*\*(.*?)\*\*", "<strong>$1</strong>");
+        formatted = System.Text.RegularExpressions.Regex.Replace(formatted, @"\*(.*?)\*", "<em>$1</em>");
+        
+        return formatted;
+    }
+} 

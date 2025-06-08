@@ -20,6 +20,7 @@ builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<ClientAuthenticationService>();
 builder.Services.AddSingleton<AppsettingsService>();
 builder.Services.AddScoped<ThreadSyncService>();
+builder.Services.AddScoped<MessageSyncService>();
 
 builder.Services.AddScoped(sp =>
 {

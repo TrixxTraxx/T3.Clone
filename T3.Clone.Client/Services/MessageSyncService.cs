@@ -158,4 +158,9 @@ public class MessageSyncService
             _snackbar.Add($"Failed to update message cache: {ex.Message}", Severity.Error);
         }
     }
+
+    public async Task<MessageDto> SendMessage(MessageDto messageDto)
+    {
+        throw new NotImplementedException();
+    }
 }

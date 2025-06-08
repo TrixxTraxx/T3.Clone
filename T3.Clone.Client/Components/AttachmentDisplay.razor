@@ -1,0 +1,135 @@
+@using T3.Clone.Client.Models
+@inject IJSRuntime JSRuntime
+
+<div class="attachment-display">
+    @if (IsImageAttachment())
+    {
+        <div class="image-attachment">
+            <img src="@GetImageSource()" alt="@Attachment.Name" class="attachment-image" />
+            <div class="attachment-info">
+                <MudText Typo="Typo.caption">@Attachment.Name</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@FormatFileSize(Attachment.Size)</MudText>
+            </div>
+        </div>
+    }
+    else if (IsTextAttachment())
+    {
+        <div class="text-attachment">
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="@Attachment.Name">
+                    <div class="text-content">
+                        <pre>@GetTextContent()</pre>
+                    </div>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </div>
+    }
+    else
+    {
+        <div class="file-attachment">
+            <MudCard Class="attachment-card">
+                <MudCardContent>
+                    <div class="file-info">
+                        <MudIcon Icon="@GetFileIcon()" Size="Size.Large" Color="Color.Primary" />
+                        <div class="file-details">
+                            <MudText Typo="Typo.body1">@Attachment.Name</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @Attachment.ContentType • @FormatFileSize(Attachment.Size)
+                            </MudText>
+                        </div>
+                    </div>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton StartIcon="Icons.Material.Filled.Download" 
+                              Size="Size.Small" 
+                              OnClick="DownloadFile">
+                        Download
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public ChatAttachment Attachment { get; set; } = new();
+
+    private bool IsImageAttachment()
+    {
+        return Attachment.ContentType?.StartsWith("image/") == true;
+    }
+
+    private bool IsTextAttachment()
+    {
+        return Attachment.ContentType?.StartsWith("text/") == true ||
+               Attachment.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
+               Attachment.Name.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ||
+               Attachment.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+               Attachment.Name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase) ||
+               Attachment.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetImageSource()
+    {
+        if (Attachment.Content == null) return "";
+        
+        var base64 = Convert.ToBase64String(Attachment.Content);
+        return $"data:{Attachment.ContentType};base64,{base64}";
+    }
+
+    private string GetTextContent()
+    {
+        if (Attachment.Content == null) return "";
+        
+        try
+        {
+            return System.Text.Encoding.UTF8.GetString(Attachment.Content);
+        }
+        catch
+        {
+            return "Unable to display text content";
+        }
+    }
+
+    private string GetFileIcon()
+    {
+        return Attachment.ContentType?.ToLower() switch
+        {
+            string ct when ct.StartsWith("image/") => Icons.Material.Filled.Image,
+            string ct when ct.StartsWith("video/") => Icons.Material.Filled.VideoFile,
+            string ct when ct.StartsWith("audio/") => Icons.Material.Filled.AudioFile,
+            "application/pdf" => Icons.Material.Filled.PictureAsPdf,
+            string ct when ct.Contains("word") => Icons.Material.Filled.Description,
+            string ct when ct.Contains("excel") || ct.Contains("spreadsheet") => Icons.Material.Filled.TableChart,
+            string ct when ct.Contains("powerpoint") || ct.Contains("presentation") => Icons.Material.Filled.Slideshow,
+            string ct when ct.Contains("zip") || ct.Contains("archive") => Icons.Material.Filled.Archive,
+            string ct when ct.StartsWith("text/") => Icons.Material.Filled.TextSnippet,
+            _ => Icons.Material.Filled.AttachFile
+        };
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024 * 1024):F1} MB";
+        return $"{bytes / (1024 * 1024 * 1024):F1} GB";
+    }
+
+    private async Task DownloadFile()
+    {
+        if (Attachment.Content == null) return;
+
+        try
+        {
+            var base64 = Convert.ToBase64String(Attachment.Content);
+            var dataUrl = $"data:{Attachment.ContentType};base64,{base64}";
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", dataUrl, Attachment.Name);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading file: {ex.Message}");
+        }
+    }
+} 

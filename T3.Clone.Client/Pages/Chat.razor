@@ -1,149 +1,308 @@
 @page "/"
 @page "/chat"
 @page "/chat/{ThreadId:int}"
+@using T3.Clone.Client.Caches
+@using T3.Clone.Dtos.Messages
+@using T3.Clone.Client.Models
+@inject MessageSyncService MessageSyncService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <PageTitle>T3.Clone - AI Chat Assistant</PageTitle>
 
-<div class="chat-container">
-    @if (messages.Count == 0)
-    {
-        <div class="welcome-section">
-            <div class="welcome-card">
-                <h1 class="welcome-title">Welcome to T3.Clone</h1>
-                <p class="welcome-subtitle">
-                    Your intelligent AI assistant for the Cloneathon. Experience the power of conversational AI 
-                    with a modern, intuitive interface designed for productivity and creativity.
-                </p>
-                
-                <div class="starter-prompts">
-                    <div class="starter-grid">
-                        <div class="starter-card" @onclick="@(() => SendMessage(codeHelperPrompt))">
-                            <div class="starter-header">
-                                <span class="starter-icon">💻</span>
-                                <h3>Code Helper</h3>
-                            </div>
-                            <p class="starter-description">Help me write a function in C#</p>
-                        </div>
-                        
-                        <div class="starter-card" @onclick="@(() => SendMessage(explainTechPrompt))">
-                            <div class="starter-header">
-                                <span class="starter-icon">🧠</span>
-                                <h3>Explain Tech</h3>
-                            </div>
-                            <p class="starter-description">How does Blazor WebAssembly work?</p>
-                        </div>
-                        
-                        <div class="starter-card" @onclick="@(() => SendMessage(codeReviewPrompt))">
-                            <div class="starter-header">
-                                <span class="starter-icon">📋</span>
-                                <h3>Code Review</h3>
-                            </div>
-                            <p class="starter-description">Review my code for best practices</p>
-                        </div>
-                        
-                        <div class="starter-card" @onclick="@(() => SendMessage(brainstormPrompt))">
-                            <div class="starter-header">
-                                <span class="starter-icon">💡</span>
-                                <h3>Brainstorm</h3>
-                            </div>
-                            <p class="starter-description">Help me brainstorm project ideas</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="messages-container">
-            @foreach (var message in messages)
+<MudContainer MaxWidth="MaxWidth.Large" Class="chat-page-container">
+    <div class="chat-container">
+        <div class="chat-messages-container">
+            @if (displayMessages.Any())
             {
-                <div class="message-wrapper @(message.IsUser ? "user-message" : "ai-message")">
-                    <div class="message-content">
-                        <div class="message-avatar @(message.IsUser ? "user-avatar" : "ai-avatar")">
-                            @(message.IsUser ? "👤" : "🤖")
-                        </div>
-                        <div class="message-bubble">
-                            <p class="message-text">@message.Content</p>
-                            <span class="message-time">@message.Timestamp.ToString("HH:mm")</span>
-                        </div>
-                    </div>
+                @foreach (var message in displayMessages)
+                {
+                    <ChatMessage 
+                        Message="message" 
+                        MessageTree="messageTree"
+                        IsCurrentBranch="IsInCurrentBranch(message.Message.Id)"
+                        OnBranchSelected="SelectBranch" 
+                        OnRegenerateMessage="RegenerateMessage" />
+                }
+            }
+            else if (isLoading)
+            {
+                <div class="loading-container">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                    <MudText Typo="Typo.h6" Class="mt-4">Loading conversation...</MudText>
+                </div>
+            }
+            else
+            {
+                <div class="welcome-container">
+                    <MudIcon Icon="Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Primary" Class="welcome-icon" />
+                    <MudText Typo="Typo.h4" Class="welcome-text">Start a new conversation</MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Ask me anything, and I'll help you!</MudText>
                 </div>
             }
         </div>
-    }
-</div>
 
-<div class="chat-input-area">
-    <div class="input-container">
-        <div class="input-wrapper">
-            <input type="text" 
-                   @bind="currentMessage"
-                   @onkeydown="HandleKeyPress"
-                   placeholder="Type your message here... (Press Enter to send)"
-                   class="chat-input" />
-            <button class="send-btn" @onclick="() => SendMessage(currentMessage)" 
-                    disabled="@(string.IsNullOrWhiteSpace(currentMessage))">
-                📤
-            </button>
+        <div class="chat-input-container">
+            <ChatInput 
+                OnSendMessage="HandleSendMessage" 
+                OnAttachmentAdded="HandleAttachment"
+                IsLoading="isSending" />
         </div>
-        <p class="input-hint">T3.Clone can make mistakes. Consider checking important information.</p>
     </div>
-</div>
+</MudContainer>
 
 @code {
     [Parameter]
     public int? ThreadId { get; set; }
-    
-    private string currentMessage = "";
-    private List<ChatMessage> messages = new();
 
-    // Predefined prompts
-    private string codeHelperPrompt = "Help me write a function in C#";
-    private string explainTechPrompt = "Explain how Blazor WebAssembly works";
-    private string codeReviewPrompt = "Review my code for best practices";
-    private string brainstormPrompt = "Help me brainstorm ideas for my project";
+    private MessageTreeDto? messageTree;
+    private bool isLoading = false;
+    private bool isSending = false;
+    private List<int> currentBranchPath = new();
+    private List<MessageCache> displayMessages = new();
 
-    public class ChatMessage
+    protected override async Task OnInitializedAsync()
     {
-        public string Content { get; set; } = "";
-        public bool IsUser { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        await LoadChat();
     }
 
-    private async Task SendMessage(string message)
+    protected override async Task OnParametersSetAsync()
     {
-        if (string.IsNullOrWhiteSpace(message)) return;
-
-        // Add user message
-        messages.Add(new ChatMessage 
-        { 
-            Content = message.Trim(), 
-            IsUser = true,
-            Timestamp = DateTime.Now
-        });
-
-        currentMessage = "";
-        StateHasChanged();
-
-        // Simulate AI response (placeholder for now)
-        await Task.Delay(1000);
-        
-        messages.Add(new ChatMessage 
-        { 
-            Content = "I'm T3.Clone, your AI assistant! I'm currently in development mode. Full chat functionality will be available soon. For now, I can acknowledge your message: \"" + message.Trim() + "\"",
-            IsUser = false,
-            Timestamp = DateTime.Now
-        });
-
-        StateHasChanged();
+        await LoadChat();
     }
 
-    private async Task HandleKeyPress(KeyboardEventArgs e)
+    private async Task LoadChat()
     {
-        if (e.Key == "Enter" && !e.ShiftKey)
+        if (ThreadId.HasValue)
         {
-            await SendMessage(currentMessage);
+            isLoading = true;
+            StateHasChanged();
+
+            try
+            {
+                messageTree = await MessageSyncService.GetMessageTree(ThreadId.Value);
+                InitializeBranchPath();
+                displayMessages = GetMessagesInOrder();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading chat: {ex.Message}");
+                messageTree = null;
+                displayMessages.Clear();
+            }
+
+            isLoading = false;
+            StateHasChanged();
         }
+        else
+        {
+            messageTree = null;
+            currentBranchPath.Clear();
+            // Show demo messages for new chat
+            CreateDemoMessages();
+        }
+    }
+
+    private void CreateDemoMessages()
+    {
+        displayMessages = new List<MessageCache>
+        {
+            new MessageCache
+            {
+                Message = new MessageDto
+                {
+                    Id = 1,
+                    Text = "Hello! I'm excited to try out this new chat interface.",
+                    CreatedAt = DateTime.Now.AddMinutes(-5)
+                }
+            },
+            new MessageCache
+            {
+                Message = new MessageDto
+                {
+                    Id = 2,
+                    ModelResponse = "Hello! I'm your AI assistant. I can help you with various tasks including:\n\n- Answering questions\n- Writing and reviewing code\n- Creative writing\n- Problem solving\n- And much more!\n\nWhat would you like to work on today?",
+                    CreatedAt = DateTime.Now.AddMinutes(-4)
+                }
+            },
+            new MessageCache
+            {
+                Message = new MessageDto
+                {
+                    Id = 3,
+                    Text = "Can you show me a simple example of syntax highlighting?",
+                    CreatedAt = DateTime.Now.AddMinutes(-3)
+                }
+            },
+            new MessageCache
+            {
+                Message = new MessageDto
+                {
+                    Id = 4,
+                    ModelResponse = "Of course! Here's a simple example in C#:\n\n```csharp\npublic class HelloWorld\n{\n    public static void Main(string[] args)\n    {\n        Console.WriteLine(\"Hello, World!\");\n        \n        // This is a comment\n        var numbers = new List<int> { 1, 2, 3, 4, 5 };\n        \n        foreach (var number in numbers)\n        {\n            Console.WriteLine($\"Number: {number}\");\n        }\n    }\n}\n```\n\nAnd here's some JavaScript:\n\n```javascript\nfunction fibonacci(n) {\n    if (n <= 1) return n;\n    return fibonacci(n - 1) + fibonacci(n - 2);\n}\n\n// Generate first 10 Fibonacci numbers\nfor (let i = 0; i < 10; i++) {\n    console.log(`F(${i}) = ${fibonacci(i)}`);\n}\n```\n\nThe syntax highlighting should make the code much easier to read!",
+                    CreatedAt = DateTime.Now.AddMinutes(-2)
+                }
+            }
+        };
+        
+        StateHasChanged();
+    }
+
+    private void InitializeBranchPath()
+    {
+        if (messageTree == null) return;
+
+        currentBranchPath.Clear();
+        var startMessageId = messageTree.StartMessageId;
+        
+        // Build the path from start to end
+        var currentId = startMessageId;
+        while (currentId != 0)
+        {
+            currentBranchPath.Add(currentId);
+            
+            // Find the next message in the main branch
+            var nextMessage = messageTree.Messages.Values
+                .FirstOrDefault(m => m.Message.PreviousMessageId == currentId);
+            
+            currentId = nextMessage?.Message.Id ?? 0;
+        }
+    }
+
+    private List<MessageCache> GetMessagesInOrder()
+    {
+        if (messageTree == null) return new List<MessageCache>();
+
+        var messages = new List<MessageCache>();
+        
+        foreach (var messageId in currentBranchPath)
+        {
+            if (messageTree.Messages.TryGetValue(messageId, out var message))
+            {
+                messages.Add(message);
+            }
+        }
+
+        return messages.OrderBy(m => m.Message.CreatedAt).ToList();
+    }
+
+    private bool IsInCurrentBranch(int messageId)
+    {
+        return currentBranchPath.Contains(messageId);
+    }
+
+    private void SelectBranch(int messageId)
+    {
+        if (messageTree == null) return;
+
+        // Rebuild branch path from the selected message
+        currentBranchPath.Clear();
+        
+        var currentId = messageId;
+        var pathToRoot = new List<int>();
+        
+        // Build path to root
+        while (currentId != 0)
+        {
+            pathToRoot.Add(currentId);
+            if (messageTree.Messages.TryGetValue(currentId, out var message))
+            {
+                currentId = message.Message.PreviousMessageId;
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        pathToRoot.Reverse();
+        currentBranchPath = pathToRoot;
+
+        // Continue path from selected message to the end of this branch
+        currentId = messageId;
+        while (true)
+        {
+            var nextMessage = messageTree.Messages.Values
+                .FirstOrDefault(m => m.Message.PreviousMessageId == currentId);
+            
+            if (nextMessage != null && !currentBranchPath.Contains(nextMessage.Message.Id))
+            {
+                currentBranchPath.Add(nextMessage.Message.Id);
+                currentId = nextMessage.Message.Id;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        displayMessages = GetMessagesInOrder();
+        StateHasChanged();
+    }
+
+    private async Task HandleSendMessage((string message, List<ChatAttachment> attachments) data)
+    {
+        if (string.IsNullOrWhiteSpace(data.message)) return;
+
+        isSending = true;
+        StateHasChanged();
+
+        try
+        {
+            // Add user message to display
+            var userMessage = new MessageCache
+            {
+                Message = new MessageDto
+                {
+                    Id = displayMessages.Count + 1,
+                    Text = data.message,
+                    CreatedAt = DateTime.Now
+                }
+            };
+            displayMessages.Add(userMessage);
+            StateHasChanged();
+
+            // Simulate API call delay
+            await Task.Delay(1500);
+
+            // Add AI response
+            var aiResponse = new MessageCache
+            {
+                Message = new MessageDto
+                {
+                    Id = displayMessages.Count + 1,
+                    ModelResponse = $"Thank you for your message: \"{data.message}\"\n\nThis is a demo response. In a real application, this would be replaced with actual AI processing through your MessageSyncService.",
+                    CreatedAt = DateTime.Now
+                }
+            };
+            displayMessages.Add(aiResponse);
+
+            // TODO: Implement actual message sending through MessageSyncService
+            // var result = await MessageSyncService.SendMessage(...);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending message: {ex.Message}");
+        }
+
+        isSending = false;
+        StateHasChanged();
+    }
+
+    private void HandleAttachment(ChatAttachment attachment)
+    {
+        // Handle attachment processing
+        Console.WriteLine($"Attachment added: {attachment.Name}");
+    }
+
+    private async Task RegenerateMessage(int messageId)
+    {
+        // TODO: Implement message regeneration
+        Console.WriteLine($"Regenerating message: {messageId}");
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
     }
 } 
