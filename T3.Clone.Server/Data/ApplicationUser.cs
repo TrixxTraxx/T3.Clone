@@ -6,5 +6,7 @@ namespace T3.Clone.Server.Data;
 public class ApplicationUser : IdentityUser
 {
     public string ProfilePictureUrl { get; set; }
+    
+    public int ThreadVersion { get; set; } = 1;
 }
 

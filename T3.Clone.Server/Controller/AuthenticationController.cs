@@ -24,7 +24,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized();
         }
 
-        return Ok(UserMappings.Map(user));
+        return Ok(UserMapper.Map(user));
     }
     
     

@@ -5,7 +5,7 @@ using T3.Clone.Server.Data;
 namespace T3.Clone.Server.Mappers;
 
 [Mapper]
-public partial class UserMappings
+public partial class UserMapper
 {
     public static partial UserDto Map(ApplicationUser user);
 }

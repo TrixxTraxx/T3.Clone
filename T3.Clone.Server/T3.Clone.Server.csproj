@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>aspnet-T3.Clone.Server-2490906e-e64c-436b-9c9f-f54f246425ed</UserSecretsId>
+        <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,6 +23,10 @@
     <ItemGroup>
       <ProjectReference Include="..\T3.Clone.Dtos\T3.Clone.Dtos.csproj" />
       <ProjectReference Include="..\T3.Clone.ServiceDefaults\T3.Clone.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>

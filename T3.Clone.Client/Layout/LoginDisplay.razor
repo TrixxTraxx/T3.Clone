@@ -35,8 +35,13 @@ else
 }
 
 @code{
-    [CascadingParameter] public UserDto? User { get; set; }
+    [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
 
+    protected override void OnParametersSet()
+    {
+        StateHasChanged();
+        base.OnParametersSet();
+    }
 
     public void Login()
     {

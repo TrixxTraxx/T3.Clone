@@ -7,6 +7,7 @@ using T3.Clone.Server.Components;
 using T3.Clone.Server.Components.Account;
 using T3.Clone.Server.Configuration;
 using T3.Clone.Server.Data;
+using T3.Clone.Server.Service;
 using T3.Clone.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +23,8 @@ builder.Services.AddCors(x =>
     x.AddPolicy("AllowFrontend",
         corsBuilder =>
         {
-            corsBuilder.WithOrigins(builder.Configuration.GetValue<string[]>("Appsettings:AllowedOrigins") ?? Array.Empty<string>())
+            var appsettings = builder.Configuration.GetSection("Appsettings").Get<Appsettings>();
+            corsBuilder.WithOrigins(appsettings.AllowedOrigins)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
@@ -33,6 +35,12 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<ThreadService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<AttachmentService>();
+builder.Services.AddScoped<AiModelService>();
+builder.Services.AddScoped<AiGenerationService>();
 
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
