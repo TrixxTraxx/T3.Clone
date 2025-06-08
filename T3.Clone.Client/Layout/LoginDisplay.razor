@@ -3,7 +3,39 @@
 @inject NavigationManager Navigation
 @inject AppsettingsService AppsettingsService
 
-<a @onclick="Login">Log in</a>
+<button class="sign-in-btn" @onclick="Login">
+    <span class="icon">👤</span>
+    <span>Sign In</span>
+</button>
+
+<style>
+    .sign-in-btn {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: transparent;
+        color: #cbd5e1;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .sign-in-btn:hover {
+        background: #334155;
+        border-color: #3b82f6;
+        color: white;
+    }
+
+    .icon {
+        font-size: 1rem;
+    }
+</style>
 
 @code{
 

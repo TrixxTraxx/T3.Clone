@@ -1,17 +1,211 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
+
+<MudThemeProvider Theme="@_theme" />
+<MudSnackbarProvider />
+
+<div class="app-layout">
     <div class="sidebar">
-        <NavMenu />
+        <div class="sidebar-header">
+            <div class="logo">T3</div>
+            <h1 class="app-title">T3.Clone</h1>
+        </div>
+        
+        <button class="new-chat-btn" @onclick="StartNewChat">
+            <span class="icon">💬</span> New Chat
+        </button>
+        
+        <div class="chat-history">
+            <h3 class="section-title">Recent Chats</h3>
+            <div class="chat-item active">
+                <span class="chat-icon">💭</span> Welcome Chat
+            </div>
+            <div class="chat-item">
+                <span class="chat-icon">🤖</span> AI Assistant Help
+            </div>
+            <div class="chat-item">
+                <span class="chat-icon">📝</span> Code Review
+            </div>
+            <div class="chat-item">
+                <span class="chat-icon">💡</span> Project Ideas
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <LoginDisplay />
+        </div>
     </div>
 
-    <main>
-        <div class="top-row px-4 auth">
-            <LoginDisplay />
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+    <main class="main-content">
+        @Body
     </main>
 </div>
+
+<style>
+    .app-layout {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        background: #0f172a;
+        color: #e2e8f0;
+    }
+
+    .sidebar {
+        width: 280px;
+        background: #1e293b;
+        border-right: 1px solid #334155;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .sidebar-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #334155;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 18px;
+    }
+
+    .app-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin: 0;
+    }
+
+    .new-chat-btn {
+        margin: 1rem;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .new-chat-btn:hover {
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .chat-history {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.75rem 0;
+        padding: 0 0.5rem;
+    }
+
+    .chat-item {
+        padding: 0.75rem;
+        margin-bottom: 0.25rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #cbd5e1;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chat-item:hover {
+        background: #334155;
+        color: white;
+    }
+
+    .chat-item.active {
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+    }
+
+    .chat-icon {
+        font-size: 1rem;
+        opacity: 0.8;
+    }
+
+    .sidebar-footer {
+        padding: 1rem;
+        border-top: 1px solid #334155;
+    }
+
+    .main-content {
+        flex: 1;
+        background: #0f172a;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @@media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: fixed;
+            left: -100%;
+            z-index: 1000;
+            transition: left 0.3s ease;
+        }
+        
+        .sidebar.show {
+            left: 0;
+        }
+        
+        .main-content {
+            width: 100%;
+        }
+    }
+</style>
+
+@code {
+    private MudTheme _theme = new();
+
+    protected override void OnInitialized()
+    {
+        _theme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#3b82f6",
+                Secondary = "#6366f1",
+                Background = "#0f172a",
+                Surface = "#1e293b",
+                TextPrimary = "#e2e8f0",
+                TextSecondary = "#cbd5e1"
+            }
+        };
+    }
+
+    private void StartNewChat()
+    {
+        // TODO: Implement new chat functionality
+    }
+}
