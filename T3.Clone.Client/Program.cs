@@ -14,10 +14,12 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
 
-builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<SettingsService>();
+builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<ClientAuthenticationService>();
 builder.Services.AddSingleton<AppsettingsService>();
+builder.Services.AddScoped<ThreadSyncService>();
 
 builder.Services.AddScoped(sp =>
 {

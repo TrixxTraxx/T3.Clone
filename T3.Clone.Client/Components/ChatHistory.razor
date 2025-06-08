@@ -1,15 +1,35 @@
+@using T3.Clone.Client.Caches
+@inject ThreadSyncService ThreadSyncService
+
 <MudButton
     StartIcon="@Icons.Material.Filled.Add"
     Variant="Variant.Filled"
+    Size="Size.Large"
+    Color="Color.Primary"
     Class="new-chat-button"
 >
     New Chat
 </MudButton>
 
 <MudNavMenu>
-    
+    @foreach(var cache in threads)
+    {
+        <MudNavLink Href="@($"/chat/{cache.Thread.Id}")" Match="NavLinkMatch.Prefix">
+            <MudText>@cache.Thread.Title</MudText>
+        </MudNavLink>
+    }
 </MudNavMenu>
 
 @code {
-    
+    private List<ThreadCache> threads = new List<ThreadCache>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        threads = await ThreadSyncService.GetThreads((caches) =>
+        {
+            threads = caches;
+            StateHasChanged();
+        });
+    }
+
 }

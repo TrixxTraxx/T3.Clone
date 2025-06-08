@@ -1,5 +1,6 @@
 @page "/"
 @page "/chat"
+@page "/chat/{ThreadId:int}"
 
 <PageTitle>T3.Clone - AI Chat Assistant</PageTitle>
 
@@ -91,6 +92,9 @@
 </div>
 
 @code {
+    [Parameter]
+    public int? ThreadId { get; set; }
+    
     private string currentMessage = "";
     private List<ChatMessage> messages = new();
 
