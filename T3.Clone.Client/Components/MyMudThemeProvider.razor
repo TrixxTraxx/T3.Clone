@@ -1,0 +1,106 @@
+@inject ThemeService ThemeService
+@inject SettingsService SettingsService
+@implements IDisposable
+
+<MudThemeProvider Theme="@currentTheme" IsDarkMode="@isDarkMode" />
+
+@code {
+    private bool isDarkMode = true;
+    private MudTheme currentTheme;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.ThemeChanged += OnThemeChanged;
+        await UpdateThemeAsync();
+    }
+
+    private void OnThemeChanged()
+    {
+        InvokeAsync(async () => { await UpdateThemeAsync(); });
+    }
+
+    private async Task UpdateThemeAsync()
+    {
+        Console.WriteLine("Updating Theme");
+        isDarkMode = await SettingsService.GetSettingAsync("IsDarkMode", true);
+        currentTheme = await GetThemeAsync();
+        
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ThemeService.ThemeChanged -= OnThemeChanged;
+    }
+    
+    public async Task<MudTheme> GetThemeAsync()
+    {
+        var primaryColor = await SettingsService.GetSettingAsync("PrimaryColor", Defaults.PrimaryColor);
+        var backgroundColor = await SettingsService.GetSettingAsync("BackgroundColor", Defaults.BackgroundColor);
+        var surfaceColor = await SettingsService.GetSettingAsync("SurfaceColor", Defaults.SurfaceColor);
+        var textColor = await SettingsService.GetSettingAsync("TextColor", "#FFFFFF");
+        var secondaryTextColor = await SettingsService.GetSettingAsync("SecondaryTextColor", "#B0B0B0");
+
+        MudTheme MyTheme = new MudTheme
+        {
+            PaletteDark = new PaletteDark
+            {
+                Primary = primaryColor,
+                Secondary = AdjustColor(primaryColor, 20), // Lighter version of primary
+                Background = backgroundColor,
+                Surface = surfaceColor,
+                DrawerBackground = AdjustColor(backgroundColor, 5),
+                DrawerText = textColor,
+                AppbarBackground = backgroundColor,
+                TextPrimary = textColor,
+                TextSecondary = secondaryTextColor,
+                ActionDefault = textColor,
+                ActionDisabled = "rgba(255,255,255, 0.26)",
+                ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+                DrawerIcon = secondaryTextColor,
+                TableLines = AdjustColor(backgroundColor, 15),
+                Success = "#22c55e",
+                Error = "#ef4444",
+                Dark = backgroundColor
+            },
+            LayoutProperties = new LayoutProperties
+            {
+                DefaultBorderRadius = "12px",
+                DrawerWidthLeft = "250px",
+                DrawerWidthRight = "250px",
+                AppbarHeight = "0px"
+            }
+        };
+        return MyTheme;
+    }
+    
+    private string AdjustColor(string hexColor, int percentage)
+    {
+        if (!hexColor.StartsWith("#") || (hexColor.Length != 7 && hexColor.Length != 9))
+            return hexColor;
+            
+        // Remove # and handle both RGB and RGBA
+        var hex = hexColor.Substring(1);
+        
+        // Parse the hex values
+        int r = Convert.ToInt32(hex.Substring(0, 2), 16);
+        int g = Convert.ToInt32(hex.Substring(2, 2), 16);
+        int b = Convert.ToInt32(hex.Substring(4, 2), 16);
+        
+        // Lighten the colors
+        r = Math.Min(255, r + (percentage * 255 / 100));
+        g = Math.Min(255, g + (percentage * 255 / 100));
+        b = Math.Min(255, b + (percentage * 255 / 100));
+        
+        // Convert back to hex
+        return $"#{r:X2}{g:X2}{b:X2}";
+    }
+    
+    // Default theme settings - should match SettingsService.Defaults
+    public static class Defaults
+    {
+        public const string PrimaryColor = "#6366f1"; // Primary color
+        public const string BackgroundColor = "#070d22"; // Background
+        public const string SurfaceColor = "#111936"; // Surface color
+    }
+}
