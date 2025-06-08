@@ -58,7 +58,7 @@ public class ThreadSyncService
         return threadCaches;
     }
 
-    private async Task<ThreadCache> GetThreadCache(int threadId)
+    public async Task<ThreadCache> GetThreadCache(int threadId)
     {
         var threadCache = _threadCaches.FirstOrDefault(tc => tc.Thread.Id == threadId);
         if (threadCache == null)

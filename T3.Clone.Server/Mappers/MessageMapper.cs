@@ -8,4 +8,6 @@ namespace T3.Clone.Server.Mappers;
 public partial class MessageMapper
 {
     public static partial Message Map(MessageDto message);
+
+    public static partial MessageDto Map(Message message);
 }

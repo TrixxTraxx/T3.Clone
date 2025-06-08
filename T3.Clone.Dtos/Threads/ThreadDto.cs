@@ -12,15 +12,18 @@ public class ThreadDto
     
     [Key(2)]
     public List<int> MessageIds { get; set; }
+    
+    [Key(3)]
+    public int LastMessageId { get; set; } = 0;
 
     // The date and time when the thread was created
-    [Key(3)]
+    [Key(4)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // The date and time when the thread was last updated
-    [Key(4)]
+    [Key(5)]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    [Key(5)]
+    [Key(6)]
     public int Version { get; set; } = 1;
 }

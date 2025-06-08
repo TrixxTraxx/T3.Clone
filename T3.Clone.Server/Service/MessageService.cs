@@ -98,4 +98,23 @@ public class MessageService(
             Id = newMessage.Id
         };
     }
+
+    public async Task<MessageDto> GetMessageAsync(int messageId)
+    {
+        var userId = httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException("User not authenticated");
+        }
+        
+        var message = await context.Messages
+            .FirstOrDefaultAsync(m => m.Id == messageId && m.Thread.UserId == userId);
+        
+        if (message == null)
+        {
+            throw new KeyNotFoundException($"Message with ID {messageId} not found.");
+        }
+        
+        return MessageMapper.Map(message);
+    }
 }
