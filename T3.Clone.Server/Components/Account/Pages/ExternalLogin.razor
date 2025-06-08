@@ -142,6 +142,12 @@
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        
+        // Set profile picture URL from Google if available
+        if (externalLoginInfo.LoginProvider == "Google" || externalLoginInfo.LoginProvider.ToLower().Contains("google"))
+        {
+            user.ProfilePictureUrl = GetGoogleProfilePictureUrl()!;
+        }
 
         var result = await UserManager.CreateAsync(user);
         if (result.Succeeded)
@@ -172,6 +178,72 @@
         }
 
         message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
+    }
+    
+    private string? GetGoogleProfilePictureUrl()
+    {
+        // Google provides the picture in a standard claim
+        var pictureClaim = externalLoginInfo.Principal.FindFirst("picture") ??
+                           externalLoginInfo.Principal.FindFirst("urn:google:picture") ??
+                           externalLoginInfo.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/uri") ??
+                           externalLoginInfo.Principal.FindFirst("image") ??
+                           externalLoginInfo.Principal.FindFirst("avatar");
+        
+        if (pictureClaim != null)
+        {
+            // Some Google APIs append size parameters - we can add our own size parameter to get a larger image
+            string pictureUrl = pictureClaim.Value;
+            if (pictureUrl.Contains("googleusercontent.com") && !pictureUrl.Contains("=s"))
+            {
+                // Add size parameter for Google profile pictures (s200-c for 200px circle)
+                pictureUrl += pictureUrl.Contains("?") ? "&" : "?";
+                pictureUrl += "s200-c";
+            }
+            return pictureUrl;
+        }
+        
+        // Log all available claims to help debugging
+        Logger.LogInformation("Available claims for {Provider}:", externalLoginInfo.LoginProvider);
+        foreach (var claim in externalLoginInfo.Principal.Claims)
+        {
+            Logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+            
+            // Additional check for any claim that might contain picture or image in its type
+            if ((claim.Type.Contains("picture", StringComparison.OrdinalIgnoreCase) ||
+                 claim.Type.Contains("image", StringComparison.OrdinalIgnoreCase) ||
+                 claim.Type.Contains("avatar", StringComparison.OrdinalIgnoreCase) ||
+                 claim.Type.Contains("photo", StringComparison.OrdinalIgnoreCase)) &&
+                Uri.IsWellFormedUriString(claim.Value, UriKind.Absolute))
+            {
+                return claim.Value;
+            }
+        }
+        
+        // If we couldn't find a picture claim, try to create one from the email (using Gravatar)
+        var email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email);
+        if (!string.IsNullOrEmpty(email))
+        {
+            return $"https://www.gravatar.com/avatar/{ComputeMd5Hash(email.Trim().ToLower())}?d=retro&s=200";
+        }
+        
+        return null;
+    }
+    
+    // Helper method to generate an MD5 hash for Gravatar
+    private static string ComputeMd5Hash(string input)
+    {
+        using (var md5 = System.Security.Cryptography.MD5.Create())
+        {
+            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            var hashBytes = md5.ComputeHash(inputBytes);
+            
+            var sb = new System.Text.StringBuilder();
+            foreach (var b in hashBytes)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
+        }
     }
 
     private ApplicationUser CreateUser()

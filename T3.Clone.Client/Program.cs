@@ -8,7 +8,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped<AppsettingsService>();
+builder.Services.AddSingleton<AppsettingsService>();
 builder.Services.AddScoped(sp =>
 {
     var settings = sp.GetRequiredService<AppsettingsService>();

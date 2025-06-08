@@ -1,11 +1,19 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using T3.Clone.Client.Services
 @inject NavigationManager Navigation
+@inject AppsettingsService AppsettingsService
 
-<a href="authentication/login">Log in</a>
+<a @onclick="Login">Log in</a>
 
 @code{
+
+    public void Login()
+    {
+        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Login", true);
+    }
+    
     public void BeginLogOut()
     {
-        Navigation.NavigateToLogout("authentication/logout");
+        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Logout", true);
     }
 }
