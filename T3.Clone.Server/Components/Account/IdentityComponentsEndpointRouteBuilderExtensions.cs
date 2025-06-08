@@ -10,7 +10,7 @@ using T3.Clone.Server.Components.Account.Pages;
 using T3.Clone.Server.Components.Account.Pages.Manage;
 using T3.Clone.Server.Data;
 
-namespace Microsoft.AspNetCore.Routing;
+namespace T3.Clone.Server.Components.Account;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {

@@ -1,4 +1,4 @@
-namespace CubeTimer.Data;
+namespace T3.Clone.Server.Configuration;
 
 public class Appsettings
 {

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="t3CloneSqlserver" uuid="2784abf8-14ea-44ca-b39e-7a1e69ddb666">
-      <driver-ref>sqlserver.jb</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
-      <jdbc-url>Server=127.0.0.1,1433;User ID=sa;Password=pR5wRAY2GN73awnqDePu0j;TrustServerCertificate=true</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="cache" uuid="9123888e-ae41-47b7-a6ef-13bc5bcb7b66">
+    <data-source source="LOCAL" name="cache" uuid="aad5d94b-ccc6-4fcd-876e-0ee627586ec1">
       <driver-ref>redis</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>jdbc.RedisDriver</jdbc-driver>
-      <jdbc-url>jdbc:redis://5pp4x0BkCnjVfcHRSeGTVV@localhost:42645</jdbc-url>
+      <jdbc-url>jdbc:redis://5pp4x0BkCnjVfcHRSeGTVV@localhost:45933</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="t3CloneDb" uuid="255031fa-706a-4a9a-a6da-a3d181f7aa2b">
+      <driver-ref>sqlserver.jb</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
+      <jdbc-url>Server=127.0.0.1,1433;User ID=sa;Password=pR5wRAY2GN73awnqDePu0j;TrustServerCertificate=true;Initial Catalog=t3CloneDb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

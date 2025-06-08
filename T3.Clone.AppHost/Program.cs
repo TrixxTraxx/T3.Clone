@@ -1,8 +1,11 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var database = builder.AddSqlServer("t3CloneSqlserver", port: 1433)
-    .WithDataVolume("T3CloneDataVolume");
+var sqlServer = builder.AddSqlServer("t3CloneSqlserver", port: 1433)
+    .WithLifetime(ContainerLifetime.Persistent);
 
+var database = sqlServer
+    .AddDatabase("t3CloneDb");
+    
 var cache = builder.AddRedis("cache");
 
 var apiService = builder

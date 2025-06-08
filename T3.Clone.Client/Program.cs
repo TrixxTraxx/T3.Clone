@@ -1,7 +1,7 @@
-using CubeTimer.Client.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using T3.Clone.Client;
+using T3.Clone.Client.Extensions;
 using T3.Clone.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

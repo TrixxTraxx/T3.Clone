@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using CubeTimer.Client.Extensions;
+using T3.Clone.Client.Extensions;
 
 namespace T3.Clone.Client.Services;
 

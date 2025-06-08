@@ -12,11 +12,15 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.4"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4"/>
+        <PackageReference Include="Riok.Mapperly" Version="4.2.1" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.4.13" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\T3.Clone.Dtos\T3.Clone.Dtos.csproj" />
       <ProjectReference Include="..\T3.Clone.ServiceDefaults\T3.Clone.ServiceDefaults.csproj" />
     </ItemGroup>
 

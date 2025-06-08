@@ -1,11 +1,13 @@
-using CubeTimer.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using T3.Clone.Server.Components;
 using T3.Clone.Server.Components.Account;
+using T3.Clone.Server.Configuration;
 using T3.Clone.Server.Data;
+using T3.Clone.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,11 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddOpenApi();
+
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
@@ -67,7 +73,7 @@ builder.Services.AddAuthentication(options =>
         });
     });
 
-builder.AddSqlServerDbContext<ApplicationDbContext>("t3CloneSqlserver");
+builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "t3CloneDb");
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -81,19 +87,29 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 var app = builder.Build();
 
 // auto apply migrations
-using (var scope = app.Services.CreateScope())
+_ = Task.Run(async () =>
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
+    await Task.Delay(TimeSpan.FromSeconds(2));
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+    
+    app.MapOpenApi();
+
+    app.MapScalarApiReference();
 }
 else
 {
+    app.UseForwardedHeaders();
+    
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
@@ -101,10 +117,18 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles();
+app.UseStaticFiles(new StaticFileOptions()
+{
+    ServeUnknownFileTypes = true
+});
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.UseAuthorization();
+
+app.MapControllers();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

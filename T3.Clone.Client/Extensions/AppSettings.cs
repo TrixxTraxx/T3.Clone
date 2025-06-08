@@ -1,4 +1,4 @@
-namespace CubeTimer.Client.Extensions;
+namespace T3.Clone.Client.Extensions;
 
 public class AppSettings
 {
