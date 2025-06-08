@@ -6,11 +6,11 @@ var database = builder.AddSqlServer("t3CloneSqlserver", port: 1433)
 var cache = builder.AddRedis("cache");
 
 var apiService = builder
-    .AddProject<Projects.T3_Clone_Server>("apiservice")
+    .AddProject<Projects.T3_Clone_Server>("t3CloneServer")
     .WithReference(database)
     .WaitFor(database);
 
-builder.AddProject<Projects.T3_Clone_Client>("webfrontend")
+builder.AddProject<Projects.T3_Clone_Client>("t3CloneClient")
     .WithExternalHttpEndpoints()
     .WithReference(cache)
     .WaitFor(cache)
