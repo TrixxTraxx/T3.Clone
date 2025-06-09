@@ -57,7 +57,7 @@ public class GenerationService : IAsyncDisposable
 
         _currentMessageCache = cache;
 
-        var hubUrl = $"{_appsettingsService.ServerUrl.TrimEnd('/')}/MessageHub?messageId={cache.Message.Id}";
+        var hubUrl = $"{_appsettingsService.ServerUrl}/MessageHub?messageId={cache.Message.Id}";
         
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
@@ -75,13 +75,22 @@ public class GenerationService : IAsyncDisposable
             _currentMessageCache.OnGenerate?.Invoke(token);
         });
 
-        _hubConnection.On<int>("GenerationStopped", (messageId) =>
+        _hubConnection.On<MessageDto>("GenerationStopped", (message) =>
         {
-            Console.WriteLine($"Received GenerationStopped for messageId: {messageId}");
+            Console.WriteLine($"Received GenerationStopped for messageId: {message.Id}");
             
-            _currentMessageCache.Message.Complete = true;
+            _currentMessageCache.Message = message;
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
             _currentMessageCache.OnUpdated?.Invoke();
+            
+            // disconnect from the hub
+            _hubConnection?.StopAsync().ContinueWith(t => 
+            {
+                if (t.IsFaulted)
+                {
+                    Console.WriteLine($"Error stopping hub connection: {t.Exception?.Message}");
+                }
+            });
         });
 
         _hubConnection.On<MessageDto>("NewMessage", (message) =>
@@ -155,7 +164,7 @@ public class GenerationService : IAsyncDisposable
     /// <param name="cache">The MessageCache to connect to</param>
     /// <param name="onStateChanged">Optional callback when the UI should update</param>
     /// <returns>A task that completes when the connection is established</returns>
-    public async Task StartGenerationSession(MessageCache cache, Action? onStateChanged = null)
+    public async Task StartGenerationSession(MessageCache cache)
     {
         await ConnectAsync(cache);
     }

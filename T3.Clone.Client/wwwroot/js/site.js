@@ -74,3 +74,12 @@ window.resetTextareaHeight = function(textarea) {
     textarea.style.height = '52px';
     textarea.style.overflowY = 'hidden';
 };
+
+// Set history state for navigation
+window.setHistory = function(url) {
+    if (typeof history.pushState === 'function') {
+        history.pushState(null, '', url);
+    } else {
+        console.warn('History API not supported');
+    }
+}

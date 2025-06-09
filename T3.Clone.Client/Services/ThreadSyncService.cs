@@ -144,7 +144,7 @@ public class ThreadSyncService
 
         try
         {
-            Console.WriteLine($"Updated {_threadCaches.Count} threads");
+            Console.WriteLine($"{_threadCaches.Count} Threads are up to date!");
             update?.Invoke(_threadCaches);
         }
         catch (Exception ex)
@@ -164,7 +164,9 @@ public class ThreadSyncService
 
     public async Task Update()
     {
-        var updatedThreads = await GetThreads();
-        ThreadsUpdated?.Invoke(updatedThreads);
+        _ = await GetThreads(threads =>
+        {
+            ThreadsUpdated?.Invoke(threads);            
+        });
     }
 }

@@ -24,7 +24,18 @@ public class AiGenerationService(
 
     public async Task StopGeneration(int messageId)
     {
-        throw new NotImplementedException();
+        var message = await dbContext.Messages.FindAsync(messageId);
+        if (message == null)
+        {
+            throw new ArgumentException("Message not found", nameof(messageId));
+        }
+        
+        // Mark the message as complete
+        message.Complete = true;
+        await dbContext.SaveChangesAsync();
+        
+        // Notify clients that the generation has stopped
+        await hubContext.Clients.Group(messageId.ToString()).SendAsync("GenerationStopped", message);
     }
 
     public async Task AddTokenToGeneration(int messageId, string token)
@@ -39,7 +50,7 @@ public class AiGenerationService(
         SendNewToken(messageId, token);
     }
 
-    public void SendExistingMessage(int messageId, HubCallerContext context)
+    public async Task SendExistingMessage(int messageId, HubCallerContext context)
     {
         var message = dbContext.Messages.Find(messageId);
         if (message == null)
@@ -48,7 +59,13 @@ public class AiGenerationService(
         }
         
         // Send the existing message to the client
-        hubContext.Clients.Client(context.ConnectionId).SendAsync("NewMessage", message);
+        await hubContext.Clients.Client(context.ConnectionId).SendAsync("NewMessage", message);
+
+        if (message.Complete || message.CreatedAt.AddMinutes(5) < DateTime.UtcNow)
+        {
+            // If the message is complete, notify the client
+            await StopGeneration(messageId);
+        }
     }
     
     public void SendNewToken(int messageId, string token)

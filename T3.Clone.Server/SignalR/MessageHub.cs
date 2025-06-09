@@ -45,7 +45,7 @@ public class MessageHub(
         //Set Group for the message
         await Groups.AddToGroupAsync(Context.ConnectionId, messageId);
 
-        aiGenerationService.SendExistingMessage(int.Parse(messageId), Context);
+        await aiGenerationService.SendExistingMessage(int.Parse(messageId), Context);
 
         await base.OnConnectedAsync();
     }
@@ -62,9 +62,6 @@ public class MessageHub(
 
         // Call the service to stop generation
         await aiGenerationService.StopGeneration(int.Parse(messageId));
-        
-        // Notify clients that the generation has stopped
-        await Clients.All.SendAsync("GenerationStopped", messageId);
     }
     
     public async Task OnTokenGenerated(string token)

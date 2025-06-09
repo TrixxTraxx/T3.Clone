@@ -7,6 +7,7 @@
         @foreach (var message in Messages)
         {
             <ChatMessage
+                @key="message.Message.Id"
                 Message="message"
                 MessageTree="MessageTree"
                 OnBranchSelected="OnBranchSelected"

@@ -19,10 +19,10 @@ public class GenerateMessageJob(
         message.ModelResponse = string.Empty;
         await dbContext.SaveChangesAsync();
 
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 1000; i++)
         {
             // Simulate a delay for each token generation
-            await Task.Delay(100);
+            await Task.Delay(10);
             
             //generate 4 characters of random text
             var randomToken = new string(Enumerable.Range(0, 4)
@@ -30,6 +30,6 @@ public class GenerateMessageJob(
                 .ToArray());
             await aiGenerationService.AddTokenToGeneration(messageId, randomToken);
         }
-        //await aiGenerationService.StopGeneration(messageId);
+        await aiGenerationService.StopGeneration(messageId);
     }
 }

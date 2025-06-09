@@ -6,6 +6,8 @@
 @using T3.Clone.Client.Models
 @inject MessageSyncService MessageSyncService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <PageTitle>T3.Clone - AI Chat Assistant</PageTitle>
 
@@ -117,6 +119,10 @@
             var result = await MessageSyncService.SendMessage(messageCache);
             messageCache.Message = result;
             ThreadId = result.ThreadId;
+            
+            //set the current location to the message
+            //await JSRuntime.InvokeVoidAsync("setHistory", "/chat/" + result.ThreadId);
+            NavigationManager.NavigateTo("/chat/" + result.ThreadId, replace: true);
         }
         catch (Exception ex)
         {

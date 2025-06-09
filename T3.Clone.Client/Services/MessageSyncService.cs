@@ -185,29 +185,11 @@ public class MessageSyncService
         // Store in local storage
         await _storageService.StoreObjectAsync($"MessageCache_{sentMessage.Id}", cache);
         
-        // Start generation for the response automatically
-        _ = Task.Run(async () => await StartGenerationForMessage(cache));
-        
         // refresh the thread cache now and after 3s
         await _threadSyncService.Update();
         _ = Task.Delay(3000).ContinueWith(async _ => await _threadSyncService.Update());
         
         return sentMessage;
-    }
-
-    private async Task StartGenerationForMessage(MessageCache messageCache)
-    {
-        try
-        {
-            var generationService = _generationServiceFactory();
-            
-            await generationService.StartGenerationSession(messageCache);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to start generation for message {messageCache.Message.Id}: {ex.Message}");
-            _snackbar?.Add($"Failed to start AI generation: {ex.Message}", Severity.Warning);
-        }
     }
 
     /// <summary>
