@@ -9,43 +9,28 @@
 
 <PageTitle>T3.Clone - AI Chat Assistant</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="chat-page-container">
-    <div class="chat-container">
-        <div class="chat-messages-container">
-            @if (currentBranch.Any())
-            {
-                @foreach (var message in currentBranch)
-                {
-                    <ChatMessage 
-                        Message="message" 
-                        MessageTree="messageTree" 
-                        OnRegenerateMessage="RegenerateMessage" 
-                    />
-                }
-            }
-            else if (isLoading)
-            {
-                <div class="loading-container">
-                    <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
-                    <MudText Typo="Typo.h6" Class="mt-4">Loading conversation...</MudText>
-                </div>
-            }
-            else
-            {
-                <div class="welcome-container">
-                    <MudIcon Icon="Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Primary" Class="welcome-icon" />
-                    <MudText Typo="Typo.h4" Class="welcome-text">Start a new conversation</MudText>
-                    <MudText Typo="Typo.body1" Color="Color.Secondary">Ask me anything, and I'll help you!</MudText>
-                </div>
-            }
-        </div>
-        
-        <ChatInput 
-            OnSendMessage="HandleSendMessage" 
-            OnAttachmentAdded="HandleAttachment"
-            IsLoading="isSending" />
+<div class="chat-container">
+    <div class="chat-messages-container">
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                <MudText Typo="Typo.h6" Class="mt-4">Loading conversation...</MudText>
+            </div>
+        }
+        else
+        {
+            <ChatTree
+                Messages="currentBranch"
+            />
+        }
     </div>
-</MudContainer>
+    
+    <ChatInput 
+        OnSendMessage="HandleSendMessage" 
+        OnAttachmentAdded="HandleAttachment"
+        IsLoading="isSending" />
+</div>
 
 @code {
     [Parameter]

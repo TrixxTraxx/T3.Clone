@@ -91,7 +91,6 @@
 @code {
     [Parameter] public MessageCache Message { get; set; } = new();
     [Parameter] public MessageTreeDto? MessageTree { get; set; }
-    [Parameter] public bool IsCurrentBranch { get; set; }
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
 
@@ -119,10 +118,7 @@
             classes.Add("user-message");
         else
             classes.Add("assistant-message");
-
-        if (IsCurrentBranch)
-            classes.Add("current-branch");
-
+        
         return string.Join(" ", classes);
     }
 

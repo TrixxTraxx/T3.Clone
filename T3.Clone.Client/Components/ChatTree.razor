@@ -1,0 +1,28 @@
+@using T3.Clone.Client.Caches
+@using T3.Clone.Dtos.Messages
+
+<div class="chat-tree-container">
+    @if (Messages.Any())
+    {
+        @foreach (var message in Messages)
+        {
+            <ChatMessage
+                Message="message"
+                MessageTree="MessageTree"
+                OnBranchSelected="OnBranchSelected"
+                OnRegenerateMessage="OnRegenerateMessage"
+            />
+        }
+    }
+    else
+    {
+        <EmptyChatComponent/>
+    }
+</div>
+
+@code {
+    [Parameter] public List<MessageCache> Messages { get; set; } = new();
+    [Parameter] public MessageTreeDto MessageTree { get; set; } = new MessageTreeDto();
+    [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
+    [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+}
