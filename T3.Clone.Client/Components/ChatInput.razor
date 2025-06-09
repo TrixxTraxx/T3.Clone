@@ -1,6 +1,8 @@
 @using T3.Clone.Client.Models
 @using T3.Clone.Dtos.Messages
+@using T3.Clone.Dtos.Model
 @inject IJSRuntime JSRuntime
+@inject AiModelService AiModelService
 
 <div class="hypermodern-chat-input-wrapper">
     <div class="hypermodern-input-container">
@@ -42,6 +44,18 @@
             <!-- Toggle Buttons and Model Selector -->
             <div class="control-group">
                 <div class="toggle-buttons">
+                    <!-- AI Model Selector -->
+                    <div class="model-selector-wrapper">
+                        <select @bind="SelectedModelId" class="hypermodern-model-select" disabled="@IsLoading">
+                            @foreach (var model in aiModels)
+                            {
+                                <option value="@model.Id" selected="@(_selectedModelId == model.Id)">
+                                    @model.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    
                     <button class="hypermodern-toggle-btn @(enableThinking ? "active" : "")"
                             @onclick="ToggleThinking"
                             disabled="@IsLoading"
@@ -51,7 +65,7 @@
                         </svg>
                         <span>Thinking</span>
                     </button>
-                    
+
                     <button class="hypermodern-toggle-btn @(enableAttachments ? "active" : "")"
                             @onclick="ToggleAttachments"
                             disabled="@IsLoading"
@@ -61,17 +75,6 @@
                         </svg>
                         <span>Attachments</span>
                     </button>
-                </div>
-
-                <!-- AI Model Selector -->
-                <div class="model-selector-wrapper">
-                    <select @bind="SelectedModelId" class="hypermodern-model-select" disabled="@IsLoading">
-                        <option value="1">GPT-4</option>
-                        <option value="2">GPT-3.5 Turbo</option>
-                        <option value="3">Claude 3 Sonnet</option>
-                        <option value="4">Claude 3 Haiku</option>
-                        <option value="5">Gemini Pro</option>
-                    </select>
                 </div>
             </div>
         </div>
@@ -94,10 +97,12 @@
     [Parameter] public EventCallback<MessageDto> OnSendMessage { get; set; }
     [Parameter] public EventCallback<ChatAttachment> OnAttachmentAdded { get; set; }
     [Parameter] public bool IsLoading { get; set; }
+    
+    private List<AiModelDto> aiModels = new List<AiModelDto>();
 
     private MessageDto message = new MessageDto();
     private ElementReference textareaRef;
-    private int _selectedModelId = 1; // Default to GPT-4
+    private int _selectedModelId = 1;
     private bool enableThinking = false;
     private bool enableAttachments = false;
     
@@ -114,6 +119,12 @@
     }
     
     private bool CanSend => !IsLoading && !string.IsNullOrWhiteSpace(message.Text);
+
+    protected override async Task OnInitializedAsync()
+    {
+        aiModels = await AiModelService.GetAiModels();
+        _selectedModelId = aiModels.FirstOrDefault()?.Id ?? 1; // Default to first model if available
+    }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
