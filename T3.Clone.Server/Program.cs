@@ -1,3 +1,7 @@
+using Aspire.Microsoft.EntityFrameworkCore.SqlServer;
+using CubeTimer.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +11,7 @@ using T3.Clone.Server.Components;
 using T3.Clone.Server.Components.Account;
 using T3.Clone.Server.Configuration;
 using T3.Clone.Server.Data;
+using T3.Clone.Server.Seeder;
 using T3.Clone.Server.Service;
 using T3.Clone.Server.SignalR;
 using T3.Clone.ServiceDefaults;
@@ -38,6 +43,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 
+builder.Services.AddScoped<Seeder>();
 builder.Services.AddScoped<ThreadService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<AttachmentService>();
@@ -95,14 +101,34 @@ builder.Services.AddAuthentication(options =>
         });
     });
 
-builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "t3CloneDb");
+var connectionString = "";
+builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "t3CloneDb", settings =>
+{
+    connectionString = settings.ConnectionString;
+});
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
+
+builder.Services.AddHangfire(configuration => configuration
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    })
+);
+
+builder.Services.AddHangfireServer();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
@@ -114,8 +140,18 @@ _ = Task.Run(async () =>
     await Task.Delay(TimeSpan.FromSeconds(2));
     using (var scope = app.Services.CreateScope())
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.MigrateAsync();
+        try
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await dbContext.Database.MigrateAsync();
+            var seeder = scope.ServiceProvider.GetService<Seeder>();
+            seeder!.Seed();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during database migration: {ex.Message}");
+            throw;
+        }
     }
 });
 
@@ -137,6 +173,12 @@ else
     app.UseHsts();
 }
 
+// Configure Hangfire dashboard for admins only
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
+
 app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
@@ -150,6 +192,7 @@ app.UseStaticFiles(new StaticFileOptions()
 app.UseAntiforgery();
 
 app.UseAuthorization();
+
 
 app.MapControllers();
 

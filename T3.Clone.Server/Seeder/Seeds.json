@@ -1,0 +1,13 @@
+{
+  "AdminUsername": "admin@t3.clone.at",
+  "AdminPassword": "Admin@123",
+  "AdminEmail": "admin@t3.clone.at",
+  "Roles": [
+    {
+      "Name": "Admin"
+    },
+    {
+      "Name": "User"
+    }
+  ]
+}
