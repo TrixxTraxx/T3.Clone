@@ -162,9 +162,9 @@ public class MessageSyncService
         }
     }
 
-    public async Task<MessageDto> SendMessage(MessageDto messageDto)
+    public async Task<MessageDto> SendMessage(MessageCache cache)
     {
-        var response = await _http.PostAsJsonAsync("api/message", messageDto);
+        var response = await _http.PostAsJsonAsync("api/message", cache.Message);
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception($"Failed to send message: {response.ReasonPhrase}");
@@ -177,19 +177,16 @@ public class MessageSyncService
         }
 
         // Update the cache
-        var messageCache = new MessageCache
-        {
-            Message = sentMessage,
-            LastUpdated = DateTime.UtcNow
-        };
+        cache.Message = sentMessage;
+        cache.LastUpdated = DateTime.UtcNow;
         
-        _messageCaches[sentMessage.Id] = messageCache;
+        _messageCaches[sentMessage.Id] = cache;
         
         // Store in local storage
-        await _storageService.StoreObjectAsync($"MessageCache_{sentMessage.Id}", messageCache);
+        await _storageService.StoreObjectAsync($"MessageCache_{sentMessage.Id}", cache);
         
         // Start generation for the response automatically
-        _ = Task.Run(async () => await StartGenerationForMessage(messageCache));
+        _ = Task.Run(async () => await StartGenerationForMessage(cache));
         
         // refresh the thread cache now and after 3s
         await _threadSyncService.Update();
@@ -203,19 +200,6 @@ public class MessageSyncService
         try
         {
             var generationService = _generationServiceFactory();
-            
-            // Set up event handlers to persist changes
-            generationService.TokenReceived += async (token) =>
-            {
-                // Store updated cache after each token
-                await _storageService.StoreObjectAsync($"MessageCache_{messageCache.Message.Id}", messageCache);
-            };
-            
-            generationService.GenerationStopped += async (messageId) =>
-            {
-                // Store final cache when generation completes
-                await _storageService.StoreObjectAsync($"MessageCache_{messageId}", messageCache);
-            };
             
             await generationService.StartGenerationSession(messageCache);
         }

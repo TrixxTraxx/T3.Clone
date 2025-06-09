@@ -30,6 +30,6 @@ public class GenerateMessageJob(
                 .ToArray());
             await aiGenerationService.AddTokenToGeneration(messageId, randomToken);
         }
-        await aiGenerationService.StopGeneration(messageId);
+        //await aiGenerationService.StopGeneration(messageId);
     }
 }

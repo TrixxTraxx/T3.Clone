@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using T3.Clone.Client.Caches;
 using T3.Clone.Client.Services;
+using T3.Clone.Dtos.Messages;
 
 namespace T3.Clone.Client.Services;
 
@@ -42,13 +43,6 @@ public class GenerationService : IAsyncDisposable
     private HubConnection? _hubConnection;
     private MessageCache? _currentMessageCache;
 
-    public event Action<string>? TokenReceived;
-    public event Action<int>? GenerationStopped;
-    public event Action<object>? MessageReceived;
-    public event Action<Exception>? ConnectionError;
-    public event Action? Connected;
-    public event Action? Disconnected;
-
     public GenerationService(AppsettingsService appsettingsService)
     {
         _appsettingsService = appsettingsService;
@@ -72,79 +66,41 @@ public class GenerationService : IAsyncDisposable
         // Set up event handlers
         _hubConnection.On<string>("ReceiveNewToken", (token) =>
         {
-            // Update the message cache with the new token
-            if (_currentMessageCache != null)
-            {
-                _currentMessageCache.Message.ModelResponse += token;
-                _currentMessageCache.LastUpdated = DateTime.UtcNow;
-                
-                // Emit events to the cache and external subscribers
-                _currentMessageCache.OnGenerate?.Invoke(token);
-                _currentMessageCache.OnUpdated?.Invoke();
-            }
+            Console.WriteLine($"Received new token: {token}");
             
-            TokenReceived?.Invoke(token);
+            _currentMessageCache.Message.ModelResponse += token;
+            _currentMessageCache.LastUpdated = DateTime.UtcNow;
+            
+            // Emit events to the cache and external subscribers
+            _currentMessageCache.OnGenerate?.Invoke(token);
         });
 
         _hubConnection.On<int>("GenerationStopped", (messageId) =>
         {
-            // Mark generation as complete
-            if (_currentMessageCache != null && _currentMessageCache.Message.Id == messageId)
-            {
-                _currentMessageCache.Message.Complete = true;
-                _currentMessageCache.LastUpdated = DateTime.UtcNow;
-                _currentMessageCache.OnUpdated?.Invoke();
-            }
+            Console.WriteLine($"Received GenerationStopped for messageId: {messageId}");
             
-            GenerationStopped?.Invoke(messageId);
+            _currentMessageCache.Message.Complete = true;
+            _currentMessageCache.LastUpdated = DateTime.UtcNow;
+            _currentMessageCache.OnUpdated?.Invoke();
         });
 
-        _hubConnection.On<object>("NewMessage", (message) =>
+        _hubConnection.On<MessageDto>("NewMessage", (message) =>
         {
+            Console.WriteLine($"Received new message: {message}");
+            
             // Handle new message events
-            if (_currentMessageCache != null)
-            {
-                _currentMessageCache.LastUpdated = DateTime.UtcNow;
-                _currentMessageCache.OnUpdated?.Invoke();
-            }
-            
-            MessageReceived?.Invoke(message);
+            _currentMessageCache.Message = message;
+            _currentMessageCache.LastUpdated = DateTime.UtcNow;
+            _currentMessageCache.OnUpdated?.Invoke();
         });
-
-        // Connection state events
-        _hubConnection.Closed += (exception) =>
-        {
-            Disconnected?.Invoke();
-            if (exception != null)
-            {
-                ConnectionError?.Invoke(exception);
-            }
-            return Task.CompletedTask;
-        };
-
-        _hubConnection.Reconnected += (connectionId) =>
-        {
-            Connected?.Invoke();
-            return Task.CompletedTask;
-        };
-
-        _hubConnection.Reconnecting += (exception) =>
-        {
-            if (exception != null)
-            {
-                ConnectionError?.Invoke(exception);
-            }
-            return Task.CompletedTask;
-        };
 
         try
         {
             await _hubConnection.StartAsync();
-            Connected?.Invoke();
         }
         catch (Exception ex)
         {
-            ConnectionError?.Invoke(ex);
+            Console.WriteLine($"Failed to connect to Hub: {ex.Message}");
             throw;
         }
     }
@@ -169,7 +125,7 @@ public class GenerationService : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                ConnectionError?.Invoke(ex);
+                Console.WriteLine(ex);
                 throw;
             }
         }
@@ -202,28 +158,6 @@ public class GenerationService : IAsyncDisposable
     public async Task StartGenerationSession(MessageCache cache, Action? onStateChanged = null)
     {
         await ConnectAsync(cache);
-        
-        // Set up additional event handlers if a state change callback is provided
-        if (onStateChanged != null)
-        {
-            TokenReceived += (_) => onStateChanged();
-            GenerationStopped += (_) => onStateChanged();
-            Connected += onStateChanged;
-            Disconnected += onStateChanged;
-        }
-    }
-
-    /// <summary>
-    /// Reconnects to a different MessageCache if needed.
-    /// </summary>
-    /// <param name="newCache">The new MessageCache to connect to</param>
-    /// <returns>A task that completes when the connection is reestablished</returns>
-    public async Task SwitchMessageCache(MessageCache newCache)
-    {
-        if (_currentMessageCache?.Message.Id != newCache.Message.Id)
-        {
-            await ConnectAsync(newCache);
-        }
     }
 
     /// <summary>
@@ -232,14 +166,6 @@ public class GenerationService : IAsyncDisposable
     /// </summary>
     public async Task ResetAsync()
     {
-        // Clear all event handlers
-        TokenReceived = null;
-        GenerationStopped = null;
-        MessageReceived = null;
-        ConnectionError = null;
-        Connected = null;
-        Disconnected = null;
-        
         await DisconnectAsync();
     }
 } 

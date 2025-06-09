@@ -114,7 +114,7 @@
             currentBranch.Insert(0, messageCache);
             StateHasChanged();
 
-            var result = await MessageSyncService.SendMessage(messageCache.Message);
+            var result = await MessageSyncService.SendMessage(messageCache);
             messageCache.Message = result;
             ThreadId = result.ThreadId;
         }

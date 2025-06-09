@@ -61,6 +61,6 @@ public class AiGenerationService(
         }
         
         // Send the new token to all clients in the group
-        clients.SendAsync("ReceiveNewToken", messageId, token).GetAwaiter().GetResult();
+        clients.SendAsync("ReceiveNewToken", token).GetAwaiter().GetResult();
     }
 }

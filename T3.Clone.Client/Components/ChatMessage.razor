@@ -99,37 +99,15 @@
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
-    private MessageCache? _previousMessage;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             aiModels = await AiModelService.GetAiModels();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to load AI models: {ex.Message}");
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        // Unsubscribe from previous message events if we had one
-        if (_previousMessage != null)
-        {
-            _previousMessage.OnGenerate = (token) => { };
-            _previousMessage.OnUpdated = () => { };
-        }
-
-        // Subscribe to new message events for live updates
-        if (Message != null)
-        {
-            _previousMessage = Message;
-            
-            // Subscribe to generation events for live updates
             Message.OnGenerate = (token) =>
             {
+                Console.WriteLine($"Received token: {token}, now rendering message: {Message.Message.ModelResponse}");
                 // Update UI when new tokens are received
                 InvokeAsync(StateHasChanged);
             };
@@ -139,6 +117,10 @@
                 // Update UI when message is updated
                 InvokeAsync(StateHasChanged);
             };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load AI models: {ex.Message}");
         }
     }
 
