@@ -7,6 +7,27 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
+<script>
+    window.setupChatInputAutoFocus = function (element) {
+        if (!element) return;
+        document.addEventListener('keydown', function (e) {
+            // Only focus if not already in an input, textarea, or contenteditable, and not typing shortcuts
+            const tag = document.activeElement.tagName;
+            const editable = document.activeElement.isContentEditable;
+            if (
+                !e.ctrlKey && !e.metaKey && !e.altKey &&
+                !editable &&
+                tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT'
+            ) {
+                // Only focus on visible character keys (no function keys, etc)
+                if (e.key.length === 1) {
+                    element.focus();
+                }
+            }
+        });
+    };
+</script>
+
 <PageTitle>LLM Lab - AI Chat Assistant</PageTitle>
 
 <div class="chat-container">
@@ -89,6 +110,7 @@
         {
             await Task.Delay(50);
             await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
+            await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.textareaRef);
         }); 
     }
 
