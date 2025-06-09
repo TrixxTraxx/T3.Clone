@@ -1,3 +1,5 @@
+using System.ClientModel;
+using OpenAI;
 using OpenAI.Chat;
 using T3.Clone.Client.Services;
 using T3.Clone.Server.Data;
@@ -8,7 +10,10 @@ public class OpenAiChat : IChatModel
 {
     public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config, Action<string> tokenCallback, Action<string> errorCallback)
     {
-        ChatClient client = new(model: config.ModelId, apiKey: config.ApiKey);
+        ChatClient client = new(model: config.ModelId, new ApiKeyCredential(config.ApiKey), new OpenAIClientOptions()
+        {
+            Endpoint = new Uri(config.ApiUrl)
+        });
         
         //create the chat messages
         List<ChatMessage> messages = new();

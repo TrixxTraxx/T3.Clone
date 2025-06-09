@@ -119,6 +119,7 @@
             var result = await MessageSyncService.SendMessage(messageCache);
             messageCache.Message = result;
             ThreadId = result.ThreadId;
+            currentBranchPath = result.Id;
             
             //set the current location to the message
             //await JSRuntime.InvokeVoidAsync("setHistory", "/chat/" + result.ThreadId);
