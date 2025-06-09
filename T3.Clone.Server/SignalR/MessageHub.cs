@@ -30,7 +30,8 @@ public class MessageHub(
             return;
         }
         
-        Context.Items["User"] = user;
+        //we technically dont need the User, we just need to know he owns the message
+        //Context.Items["User"] = user;
         
         // Get the Thread Id
         var messageId = Context.GetHttpContext()!.Request.Query["messageId"].ToString();

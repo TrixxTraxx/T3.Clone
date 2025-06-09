@@ -13,6 +13,8 @@ public class ThreadSyncService
     private readonly HttpClient _http;
     private readonly ISnackbar _snackbar;
     private readonly StorageService _storageService;
+    
+    public Action<List<ThreadCache>>? ThreadsUpdated;
 
     public ThreadSyncService(HttpClient http, StorageService storageService, ISnackbar snackbar)
     {
@@ -158,5 +160,11 @@ public class ThreadSyncService
     {
         // Store the thread cache in the collection
         await _storageService.StoreObjectAsync($"ThreadCache_{threadCache.Thread.Id}", threadCache);
+    }
+
+    public async Task Update()
+    {
+        var updatedThreads = await GetThreads();
+        ThreadsUpdated?.Invoke(updatedThreads);
     }
 }

@@ -2,8 +2,10 @@
 @using T3.Clone.Dtos.Messages
 @using T3.Clone.Client.Models
 @using T3.Clone.Dtos.Model
+@using T3.Clone.Client.Services
 @inject IJSRuntime JSRuntime
 @inject AiModelService AiModelService
+@inject GenerationService GenerationService
 
 <div class="chat-message-container">
     @if (!string.IsNullOrWhiteSpace(Message.Message.Text))
@@ -62,6 +64,11 @@
                                 <span></span>
                                 <span></span>
                             </div>
+                            <button class="stop-generation-btn" @onclick="StopGeneration" title="Stop generation">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 6h12v12H6z"/>
+                                </svg>
+                            </button>
                         </div>
                     }
                 </div>
@@ -92,6 +99,7 @@
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
+    private MessageCache? _previousMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,6 +110,35 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to load AI models: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Unsubscribe from previous message events if we had one
+        if (_previousMessage != null)
+        {
+            _previousMessage.OnGenerate = (token) => { };
+            _previousMessage.OnUpdated = () => { };
+        }
+
+        // Subscribe to new message events for live updates
+        if (Message != null)
+        {
+            _previousMessage = Message;
+            
+            // Subscribe to generation events for live updates
+            Message.OnGenerate = (token) =>
+            {
+                // Update UI when new tokens are received
+                InvokeAsync(StateHasChanged);
+            };
+            
+            Message.OnUpdated = () =>
+            {
+                // Update UI when message is updated
+                InvokeAsync(StateHasChanged);
+            };
         }
     }
 
@@ -148,6 +185,22 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to copy to clipboard: {ex.Message}");
+        }
+    }
+    
+    private async Task StopGeneration()
+    {
+        try
+        {
+            // Check if this GenerationService is connected to the current message
+            if (GenerationService.CurrentMessageId == Message.Message.Id && GenerationService.IsConnected)
+            {
+                await GenerationService.StopGeneration();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to stop generation: {ex.Message}");
         }
     }
 } 

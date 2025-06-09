@@ -8,18 +8,21 @@ namespace T3.Clone.Client.Services;
 public class MessageSyncService
 {
     private Dictionary<int, MessageCache> _messageCaches { get; } = new();
+    private HashSet<int> _activeGenerations { get; } = new();
 
     private readonly HttpClient _http;
     private readonly ISnackbar _snackbar;
     private readonly StorageService _storageService;
     private readonly ThreadSyncService _threadSyncService;
+    private readonly Func<GenerationService> _generationServiceFactory;
 
-    public MessageSyncService(HttpClient http, ISnackbar snackbar, StorageService storageService, ThreadSyncService threadSyncService)
+    public MessageSyncService(HttpClient http, ISnackbar snackbar, StorageService storageService, ThreadSyncService threadSyncService, Func<GenerationService> generationServiceFactory)
     {
         _http = http;
         _snackbar = snackbar;
         _storageService = storageService;
         _threadSyncService = threadSyncService;
+        _generationServiceFactory = generationServiceFactory;
     }
     
     public async Task<MessageCache> GetMessageCache(int messageId)
@@ -185,6 +188,58 @@ public class MessageSyncService
         // Store in local storage
         await _storageService.StoreObjectAsync($"MessageCache_{sentMessage.Id}", messageCache);
         
+        // Start generation for the response automatically
+        _ = Task.Run(async () => await StartGenerationForMessage(messageCache));
+        
+        // refresh the thread cache now and after 3s
+        await _threadSyncService.Update();
+        _ = Task.Delay(3000).ContinueWith(async _ => await _threadSyncService.Update());
+        
         return sentMessage;
+    }
+
+    private async Task StartGenerationForMessage(MessageCache messageCache)
+    {
+        try
+        {
+            var generationService = _generationServiceFactory();
+            
+            // Set up event handlers to persist changes
+            generationService.TokenReceived += async (token) =>
+            {
+                // Store updated cache after each token
+                await _storageService.StoreObjectAsync($"MessageCache_{messageCache.Message.Id}", messageCache);
+            };
+            
+            generationService.GenerationStopped += async (messageId) =>
+            {
+                // Store final cache when generation completes
+                await _storageService.StoreObjectAsync($"MessageCache_{messageId}", messageCache);
+            };
+            
+            await generationService.StartGenerationSession(messageCache);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to start generation for message {messageCache.Message.Id}: {ex.Message}");
+            _snackbar?.Add($"Failed to start AI generation: {ex.Message}", Severity.Warning);
+        }
+    }
+
+    /// <summary>
+    /// Updates a message cache and persists it to storage
+    /// </summary>
+    public async Task UpdateMessageCache(MessageCache messageCache)
+    {
+        _messageCaches[messageCache.Message.Id] = messageCache;
+        await _storageService.StoreObjectAsync($"MessageCache_{messageCache.Message.Id}", messageCache);
+    }
+
+    /// <summary>
+    /// Gets all cached messages for cleanup or management purposes
+    /// </summary>
+    public Dictionary<int, MessageCache> GetAllCachedMessages()
+    {
+        return new Dictionary<int, MessageCache>(_messageCaches);
     }
 }

@@ -57,19 +57,6 @@ public class MessageService(
                 Title = "New Thread" // Default title, can be changed later
             };
             context.MessageThreads.Add(thread);
-            
-            // Generate a Thread Title based on the first message in the background
-            _ = Task.Run(async () => {
-                try
-                {
-                    await aiService.GenerateThreadTitle(thread.Id, newMessage.Text);
-                }
-                catch (Exception ex)
-                {
-                    // Handle exceptions from AI generation
-                    Console.WriteLine($"AI Thread Title generation failed: {ex.Message}");
-                }
-            });
         }
         newMessage.Thread = thread;
         user.ThreadVersion++;
@@ -79,18 +66,10 @@ public class MessageService(
         context.Messages.Add(newMessage);
         await context.SaveChangesAsync();
         
-        //Start the Generation in the Background
-        _ = Task.Run((Action) (async () => {
-            try
-            {
-                await aiService.StartGeneration(newMessage.Id);
-            }
-            catch (Exception ex)
-            {
-                // Handle exceptions from AI generation
-                Console.WriteLine($"AI Generation failed: {ex.Message}");
-            }
-        }));
+        // Generate a Thread Title based on the first message in the background
+        await aiService.GenerateThreadTitle(thread.Id, newMessage.Text);
+        
+        await aiService.StartGeneration(newMessage.Id);
         
         //return the result
         return MessageMapper.Map(newMessage);

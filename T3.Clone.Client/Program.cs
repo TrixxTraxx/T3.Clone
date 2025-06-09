@@ -24,6 +24,9 @@ builder.Services.AddScoped<MessageSyncService>();
 builder.Services.AddScoped<AiModelService>();
 builder.Services.AddTransient<GenerationService>();
 
+// Add GenerationService factory for MessageSyncService
+builder.Services.AddScoped<Func<GenerationService>>(provider => () => provider.GetRequiredService<GenerationService>());
+
 builder.Services.AddScoped(sp =>
 {
     var settings = sp.GetRequiredService<AppsettingsService>();

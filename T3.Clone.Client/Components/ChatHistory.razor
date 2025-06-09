@@ -26,6 +26,12 @@
             threads = caches;
             StateHasChanged();
         });
+        
+        ThreadSyncService.ThreadsUpdated += (caches) =>
+        {
+            threads = caches;
+            StateHasChanged();
+        };
 
         // Listen to navigation changes
         NavigationManager.LocationChanged += OnLocationChanged;
