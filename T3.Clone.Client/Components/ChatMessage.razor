@@ -5,6 +5,7 @@
 @using T3.Clone.Dtos.Model
 @using T3.Clone.Client.Services
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
 @inject AiModelService AiModelService
 @inject GenerationService GenerationService
 @implements IAsyncDisposable
@@ -189,6 +190,7 @@
         try
         {
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            Snackbar.Add("Copied to clipboard", Severity.Success);
         }
         catch (Exception ex)
         {
