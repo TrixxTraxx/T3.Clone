@@ -83,3 +83,33 @@ window.setHistory = function(url) {
         console.warn('History API not supported');
     }
 }
+
+// Download file from URL
+window.downloadFile = function(url, filename) {
+    try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || 'download';
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('File download initiated:', filename);
+    } catch (err) {
+        console.error('Failed to download file:', err);
+    }
+}
+
+// Trigger file input selection
+window.triggerFileInput = function() {
+    try {
+        const fileInput = document.getElementById('hiddenFileInput');
+        if (fileInput && fileInput.click) {
+            fileInput.click();
+        }
+    } catch (err) {
+        console.error('Failed to trigger file input:', err);
+    }
+}

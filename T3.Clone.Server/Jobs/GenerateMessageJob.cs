@@ -15,6 +15,7 @@ public class GenerateMessageJob(
     public async Task GenerateMessageAsync(int messageId) 
     {
         var message = await dbContext.Messages
+            .Include(x => x.Attachments)
             .Include(x => x.Model)
             .FirstOrDefaultAsync(x => x.Id == messageId);
         if (message == null)
@@ -56,6 +57,7 @@ public class GenerateMessageJob(
     private List<Message> GetMessageChain(Message message)
     {
         var messages = dbContext.Messages
+            .Include(x => x.Attachments)
             .Where(x => x.ThreadId == message.ThreadId && x.Id != message.Id)
             .OrderBy(x => x.CreatedAt)
             .ToList();

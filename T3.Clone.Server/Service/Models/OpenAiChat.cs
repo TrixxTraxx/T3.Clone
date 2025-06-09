@@ -6,7 +6,9 @@ using T3.Clone.Server.Data;
 
 namespace T3.Clone.Server.Service.Models;
 
-public class OpenAiChat : IChatModel
+public class OpenAiChat(
+    AttachmentService attachmentService
+) : IChatModel
 {
     public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config, Action<string> tokenCallback, Action<string> errorCallback)
     {
@@ -30,6 +32,17 @@ public class OpenAiChat : IChatModel
             {
                 ChatMessageContentPart.CreateTextPart(message.Text)
             };
+            foreach (var attachment in message.Attachments ?? new ())
+            {
+                var content = attachmentService.GetAttachmentContent(attachment.Id, true);
+                if (content.data != null && content.data.Length > 0)
+                {
+                    userContentParts = userContentParts.Append(ChatMessageContentPart.CreateImagePart(
+                        BinaryData.FromBytes(content.data),
+                        content.contentType
+                    )).ToArray();
+                }
+            }
             messages.Add(new UserChatMessage(userContentParts));
             
             if (!string.IsNullOrEmpty(message.ModelResponse) && message.Complete)

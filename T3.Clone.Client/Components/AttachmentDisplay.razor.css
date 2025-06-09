@@ -1,0 +1,101 @@
+.attachment-display {
+    margin: 8px 0;
+}
+
+.image-attachment {
+    max-width: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 95%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 75%, transparent) 100%);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.attachment-image {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.attachment-info {
+    padding: 8px 12px;
+}
+
+.file-attachment {
+    max-width: 280px;
+}
+
+.attachment-card {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 95%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 75%, transparent) 100%) !important;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-surface) 40%, transparent) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.attachment-card:hover {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent) !important;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 8px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent) !important;
+    transform: translateY(-2px);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-details .mud-typography {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--mud-palette-surface) 30%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .image-attachment,
+    .file-attachment {
+        max-width: 100%;
+    }
+    
+    .attachment-image {
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .file-info {
+        gap: 8px;
+    }
+    
+    .attachment-info {
+        padding: 6px 10px;
+    }
+} 
