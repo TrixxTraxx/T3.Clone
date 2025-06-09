@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.Mail;
 
 namespace T3.Clone.Server.Data;
@@ -11,7 +12,12 @@ public class Message
     
     public string ModelResponse { get; set; } = string.Empty;
     
-    public List<MessageAttachment> Attachments { get; set; }
+    public List<MessageAttachment> Attachments { get; set; } = new ();
+    
+    [NotMapped]
+    public List<int> AttachmentIds => Attachments.Select(a => a.Id).ToList();
+    
+    
     
     public bool Complete { get; set; } = false;
 

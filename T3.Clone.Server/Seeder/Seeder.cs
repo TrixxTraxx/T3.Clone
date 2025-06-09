@@ -27,6 +27,7 @@ public class Seeder
     {
         SeedRoles();
         SeedAdminUser();
+        SeedModels();
     }
 
     private void SeedRoles()
@@ -41,6 +42,7 @@ public class Seeder
         }
         _context.SaveChanges();
     }
+
     private void SeedAdminUser()
     {
         var adminUser = new ApplicationUser
@@ -64,6 +66,40 @@ public class Seeder
             }
         }
     }
+
+    private void SeedModels()
+    {
+        foreach (var model in _seeds.Models)
+        {
+            var existingModel = _context.AiModels.FirstOrDefault(m => m.Name == model.Name && m.ModelId == model.ModelId);
+            if (existingModel == null)
+            {
+                _context.AiModels.Add(model);
+            }
+            else
+            {
+                existingModel.Description = model.Description;
+                existingModel.IsDefault = model.IsDefault;
+                existingModel.HasImageSupport = model.HasImageSupport;
+                existingModel.SupportedContentTypes = model.SupportedContentTypes;
+                existingModel.HasImageGenerationSupport = model.HasImageGenerationSupport;
+                existingModel.HasThinkingSupport = model.HasThinkingSupport;
+                
+                existingModel.SystemPrompt = model.SystemPrompt;
+                existingModel.Provider = model.Provider;
+                existingModel.ApiUrl = model.ApiUrl;
+                existingModel.ApiKey = model.ApiKey;
+                
+                existingModel.InputTokenCost = model.InputTokenCost;
+                existingModel.OutputTokenCost = model.OutputTokenCost;
+                existingModel.ThinkingCost = model.ThinkingCost;
+                existingModel.ImageGenerationCost = model.ImageGenerationCost;
+                existingModel.MaxInputTokens = model.MaxInputTokens;
+                existingModel.MaxOutputTokens = model.MaxOutputTokens;
+            }
+        }
+        _context.SaveChanges();
+    }
 }
 
 public class Seeds
@@ -74,4 +110,6 @@ public class Seeds
     public string AdminUsername { get; set; }
     public string AdminPassword { get; set; }
     public string AdminEmail { get; set; }
+    
+    public List<AiModel> Models { get; set; } = new();
 }

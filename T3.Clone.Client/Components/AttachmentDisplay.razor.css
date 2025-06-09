@@ -12,14 +12,18 @@
     border: 1px solid color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
 }
 
 .attachment-image {
     width: 100%;
     height: auto;
     max-height: 200px;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     display: block;
+    background: color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
 }
 
 .attachment-info {
