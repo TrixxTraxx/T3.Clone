@@ -45,7 +45,7 @@ public class MessageHub(
         //Set Group for the message
         await Groups.AddToGroupAsync(Context.ConnectionId, messageId);
 
-        await aiGenerationService.SendExistingMessage(int.Parse(messageId), Context);
+        await aiGenerationService.SendExistingMessage(user, int.Parse(messageId), Context);
 
         await base.OnConnectedAsync();
     }

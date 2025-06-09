@@ -50,12 +50,12 @@ public class AiGenerationService(
         SendNewToken(messageId, token);
     }
 
-    public async Task SendExistingMessage(int messageId, HubCallerContext context)
+    public async Task SendExistingMessage(ApplicationUser user, int messageId, HubCallerContext context)
     {
-        var message = dbContext.Messages.Find(messageId);
+        var message = await dbContext.Messages.FirstOrDefaultAsync(x => x.Id == messageId && x.Thread.UserId == user.Id);
         if (message == null)
-        {
-            throw new ArgumentException("Message not found", nameof(messageId));
+        { 
+            throw new ArgumentException("Message with Id not found", nameof(messageId));
         }
         
         // Send the existing message to the client

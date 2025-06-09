@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using T3.Clone.Client.Services;
 using T3.Clone.Server.Components;
 using T3.Clone.Server.Components.Account;
 using T3.Clone.Server.Configuration;
 using T3.Clone.Server.Data;
 using T3.Clone.Server.Seeder;
 using T3.Clone.Server.Service;
+using T3.Clone.Server.Service.Models;
 using T3.Clone.Server.SignalR;
 using T3.Clone.ServiceDefaults;
 
@@ -49,6 +51,9 @@ builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<AttachmentService>();
 builder.Services.AddScoped<AiModelService>();
 builder.Services.AddScoped<AiGenerationService>();
+
+builder.Services.AddScoped<ChatModelProvider>();
+builder.Services.AddScoped<OpenAiChat>();
 
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
