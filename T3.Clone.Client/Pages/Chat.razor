@@ -43,8 +43,7 @@
         <ChatInput 
             OnSendMessage="HandleSendMessage" 
             OnAttachmentAdded="HandleAttachment"
-            IsLoading="isSending" 
-        />
+            IsLoading="isSending" />
     </div>
 </MudContainer>
 
@@ -55,6 +54,7 @@
     private MessageTreeDto? messageTree;
     private bool isLoading = false;
     private bool isSending = false;
+    private int selectedModelId = 1; // Default to GPT-4
     
     //the down most message of the current Branch
     private int currentBranchPath;
@@ -141,6 +141,13 @@
     {
         // Handle attachment processing
         Console.WriteLine($"Attachment added: {attachment.Name}");
+    }
+
+    private void HandleModelChanged(int modelId)
+    {
+        selectedModelId = modelId;
+        Console.WriteLine($"Selected AI Model ID: {modelId}");
+        // You can add additional logic here to store the model preference or handle model-specific settings
     }
 
     private async Task RegenerateMessage(int messageId)

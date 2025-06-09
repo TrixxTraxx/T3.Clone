@@ -42,7 +42,6 @@
 }
 
 .hypermodern-input-container:hover {
-    transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
     box-shadow: 
         0 12px 40px rgba(0, 0, 0, 0.15),
@@ -52,7 +51,6 @@
 }
 
 .hypermodern-input-container:focus-within {
-    transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--mud-palette-primary) 50%, transparent);
     box-shadow: 
         0 12px 40px rgba(0, 0, 0, 0.15),
@@ -67,6 +65,7 @@
     gap: 16px;
     position: relative;
     z-index: 1;
+    margin-bottom: 16px;
 }
 
 .textarea-wrapper {
@@ -127,6 +126,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: flex-end;
 }
 
 .hypermodern-send-btn {
@@ -222,6 +222,151 @@
     color: var(--mud-palette-text-disabled);
 }
 
+.control-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    gap: 16px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toggle-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.hypermodern-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 90%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 70%, transparent) 100%);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    border-radius: 10px;
+    color: var(--mud-palette-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    outline: none;
+}
+
+.hypermodern-toggle-btn:hover {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    color: var(--mud-palette-text-primary);
+    transform: translateY(-1px);
+}
+
+.hypermodern-toggle-btn.active {
+    border-color: var(--mud-palette-primary);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 15%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 100%);
+    color: var(--mud-palette-primary);
+    box-shadow: 
+        0 4px 12px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+}
+
+.hypermodern-toggle-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: color-mix(in srgb, var(--mud-palette-text-disabled) 5%, transparent);
+    border-color: color-mix(in srgb, var(--mud-palette-text-disabled) 15%, transparent);
+}
+
+.toggle-icon {
+    width: 16px;
+    height: 16px;
+    transition: all 0.3s ease;
+}
+
+.hypermodern-toggle-btn:hover .toggle-icon {
+    transform: scale(1.1);
+}
+
+.hypermodern-toggle-btn.active .toggle-icon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--mud-palette-primary) 30%, transparent));
+}
+
+.model-selector-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.hypermodern-model-select {
+    width: 140px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 90%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 70%, transparent) 100%);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    border-radius: 10px;
+    color: var(--mud-palette-text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 14px;
+    padding-right: 32px;
+}
+
+.hypermodern-model-select:hover {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+}
+
+.hypermodern-model-select:focus {
+    border-color: var(--mud-palette-primary);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 10%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 5%, transparent) 100%);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 20%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+}
+
+.hypermodern-model-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: color-mix(in srgb, var(--mud-palette-text-disabled) 5%, transparent);
+    border-color: color-mix(in srgb, var(--mud-palette-text-disabled) 15%, transparent);
+}
+
+.hypermodern-model-select option {
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    padding: 8px 12px;
+}
+
 .loading-spinner {
     width: 20px;
     height: 20px;
@@ -282,4 +427,25 @@
     font-weight: 500;
     color: var(--mud-palette-primary);
     letter-spacing: 0.02em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .control-row {
+        justify-content: center;
+    }
+    
+    .control-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .toggle-buttons {
+        justify-content: center;
+    }
+    
+    .hypermodern-model-select {
+        width: 160px;
+    }
 } 
