@@ -1,11 +1,12 @@
 @using T3.Clone.Client.Models
+@using T3.Clone.Dtos.Messages
 @inject IJSRuntime JSRuntime
 
 <div class="chat-input-wrapper">
     <div class="input-container">
         <MudPaper Class="pa-4" Elevation="2">
             <div class="d-flex align-center gap-3">
-                <MudTextField @bind-Value="messageText" 
+                <MudTextField @bind-Value="message.Text" 
                              Label="Type your message..." 
                              Variant="Variant.Outlined"
                              Lines="1"
@@ -20,7 +21,7 @@
                               Color="Color.Primary"
                               Size="Size.Large"
                               OnClick="SendMessage"
-                              Disabled="IsLoading || string.IsNullOrWhiteSpace(messageText)" />
+                              Disabled="IsLoading || string.IsNullOrWhiteSpace(message.Text)" />
             </div>
             
             @if (IsLoading)
@@ -35,11 +36,11 @@
 </div>
 
 @code {
-    [Parameter] public EventCallback<(string message, List<ChatAttachment> attachments)> OnSendMessage { get; set; }
+    [Parameter] public EventCallback<MessageDto> OnSendMessage { get; set; }
     [Parameter] public EventCallback<ChatAttachment> OnAttachmentAdded { get; set; }
     [Parameter] public bool IsLoading { get; set; }
 
-    private string messageText = "";
+    private MessageDto message = new MessageDto();
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
@@ -51,13 +52,14 @@
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(messageText) || IsLoading) return;
-
-        var message = messageText.Trim();
+        if (string.IsNullOrWhiteSpace(this.message.Text) || IsLoading) return;
         
-        // Clear the input
-        messageText = "";
+        IsLoading = true;
+        StateHasChanged();
         
-        await OnSendMessage.InvokeAsync((message, new List<ChatAttachment>()));
+        await OnSendMessage.InvokeAsync(message);
+        
+        message = new MessageDto(); // Reset message after sending
+        IsLoading = false;
     }
 } 

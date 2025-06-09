@@ -5,24 +5,22 @@
 @using T3.Clone.Dtos.Messages
 @using T3.Clone.Client.Models
 @inject MessageSyncService MessageSyncService
-@inject IJSRuntime JSRuntime
-@implements IDisposable
+@inject ISnackbar Snackbar
 
 <PageTitle>T3.Clone - AI Chat Assistant</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="chat-page-container">
     <div class="chat-container">
         <div class="chat-messages-container">
-            @if (displayMessages.Any())
+            @if (currentBranch.Any())
             {
-                @foreach (var message in displayMessages)
+                @foreach (var message in currentBranch)
                 {
                     <ChatMessage 
                         Message="message" 
-                        MessageTree="messageTree"
-                        IsCurrentBranch="IsInCurrentBranch(message.Message.Id)"
-                        OnBranchSelected="SelectBranch" 
-                        OnRegenerateMessage="RegenerateMessage" />
+                        MessageTree="messageTree" 
+                        OnRegenerateMessage="RegenerateMessage" 
+                    />
                 }
             }
             else if (isLoading)
@@ -58,8 +56,10 @@
     private MessageTreeDto? messageTree;
     private bool isLoading = false;
     private bool isSending = false;
-    private List<int> currentBranchPath = new();
-    private List<MessageCache> displayMessages = new();
+    
+    //the down most message of the current Branch
+    private int currentBranchPath;
+    private List<MessageCache> currentBranch = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,13 +82,11 @@
             {
                 messageTree = await MessageSyncService.GetMessageTree(ThreadId.Value);
                 InitializeBranchPath();
-                displayMessages = GetMessagesInOrder();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading chat: {ex.Message}");
                 messageTree = null;
-                displayMessages.Clear();
             }
 
             isLoading = false;
@@ -97,152 +95,23 @@
         else
         {
             messageTree = null;
-            currentBranchPath.Clear();
-            // Show demo messages for new chat
-            CreateDemoMessages();
+            currentBranchPath = 0;
         }
-    }
-
-    private void CreateDemoMessages()
-    {
-        displayMessages = new List<MessageCache>
-        {
-            new MessageCache
-            {
-                Message = new MessageDto
-                {
-                    Id = 1,
-                    Text = "Hello! I'm excited to try out this new chat interface.",
-                    CreatedAt = DateTime.Now.AddMinutes(-5)
-                }
-            },
-            new MessageCache
-            {
-                Message = new MessageDto
-                {
-                    Id = 2,
-                    ModelResponse = "Hello! I'm your AI assistant. I can help you with various tasks including:\n\n- Answering questions\n- Writing and reviewing code\n- Creative writing\n- Problem solving\n- And much more!\n\nWhat would you like to work on today?",
-                    CreatedAt = DateTime.Now.AddMinutes(-4)
-                }
-            },
-            new MessageCache
-            {
-                Message = new MessageDto
-                {
-                    Id = 3,
-                    Text = "Can you show me a simple example of syntax highlighting?",
-                    CreatedAt = DateTime.Now.AddMinutes(-3)
-                }
-            },
-            new MessageCache
-            {
-                Message = new MessageDto
-                {
-                    Id = 4,
-                    ModelResponse = "Of course! Here's a simple example in C#:\n\n```csharp\npublic class HelloWorld\n{\n    public static void Main(string[] args)\n    {\n        Console.WriteLine(\"Hello, World!\");\n        \n        // This is a comment\n        var numbers = new List<int> { 1, 2, 3, 4, 5 };\n        \n        foreach (var number in numbers)\n        {\n            Console.WriteLine($\"Number: {number}\");\n        }\n    }\n}\n```\n\nAnd here's some JavaScript:\n\n```javascript\nfunction fibonacci(n) {\n    if (n <= 1) return n;\n    return fibonacci(n - 1) + fibonacci(n - 2);\n}\n\n// Generate first 10 Fibonacci numbers\nfor (let i = 0; i < 10; i++) {\n    console.log(`F(${i}) = ${fibonacci(i)}`);\n}\n```\n\nThe syntax highlighting should make the code much easier to read!",
-                    CreatedAt = DateTime.Now.AddMinutes(-2)
-                }
-            }
-        };
-        
-        StateHasChanged();
     }
 
     private void InitializeBranchPath()
     {
         if (messageTree == null) return;
 
-        currentBranchPath.Clear();
-        var startMessageId = messageTree.StartMessageId;
+        currentBranchPath = messageTree.StartMessageId;
         
         // Build the path from start to end
-        var currentId = startMessageId;
-        while (currentId != 0)
-        {
-            currentBranchPath.Add(currentId);
-            
-            // Find the next message in the main branch
-            var nextMessage = messageTree.Messages.Values
-                .FirstOrDefault(m => m.Message.PreviousMessageId == currentId);
-            
-            currentId = nextMessage?.Message.Id ?? 0;
-        }
+        currentBranch = messageTree.GetMessagesForBranch(currentBranchPath);
     }
 
-    private List<MessageCache> GetMessagesInOrder()
+    private async Task HandleSendMessage(MessageDto message)
     {
-        if (messageTree == null) return new List<MessageCache>();
-
-        var messages = new List<MessageCache>();
-        
-        foreach (var messageId in currentBranchPath)
-        {
-            if (messageTree.Messages.TryGetValue(messageId, out var message))
-            {
-                messages.Add(message);
-            }
-        }
-
-        return messages.OrderBy(m => m.Message.CreatedAt).ToList();
-    }
-
-    private bool IsInCurrentBranch(int messageId)
-    {
-        return currentBranchPath.Contains(messageId);
-    }
-
-    private void SelectBranch(int messageId)
-    {
-        if (messageTree == null) return;
-
-        // Rebuild branch path from the selected message
-        currentBranchPath.Clear();
-        
-        var currentId = messageId;
-        var pathToRoot = new List<int>();
-        
-        // Build path to root
-        while (currentId != 0)
-        {
-            pathToRoot.Add(currentId);
-            if (messageTree.Messages.TryGetValue(currentId, out var message))
-            {
-                currentId = message.Message.PreviousMessageId;
-            }
-            else
-            {
-                break;
-            }
-        }
-        
-        pathToRoot.Reverse();
-        currentBranchPath = pathToRoot;
-
-        // Continue path from selected message to the end of this branch
-        currentId = messageId;
-        while (true)
-        {
-            var nextMessage = messageTree.Messages.Values
-                .FirstOrDefault(m => m.Message.PreviousMessageId == currentId);
-            
-            if (nextMessage != null && !currentBranchPath.Contains(nextMessage.Message.Id))
-            {
-                currentBranchPath.Add(nextMessage.Message.Id);
-                currentId = nextMessage.Message.Id;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        displayMessages = GetMessagesInOrder();
-        StateHasChanged();
-    }
-
-    private async Task HandleSendMessage((string message, List<ChatAttachment> attachments) data)
-    {
-        if (string.IsNullOrWhiteSpace(data.message)) return;
+        if (string.IsNullOrWhiteSpace(message.Text)) return;
 
         isSending = true;
         StateHasChanged();
@@ -250,35 +119,15 @@
         try
         {
             // Add user message to display
-            var userMessage = new MessageCache
+            var messageCache = new MessageCache
             {
-                Message = new MessageDto
-                {
-                    Id = displayMessages.Count + 1,
-                    Text = data.message,
-                    CreatedAt = DateTime.Now
-                }
+                Message = message
             };
-            displayMessages.Add(userMessage);
+            currentBranch.Insert(0, messageCache);
             StateHasChanged();
 
-            // Simulate API call delay
-            await Task.Delay(1500);
-
-            // Add AI response
-            var aiResponse = new MessageCache
-            {
-                Message = new MessageDto
-                {
-                    Id = displayMessages.Count + 1,
-                    ModelResponse = $"Thank you for your message: \"{data.message}\"\n\nThis is a demo response. In a real application, this would be replaced with actual AI processing through your MessageSyncService.",
-                    CreatedAt = DateTime.Now
-                }
-            };
-            displayMessages.Add(aiResponse);
-
-            // TODO: Implement actual message sending through MessageSyncService
-            // var result = await MessageSyncService.SendMessage(...);
+            var result = await MessageSyncService.SendMessage(messageCache.Message);
+            messageCache.Message = result;
         }
         catch (Exception ex)
         {
@@ -299,10 +148,5 @@
     {
         // TODO: Implement message regeneration
         Console.WriteLine($"Regenerating message: {messageId}");
-    }
-
-    public void Dispose()
-    {
-        // Cleanup if needed
     }
 } 

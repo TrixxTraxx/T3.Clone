@@ -18,7 +18,7 @@ public class MessageController(
     }
     
     [HttpGet("{messageId}")]
-    public async Task<IActionResult> GetMessage([FromQuery] int messageId)
+    public async Task<IActionResult> GetMessage(int messageId)
     {
         var messages = await service.GetMessageAsync(messageId);
         return Ok(messages);

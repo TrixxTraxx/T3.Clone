@@ -14,4 +14,7 @@ public class MessageCache
     
     [IgnoreMember]
     public Action OnUpdated { get; set; } = () => { };
+    
+    [IgnoreMember]
+    public Action<string> OnGenerate { get; set; } = (output) => { };
 }
