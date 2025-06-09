@@ -1,0 +1,79 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using T3.Clone.Server.Data;
+using T3.Clone.Server.Service;
+
+namespace T3.Clone.Server.SignalR;
+
+public class MessageHub(
+    ApplicationDbContext db,
+    AiGenerationService aiGenerationService
+) : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        var userId = Context.GetHttpContext()!.Request.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            Context.Abort();
+            return;
+        }
+
+        var user = await db.Users
+            .SingleOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            Context.Abort();
+            return;
+        }
+        
+        Context.Items["User"] = user;
+        
+        // Get the Thread Id
+        var messageId = Context.GetHttpContext()!.Request.Query["messageId"].ToString();
+        if (string.IsNullOrEmpty(messageId))
+        {
+            Context.Abort();
+            return;
+        }
+        Context.Items["MessageId"] = messageId;
+        
+        //Set Group for the message
+        await Groups.AddToGroupAsync(Context.ConnectionId, messageId);
+
+        aiGenerationService.SendExistingMessage(int.Parse(messageId), Context);
+
+        await base.OnConnectedAsync();
+    }
+    
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        // Handle disconnection logic if needed
+        return base.OnDisconnectedAsync(exception);
+    }
+    
+    public async Task StopGeneration()
+    {
+        var messageId = Context.Items["MessageId"]!.ToString();
+
+        // Call the service to stop generation
+        await aiGenerationService.StopGeneration(int.Parse(messageId));
+        
+        // Notify clients that the generation has stopped
+        await Clients.All.SendAsync("GenerationStopped", messageId);
+    }
+    
+    public async Task OnTokenGenerated(string token)
+    {
+        var messageId = Context.Items["MessageId"]!.ToString();
+        
+        // Call the service to start generation
+        await aiGenerationService.AddTokenToGeneration(int.Parse(messageId), token);
+        
+        // Notify clients that the token has been generated
+        await Clients.All.SendAsync("TokenGenerated", token);
+    }
+}

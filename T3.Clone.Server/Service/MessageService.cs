@@ -12,7 +12,7 @@ public class MessageService(
     AiGenerationService aiService
 )
 {
-    public async Task<MessageCreationResult> CreateMessageAsync(MessageDto dto)
+    public async Task<MessageDto> CreateMessageAsync(MessageDto dto)
     {
         var userId = httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
@@ -57,7 +57,6 @@ public class MessageService(
                 Title = "New Thread" // Default title, can be changed later
             };
             context.MessageThreads.Add(thread);
-            newMessage.Thread = thread; // Associate the new message with the new thread
             
             // Generate a Thread Title based on the first message in the background
             _ = Task.Run(async () => {
@@ -72,6 +71,7 @@ public class MessageService(
                 }
             });
         }
+        newMessage.Thread = thread;
         user.ThreadVersion++;
         thread.Version = user.ThreadVersion; // Increment thread version
         
@@ -93,10 +93,7 @@ public class MessageService(
         }));
         
         //return the result
-        return new MessageCreationResult
-        {
-            Id = newMessage.Id
-        };
+        return MessageMapper.Map(newMessage);
     }
 
     public async Task<MessageDto> GetMessageAsync(int messageId)

@@ -22,6 +22,7 @@ builder.Services.AddSingleton<AppsettingsService>();
 builder.Services.AddScoped<ThreadSyncService>();
 builder.Services.AddScoped<MessageSyncService>();
 builder.Services.AddScoped<AiModelService>();
+builder.Services.AddTransient<GenerationService>();
 
 builder.Services.AddScoped(sp =>
 {

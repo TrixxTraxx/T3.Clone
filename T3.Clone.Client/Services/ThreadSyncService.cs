@@ -35,7 +35,10 @@ public class ThreadSyncService
         foreach (var threadId in threadCollection.ThreadIds)
         {
             var threadCache = await GetThreadCache(threadId);
-            threadCaches.Add(threadCache);
+            if (threadCache != null)
+            {
+                threadCaches.Add(threadCache);
+            }
         }
 
         if (update != null)
@@ -58,15 +61,18 @@ public class ThreadSyncService
         return threadCaches;
     }
 
-    public async Task<ThreadCache> GetThreadCache(int threadId)
+    public async Task<ThreadCache?> GetThreadCache(int threadId)
     {
         var threadCache = _threadCaches.FirstOrDefault(tc => tc.Thread.Id == threadId);
         if (threadCache == null)
         {
             // Get from storage
             threadCache = await _storageService.ReadObjectAsync<ThreadCache>($"ThreadCache_{threadId}");
-            //Thread Cache should always be initialized
-            _threadCaches.Add(threadCache!);
+            if(threadCache != null)
+            {
+                // Add to the local cache if not already present
+                _threadCaches.Add(threadCache);
+            }
         }
         return threadCache;
     }

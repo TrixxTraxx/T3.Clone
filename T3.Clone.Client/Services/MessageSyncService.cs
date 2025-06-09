@@ -73,7 +73,7 @@ public class MessageSyncService
         return messageCache;
     }
 
-    public async Task<MessageTreeDto> GetMessageTree(int threadId, int? clientVersion = null)
+    public async Task<MessageTreeDto> GetMessageTree(int threadId)
     {
         var thread = await _threadSyncService.GetThreadCache(threadId);
         
@@ -124,7 +124,7 @@ public class MessageSyncService
         return messageTree;
     }
     
-    public async Task UpdateCacheInBackground ()
+    public async Task UpdateCacheInBackground()
     {
         try
         {
@@ -161,6 +161,30 @@ public class MessageSyncService
 
     public async Task<MessageDto> SendMessage(MessageDto messageDto)
     {
-        throw new NotImplementedException();
+        var response = await _http.PostAsJsonAsync("api/message", messageDto);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Failed to send message: {response.ReasonPhrase}");
+        }
+        
+        var sentMessage = await response.Content.ReadFromJsonAsync<MessageDto>();
+        if (sentMessage == null)
+        {
+            throw new Exception("Failed to parse sent message.");
+        }
+
+        // Update the cache
+        var messageCache = new MessageCache
+        {
+            Message = sentMessage,
+            LastUpdated = DateTime.UtcNow
+        };
+        
+        _messageCaches[sentMessage.Id] = messageCache;
+        
+        // Store in local storage
+        await _storageService.StoreObjectAsync($"MessageCache_{sentMessage.Id}", messageCache);
+        
+        return sentMessage;
     }
 }

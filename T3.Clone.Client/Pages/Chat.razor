@@ -99,7 +99,10 @@
 
         isSending = true;
         StateHasChanged();
-
+        
+        message.ThreadId = ThreadId ?? 0;
+        message.PreviousMessageId = currentBranchPath;
+        
         try
         {
             // Add user message to display
@@ -112,6 +115,7 @@
 
             var result = await MessageSyncService.SendMessage(messageCache.Message);
             messageCache.Message = result;
+            ThreadId = result.ThreadId;
         }
         catch (Exception ex)
         {

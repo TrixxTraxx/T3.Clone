@@ -8,6 +8,7 @@ using T3.Clone.Server.Components.Account;
 using T3.Clone.Server.Configuration;
 using T3.Clone.Server.Data;
 using T3.Clone.Server.Service;
+using T3.Clone.Server.SignalR;
 using T3.Clone.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<ThreadService>();
 builder.Services.AddScoped<MessageService>();
@@ -150,6 +152,8 @@ app.UseAntiforgery();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<MessageHub>("/messageHub");
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
