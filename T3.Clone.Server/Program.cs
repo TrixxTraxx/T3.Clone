@@ -106,11 +106,11 @@ builder.Services.AddAuthentication(options =>
         });
     });
 
-var connectionString = builder.Configuration.GetConnectionString("t3CloneDb") ??
-                        throw new InvalidOperationException("Connection string 't3CloneDb' not found.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString + ";MultipleActiveResultSets=true;"));
+var connectionString = "";
+builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "t3CloneDb", settings =>
+{
+    connectionString = settings.ConnectionString;
+});
 
 
 
