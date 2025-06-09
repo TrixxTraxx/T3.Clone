@@ -2,36 +2,52 @@
 @using T3.Clone.Dtos.Messages
 @inject IJSRuntime JSRuntime
 
-<div class="chat-input-wrapper">
-    <div class="input-container">
-        <MudPaper Class="pa-4" Elevation="2">
-            <div class="d-flex align-center gap-3">
-                <MudTextField @bind-Value="message.Text" 
-                             Label="Type your message..." 
-                             Variant="Variant.Outlined"
-                             Lines="1"
-                             AutoGrow="true"
-                             MaxLines="5"
-                             OnKeyDown="HandleKeyDown"
-                             Disabled="IsLoading"
-                             Class="flex-grow-1"
-                             Immediate="true" />
-                
-                <MudIconButton Icon="Icons.Material.Filled.Send" 
-                              Color="Color.Primary"
-                              Size="Size.Large"
-                              OnClick="SendMessage"
-                              Disabled="IsLoading || string.IsNullOrWhiteSpace(message.Text)" />
+<div class="hypermodern-chat-input-wrapper">
+    <div class="hypermodern-input-container">
+        <div class="input-field-wrapper">
+            <div class="textarea-wrapper">
+                <textarea @bind="message.Text" 
+                         @bind:event="oninput"
+                         @onkeydown="HandleKeyDown"
+                         placeholder="Type your message..." 
+                         disabled="@IsLoading"
+                         class="hypermodern-textarea"
+                         rows="1"
+                         @ref="textareaRef"></textarea>
             </div>
             
-            @if (IsLoading)
-            {
-                <div class="mt-2">
-                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-                    <MudText Typo="Typo.caption" Class="mt-1" Align="Align.Center">Sending message...</MudText>
+            <div class="send-button-wrapper">
+                <button class="hypermodern-send-btn @(CanSend ? "enabled" : "disabled")"
+                        @onclick="SendMessage"
+                        disabled="@(!CanSend)"
+                        type="button">
+                    <div class="btn-content">
+                        @if (IsLoading)
+                        {
+                            <div class="loading-spinner"></div>
+                        }
+                        else
+                        {
+                            <svg class="send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
+                            </svg>
+                        }
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        @if (IsLoading)
+        {
+            <div class="loading-indicator">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-            }
-        </MudPaper>
+                <span class="loading-text">Sending message...</span>
+            </div>
+        }
     </div>
 </div>
 
@@ -41,18 +57,25 @@
     [Parameter] public bool IsLoading { get; set; }
 
     private MessageDto message = new MessageDto();
+    private ElementReference textareaRef;
+    
+    private bool CanSend => !IsLoading && !string.IsNullOrWhiteSpace(message.Text);
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !e.ShiftKey && !e.CtrlKey)
         {
+            await JSRuntime.InvokeVoidAsync("eval", "event.preventDefault()");
             await SendMessage();
         }
+        
+        // Handle auto-resize on input
+        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", textareaRef);
     }
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(this.message.Text) || IsLoading) return;
+        if (!CanSend) return;
         
         IsLoading = true;
         StateHasChanged();
@@ -60,6 +83,19 @@
         await OnSendMessage.InvokeAsync(message);
         
         message = new MessageDto(); // Reset message after sending
+        
+        // Reset textarea height
+        await JSRuntime.InvokeVoidAsync("resetTextareaHeight", textareaRef);
+        
         IsLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize auto-resize functionality
+            await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", textareaRef);
+        }
     }
 } 

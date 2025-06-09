@@ -1,0 +1,285 @@
+.hypermodern-chat-input-wrapper {
+    width: 100%;
+    position: relative;
+}
+
+.hypermodern-input-container {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 85%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 65%, transparent) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 30%, transparent);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hypermodern-input-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.hypermodern-input-container:hover::before,
+.hypermodern-input-container:focus-within::before {
+    opacity: 1;
+}
+
+.hypermodern-input-container:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        0 8px 25px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
+}
+
+.hypermodern-input-container:focus-within {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 50%, transparent);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        0 8px 25px color-mix(in srgb, var(--mud-palette-primary) 35%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
+}
+
+.input-field-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.textarea-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.hypermodern-textarea {
+    width: 100%;
+    min-height: 52px;
+    max-height: 200px;
+    padding: 16px 20px;
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    border-radius: 16px;
+    background: transparent;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--mud-palette-text-primary);
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    resize: none;
+    overflow-y: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.hypermodern-textarea::placeholder {
+    color: color-mix(in srgb, var(--mud-palette-text-secondary) 70%, transparent);
+    font-weight: 500;
+}
+
+.hypermodern-textarea:hover {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+    background: color-mix(in srgb, var(--mud-palette-primary) 3%, transparent);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+}
+
+.hypermodern-textarea:focus {
+    border-color: var(--mud-palette-primary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 5%, transparent);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 20%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+}
+
+.hypermodern-textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: color-mix(in srgb, var(--mud-palette-text-disabled) 5%, transparent);
+    border-color: color-mix(in srgb, var(--mud-palette-text-disabled) 15%, transparent);
+}
+
+.send-button-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hypermodern-send-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+    background: linear-gradient(135deg, 
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 85%, white) 100%);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 
+        0 4px 12px color-mix(in srgb, var(--mud-palette-primary) 30%, transparent),
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 color-mix(in srgb, white, 30%);
+}
+
+.hypermodern-send-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, white, 20%) 0%,
+        transparent 50%,
+        color-mix(in srgb, var(--mud-palette-primary) 80%, black) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hypermodern-send-btn.enabled:hover {
+    transform: translateY(-3px) scale(1.05);
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 50%, white);
+    box-shadow: 
+        0 8px 25px color-mix(in srgb, var(--mud-palette-primary) 40%, transparent),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 color-mix(in srgb, white, 40%);
+}
+
+.hypermodern-send-btn.enabled:hover::before {
+    opacity: 1;
+}
+
+.hypermodern-send-btn.enabled:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+.hypermodern-send-btn.disabled {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-text-disabled) 50%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-text-disabled) 30%, transparent) 100%);
+    border-color: color-mix(in srgb, var(--mud-palette-text-disabled) 20%, transparent);
+    cursor: not-allowed;
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 10%, transparent);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.send-icon {
+    width: 20px;
+    height: 20px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.hypermodern-send-btn.enabled .send-icon {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.hypermodern-send-btn.enabled:hover .send-icon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.hypermodern-send-btn.disabled .send-icon {
+    color: var(--mud-palette-text-disabled);
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid color-mix(in srgb, white, 30%);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.loading-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.loading-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--mud-palette-primary);
+    border-radius: 50%;
+    animation: loadingDots 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loadingDots {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.loading-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mud-palette-primary);
+    letter-spacing: 0.02em;
+} 

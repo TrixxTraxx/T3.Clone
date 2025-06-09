@@ -39,13 +39,12 @@
                 </div>
             }
         </div>
-
-        <div class="chat-input-container">
-            <ChatInput 
-                OnSendMessage="HandleSendMessage" 
-                OnAttachmentAdded="HandleAttachment"
-                IsLoading="isSending" />
-        </div>
+        
+        <ChatInput 
+            OnSendMessage="HandleSendMessage" 
+            OnAttachmentAdded="HandleAttachment"
+            IsLoading="isSending" 
+        />
     </div>
 </MudContainer>
 

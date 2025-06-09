@@ -213,3 +213,37 @@ window.focusChatInput = function() {
         input.focus();
     }
 };
+
+// Textarea auto-resize functions for ChatInput
+window.initializeTextareaAutoResize = function(textarea) {
+    if (!textarea) return;
+    
+    // Set initial height
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.max(textarea.scrollHeight, 52) + 'px';
+};
+
+window.autoResizeTextarea = function(textarea) {
+    if (!textarea) return;
+    
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    
+    // Calculate new height (min 52px, max 200px)
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, 52), 200);
+    textarea.style.height = newHeight + 'px';
+    
+    // If content exceeds max height, show scrollbar
+    if (textarea.scrollHeight > 200) {
+        textarea.style.overflowY = 'auto';
+    } else {
+        textarea.style.overflowY = 'hidden';
+    }
+};
+
+window.resetTextareaHeight = function(textarea) {
+    if (!textarea) return;
+    
+    textarea.style.height = '52px';
+    textarea.style.overflowY = 'hidden';
+};
