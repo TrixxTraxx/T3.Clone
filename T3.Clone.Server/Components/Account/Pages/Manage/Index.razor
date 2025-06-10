@@ -20,7 +20,7 @@
         </MudItem>
         <MudItem md="12">
             <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
-                                Label="Phone Number" HelperText="Please enter your phone number."
+                                Label="Phone Number" HelperText="Please enter your phone number." Variant="Variant.Outlined"
                                 UserAttributes="@(new() { { "autocomplete", "tel-national" } })"/>
         </MudItem>
         <MudItem md="12">

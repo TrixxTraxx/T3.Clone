@@ -25,13 +25,13 @@
         @if (isEmailConfirmed)
         {
             <MudItem md="12">
-                <MudStaticTextField Value="@email" Label="Email" Placeholder="Please enter your email." Disabled="true" AdornmentIcon="Icons.Material.Filled.Check" AdornmentColor="Color.Success"/>
+                <MudStaticTextField Value="@email" Label="Email" Placeholder="Please enter your email." Disabled="true" Variant="Variant.Outlined" AdornmentIcon="Icons.Material.Filled.Check" AdornmentColor="Color.Success"/>
             </MudItem>
         }
         else
         {
             <MudItem md="12">
-                <MudStaticTextField Value="@email" Label="Email" Placeholder="Please enter your email." Disabled="true"/>
+                <MudStaticTextField Value="@email" Label="Email" Placeholder="Please enter your email." Disabled="true" Variant="Variant.Outlined"/>
             </MudItem>
             <MudItem md="12">
                 <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Send verification email</MudStaticButton>
@@ -39,7 +39,7 @@
         }
 
         <MudItem md="12">
-            <MudStaticTextField @bind-Value="@Input.NewEmail" For="@(() => Input.NewEmail)" UserAttributes="@(new() { { "autocomplete", "email" }, { "aria-required", "true" } })" Label="New Email" HelperText="Please enter new email."/>
+            <MudStaticTextField @bind-Value="@Input.NewEmail" For="@(() => Input.NewEmail)" UserAttributes="@(new() { { "autocomplete", "email" }, { "aria-required", "true" } })" Label="New Email" HelperText="Please enter new email." Variant="Variant.Outlined"/>
         </MudItem>
 
         <MudItem md="12">
