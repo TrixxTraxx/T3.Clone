@@ -143,6 +143,8 @@
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
         
+        user.DisplayName = GetGoogleUserName() ?? Input.Email;
+        
         // Set profile picture URL from Google if available
         if (externalLoginInfo.LoginProvider == "Google" || externalLoginInfo.LoginProvider.ToLower().Contains("google"))
         {
@@ -179,7 +181,7 @@
 
         message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
     }
-    
+
     private string? GetGoogleProfilePictureUrl()
     {
         // Google provides the picture in a standard claim
@@ -228,7 +230,19 @@
         
         return null;
     }
-    
+
+    private string? GetGoogleUserName()
+    {
+        // Google provides the name in a standard claim
+        var nameClaim = externalLoginInfo.Principal.FindFirst(ClaimTypes.Name) ??
+                        externalLoginInfo.Principal.FindFirst("urn:google:name") ??
+                        externalLoginInfo.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name") ??
+                        externalLoginInfo.Principal.FindFirst("name") ??
+                        externalLoginInfo.Principal.FindFirst("nickname");
+
+        return nameClaim?.Value;
+    }
+
     // Helper method to generate an MD5 hash for Gravatar
     private static string ComputeMd5Hash(string input)
     {
