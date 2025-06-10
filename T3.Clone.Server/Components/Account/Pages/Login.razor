@@ -31,13 +31,13 @@
 
                 <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                        Label="Email" Placeholder="name@example.com" Variant="Variant.Filled"
+                                        Label="Email" Placeholder="name@example.com" Variant="Variant.Outlined"
                                         UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } })"/>
                 </div>
                 
                 <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                        Label="Password" InputType="InputType.Password" Placeholder="Enter your password" Variant="Variant.Filled"
+                                        Label="Password" InputType="InputType.Password" Placeholder="Enter your password" Variant="Variant.Outlined"
                                         UserAttributes="@(new() { { "autocomplete", "current-password" }, { "aria-required", "true" } })"/>
                 </div>
                 

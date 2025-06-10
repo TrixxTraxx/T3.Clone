@@ -57,7 +57,7 @@ else
                 <DataAnnotationsValidator/>
                 <MudGrid>
                     <MudItem md="12">
-                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="Verification Code" HelperText="Please enter the code."/>
+                        <MudStaticTextField @bind-Value="@Input.Code" For="@(() => Input.Code)" Label="Verification Code" HelperText="Please enter the code." Variant="Variant.Outlined"/>
                     </MudItem>
                     <MudItem md="12">
                         <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Verify</MudStaticButton>
