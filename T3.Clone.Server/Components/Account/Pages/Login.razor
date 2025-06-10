@@ -42,12 +42,6 @@
                 </div>
                 
                 <div class="login-form-field">
-                    <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe" Color="Color.Primary">
-                        Remember me for 30 days
-                    </MudStaticCheckBox>
-                </div>
-                
-                <div class="login-form-field">
                     <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
                                      FormAction="FormAction.Submit" Size="Size.Large">
                         Sign in
@@ -102,7 +96,7 @@
     {
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, true, lockoutOnFailure: false);
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
@@ -112,7 +106,7 @@
         {
             RedirectManager.RedirectTo(
                 "Account/LoginWith2fa",
-                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = true });
         }
         else if (result.IsLockedOut)
         {
@@ -132,7 +126,5 @@
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
-
-        [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
     }
 }
