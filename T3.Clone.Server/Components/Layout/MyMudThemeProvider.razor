@@ -1,5 +1,4 @@
 @inject ServerSettingsService SettingsService
-@using MudBlazor
 @using T3.Clone.Client.Services
 
 <MudThemeProvider Theme="@currentTheme" IsDarkMode="@isDarkMode" />
@@ -7,15 +6,13 @@
 @code {
     private bool isDarkMode = true;
     private MudTheme currentTheme;
-    
-    protected override async Task OnInitializedAsync()
-    {
-        await UpdateThemeAsync();
-    }
 
-    private void OnThemeChanged()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        InvokeAsync(async () => { await UpdateThemeAsync(); });
+        if(firstRender)
+        {
+            await UpdateThemeAsync();
+        }
     }
 
     private async Task UpdateThemeAsync()

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using T3.Clone.Dtos.Messages;
-using T3.Clone.Server.Data;
 using T3.Clone.Server.Service;
 
 namespace T3.Clone.Server.Controller;

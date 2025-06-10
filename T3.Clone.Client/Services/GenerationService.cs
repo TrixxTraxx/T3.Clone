@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using T3.Clone.Client.Caches;
-using T3.Clone.Client.Services;
 using T3.Clone.Dtos.Messages;
 
 namespace T3.Clone.Client.Services;

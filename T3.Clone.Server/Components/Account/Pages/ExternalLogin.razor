@@ -1,12 +1,8 @@
 ﻿@page "/Account/ExternalLogin"
-
-@using System.ComponentModel.DataAnnotations
 @using System.Security.Claims
 @using System.Text
 @using System.Text.Encodings.Web
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using T3.Clone.Server.Data
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -18,12 +14,12 @@
 
 <PageTitle>Register</PageTitle>
 
-<StatusMessage Message="@message" />
+<StatusMessage Message="@message"/>
 <h1>Register</h1>
 <h2>Associate your @ProviderDisplayName account.</h2>
-<hr />
+<MudDivider/>
 
-<div  class="alert alert-info">
+<div class="alert alert-info">
     You've successfully authenticated with <strong>@ProviderDisplayName</strong>.
     Please enter an email address for this site below and click the Register button to finish
     logging in.
@@ -32,12 +28,12 @@
 <div class="row">
     <div class="col-md-4">
         <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger" role="alert"/>
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email." />
+                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email."/>
                 <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email" />
+                <ValidationMessage For="() => Input.Email"/>
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
@@ -50,20 +46,15 @@
     private string? message;
     private ExternalLoginInfo? externalLoginInfo;
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
 
-    [SupplyParameterFromQuery]
-    private string? RemoteError { get; set; }
+    [SupplyParameterFromQuery] private string? RemoteError { get; set; }
 
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
-    [SupplyParameterFromQuery]
-    private string? Action { get; set; }
+    [SupplyParameterFromQuery] private string? Action { get; set; }
 
     private string? ProviderDisplayName => externalLoginInfo?.ProviderDisplayName;
 
@@ -105,8 +96,8 @@
 
         // Sign in the user with this external login provider if the user already has a login.
         var result = await SignInManager.ExternalLoginSignInAsync(
-            externalLoginInfo.LoginProvider,
-            externalLoginInfo.ProviderKey,
+            externalLoginInfo!.LoginProvider,
+            externalLoginInfo!.ProviderKey,
             isPersistent: false,
             bypassTwoFactor: true);
 
@@ -142,14 +133,6 @@
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        
-        user.DisplayName = GetGoogleUserName() ?? Input.Email;
-        
-        // Set profile picture URL from Google if available
-        if (externalLoginInfo.LoginProvider == "Google" || externalLoginInfo.LoginProvider.ToLower().Contains("google"))
-        {
-            user.ProfilePictureUrl = GetGoogleProfilePictureUrl()!;
-        }
 
         var result = await UserManager.CreateAsync(user);
         if (result.Succeeded)
@@ -182,85 +165,7 @@
         message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
     }
 
-    private string? GetGoogleProfilePictureUrl()
-    {
-        // Google provides the picture in a standard claim
-        var pictureClaim = externalLoginInfo.Principal.FindFirst("picture") ??
-                           externalLoginInfo.Principal.FindFirst("urn:google:picture") ??
-                           externalLoginInfo.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/uri") ??
-                           externalLoginInfo.Principal.FindFirst("image") ??
-                           externalLoginInfo.Principal.FindFirst("avatar");
-        
-        if (pictureClaim != null)
-        {
-            // Some Google APIs append size parameters - we can add our own size parameter to get a larger image
-            string pictureUrl = pictureClaim.Value;
-            if (pictureUrl.Contains("googleusercontent.com") && !pictureUrl.Contains("=s"))
-            {
-                // Add size parameter for Google profile pictures (s200-c for 200px circle)
-                pictureUrl += pictureUrl.Contains("?") ? "&" : "?";
-                pictureUrl += "s200-c";
-            }
-            return pictureUrl;
-        }
-        
-        // Log all available claims to help debugging
-        Logger.LogInformation("Available claims for {Provider}:", externalLoginInfo.LoginProvider);
-        foreach (var claim in externalLoginInfo.Principal.Claims)
-        {
-            Logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
-            
-            // Additional check for any claim that might contain picture or image in its type
-            if ((claim.Type.Contains("picture", StringComparison.OrdinalIgnoreCase) ||
-                 claim.Type.Contains("image", StringComparison.OrdinalIgnoreCase) ||
-                 claim.Type.Contains("avatar", StringComparison.OrdinalIgnoreCase) ||
-                 claim.Type.Contains("photo", StringComparison.OrdinalIgnoreCase)) &&
-                Uri.IsWellFormedUriString(claim.Value, UriKind.Absolute))
-            {
-                return claim.Value;
-            }
-        }
-        
-        // If we couldn't find a picture claim, try to create one from the email (using Gravatar)
-        var email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email);
-        if (!string.IsNullOrEmpty(email))
-        {
-            return $"https://www.gravatar.com/avatar/{ComputeMd5Hash(email.Trim().ToLower())}?d=retro&s=200";
-        }
-        
-        return null;
-    }
-
-    private string? GetGoogleUserName()
-    {
-        // Google provides the name in a standard claim
-        var nameClaim = externalLoginInfo.Principal.FindFirst(ClaimTypes.Name) ??
-                        externalLoginInfo.Principal.FindFirst("urn:google:name") ??
-                        externalLoginInfo.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name") ??
-                        externalLoginInfo.Principal.FindFirst("name") ??
-                        externalLoginInfo.Principal.FindFirst("nickname");
-
-        return nameClaim?.Value;
-    }
-
-    // Helper method to generate an MD5 hash for Gravatar
-    private static string ComputeMd5Hash(string input)
-    {
-        using (var md5 = System.Security.Cryptography.MD5.Create())
-        {
-            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-            var hashBytes = md5.ComputeHash(inputBytes);
-            
-            var sb = new System.Text.StringBuilder();
-            foreach (var b in hashBytes)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return sb.ToString();
-        }
-    }
-
-    private ApplicationUser CreateUser()
+    private static ApplicationUser CreateUser()
     {
         try
         {
@@ -269,7 +174,7 @@
         catch
         {
             throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor");
+                                                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor");
         }
     }
 
@@ -279,13 +184,13 @@
         {
             throw new NotSupportedException("The default UI requires a user store with email support.");
         }
+
         return (IUserEmailStore<ApplicationUser>)UserStore;
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = "";
+        [Required] [EmailAddress] public string Email { get; set; } = "";
     }
+
 }
