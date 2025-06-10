@@ -1,5 +1,3 @@
-using System.Net.Mail;
-
 namespace T3.Clone.Server.Data;
 
 public class AttachementContent

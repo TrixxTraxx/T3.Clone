@@ -1,4 +1,3 @@
-using Aspire.Microsoft.EntityFrameworkCore.SqlServer;
 using CubeTimer.Services;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -9,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using T3.Clone.Client.Services;
 using T3.Clone.Server.Components;
-using T3.Clone.Server.Components.Account;
 using T3.Clone.Server.Configuration;
 using T3.Clone.Server.Data;
 using T3.Clone.Server.Seeder;
@@ -17,6 +15,9 @@ using T3.Clone.Server.Service;
 using T3.Clone.Server.Service.Models;
 using T3.Clone.Server.SignalR;
 using T3.Clone.ServiceDefaults;
+using MudBlazor.Services;
+using Blazored.LocalStorage;
+using MudBlazorWebApp1.Components.Account;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +60,13 @@ builder.Services.AddScoped<OpenAiChat>();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+// Add MudBlazor services
+builder.Services.AddMudServices();
+
+// Add ServerSettingsService for theme management  
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<ServerSettingsService>();
 
 builder.Services.AddAuthentication(options =>
     {

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using MessagePack;
 using Microsoft.JSInterop;
 

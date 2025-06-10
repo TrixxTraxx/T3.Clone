@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 using T3.Clone.Dtos.Threads;
 using T3.Clone.Server.Data;
 using T3.Clone.Server.Mappers;

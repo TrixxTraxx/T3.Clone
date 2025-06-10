@@ -1,4 +1,3 @@
-using System.Net.Mail;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using T3.Clone.Dtos.Messages;
