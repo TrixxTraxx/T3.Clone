@@ -71,9 +71,9 @@ builder.Services.AddScoped<ServerSettingsService>();
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-        options.DefaultChallengeScheme = "Google";
-        options.DefaultSignOutScheme = IdentityConstants.ExternalScheme;
+        options.DefaultSignInScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignOutScheme = IdentityConstants.ApplicationScheme;
     })
     .AddGoogle(googleOptions =>
     {
