@@ -1,0 +1,18 @@
+@page "/afterLogin"
+@inject StorageService StorageService
+@inject NavigationManager NavigationManager
+
+<div>clearing cache...</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var keys = await StorageService.GetKeysAsync();
+        foreach (var key in keys)
+        {
+            await StorageService.RemoveObjectAsync(key);
+        }
+        NavigationManager.NavigateTo("/chat");
+    }
+
+}

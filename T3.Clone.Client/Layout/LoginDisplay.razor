@@ -27,8 +27,20 @@ else
             />
         </MudAvatar>
         <MudText>
-            @User.UserName
+            @User.DisplayName
         </MudText>
+
+
+        <MudButton
+            StartIcon="@Icons.Material.Filled.SwitchAccount"
+            Variant="Variant.Filled"
+            Color="Color.Primary"
+            Size="Size.Medium"
+            OnClick="Login"
+            Class="login-button"
+        >
+            Switch Account
+        </MudButton>
     </div>
 }
 
