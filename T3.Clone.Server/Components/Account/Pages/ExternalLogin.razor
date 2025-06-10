@@ -1,4 +1,5 @@
 ﻿@page "/Account/ExternalLogin"
+@layout AuthLayout
 @using System.Security.Claims
 @using System.Text
 @using System.Text.Encodings.Web
@@ -11,32 +12,55 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ExternalLogin> Logger
+@inject IConfiguration Configuration
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Complete Registration - T3.Clone</PageTitle>
 
-<StatusMessage Message="@message"/>
-<h1>Register</h1>
-<h2>Associate your @ProviderDisplayName account.</h2>
-<MudDivider/>
+<div class="login-container">
+    <div class="login-card">        
+        <div class="login-brand">
+            <div class="login-brand-title">T3.Clone</div>
+            <div class="login-brand-subtitle">Complete Your Registration</div>
+        </div>
 
-<div class="alert alert-info">
-    You've successfully authenticated with <strong>@ProviderDisplayName</strong>.
-    Please enter an email address for this site below and click the Register button to finish
-    logging in.
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email."/>
-                <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email"/>
+        <div class="login-form-section">
+            <div class="login-welcome-title">Associate your @ProviderDisplayName account</div>
+            <div class="login-welcome-subtitle">
+                You've successfully authenticated with <strong>@ProviderDisplayName</strong>. 
+                Please enter an email address to complete your registration.
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="login-status-message">
+                    @message
+                </div>
+            }
+
+            <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
+                <DataAnnotationsValidator/>
+                
+                <div class="login-form-field">
+                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
+                                        Label="Email" Placeholder="name@example.com" Variant="Variant.Outlined"
+                                        UserAttributes="@(new() { { "autocomplete", "email" }, { "aria-required", "true" } })"/>
+                </div>
+                
+                <div class="login-form-field">
+                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                                     FormAction="FormAction.Submit" Size="Size.Large"
+                                     StartIcon="@GetProviderIcon(externalLoginInfo?.LoginProvider ?? "")">
+                        Complete Registration
+                    </MudStaticButton>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="login-links-section">
+            <div>
+                <MudLink Href="Account/Login" Class="login-link">Use a different account? Sign in here</MudLink>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -107,6 +131,18 @@
                 "{Name} logged in with {LoginProvider} provider.",
                 externalLoginInfo.Principal.Identity?.Name,
                 externalLoginInfo.LoginProvider);
+                
+            // Check if we should redirect to the client URL instead of the return URL
+            if (string.IsNullOrEmpty(ReturnUrl) || ReturnUrl == "/")
+            {
+                var clientUrl = Configuration["AppSettings:ClientUrl"] + Configuration["AppSettings:ClientAfterLoginPath"];
+                if (!string.IsNullOrEmpty(clientUrl))
+                {
+                    NavigationManager.NavigateTo(clientUrl, forceLoad: true);
+                    return;
+                }
+            }
+            
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
@@ -133,6 +169,14 @@
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        
+        user.DisplayName = GetGoogleUserName() ?? Input.Email;
+        
+        // Set profile picture URL from Google if available
+        if (externalLoginInfo.LoginProvider == "Google" || externalLoginInfo.LoginProvider.ToLower().Contains("google"))
+        {
+            user.ProfilePictureUrl = GetGoogleProfilePictureUrl()!;
+        }
 
         var result = await UserManager.CreateAsync(user);
         if (result.Succeeded)
@@ -158,6 +202,18 @@
                 }
 
                 await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
+                
+                // Check if we should redirect to the client URL instead of the return URL
+                if (string.IsNullOrEmpty(ReturnUrl) || ReturnUrl == "/")
+                {
+                    var clientUrl = Configuration["AppSettings:ClientUrl"] + Configuration["AppSettings:ClientAfterLoginPath"];
+                    if (!string.IsNullOrEmpty(clientUrl))
+                    {
+                        NavigationManager.NavigateTo(clientUrl, forceLoad: true);
+                        return;
+                    }
+                }
+                
                 RedirectManager.RedirectTo(ReturnUrl);
             }
         }
@@ -178,6 +234,94 @@
         }
     }
 
+    private string GetProviderIcon(string? providerName) => (providerName?.ToLower()) switch
+    {
+        "google" => Icons.Custom.Brands.Google,
+        "microsoft" => Icons.Custom.Brands.Microsoft,
+        "github" => Icons.Custom.Brands.GitHub,
+        "facebook" => Icons.Custom.Brands.Facebook,
+        "twitter" => Icons.Custom.Brands.Twitter,
+        _ => Icons.Material.Filled.Login
+    };
+
+    private string? GetGoogleProfilePictureUrl()
+    {
+        // Google provides the picture in a standard claim
+        var pictureClaim = externalLoginInfo.Principal.FindFirst("picture") ??
+                           externalLoginInfo.Principal.FindFirst("urn:google:picture") ??
+                           externalLoginInfo.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/uri") ??
+                           externalLoginInfo.Principal.FindFirst("image") ??
+                           externalLoginInfo.Principal.FindFirst("avatar");
+        
+        if (pictureClaim != null)
+        {
+            // Some Google APIs append size parameters - we can add our own size parameter to get a larger image
+            string pictureUrl = pictureClaim.Value;
+            if (pictureUrl.Contains("googleusercontent.com") && !pictureUrl.Contains("=s"))
+            {
+                // Add size parameter for Google profile pictures (s200-c for 200px circle)
+                pictureUrl += pictureUrl.Contains("?") ? "&" : "?";
+                pictureUrl += "s200-c";
+            }
+            return pictureUrl;
+        }
+        
+        // Log all available claims to help debugging
+        Logger.LogInformation("Available claims for {Provider}:", externalLoginInfo.LoginProvider);
+        foreach (var claim in externalLoginInfo.Principal.Claims)
+        {
+            Logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+            
+            // Additional check for any claim that might contain picture or image in its type
+            if ((claim.Type.Contains("picture", StringComparison.OrdinalIgnoreCase) ||
+                 claim.Type.Contains("image", StringComparison.OrdinalIgnoreCase) ||
+                 claim.Type.Contains("avatar", StringComparison.OrdinalIgnoreCase) ||
+                 claim.Type.Contains("photo", StringComparison.OrdinalIgnoreCase)) &&
+                Uri.IsWellFormedUriString(claim.Value, UriKind.Absolute))
+            {
+                return claim.Value;
+            }
+        }
+        
+        // If we couldn't find a picture claim, try to create one from the email (using Gravatar)
+        var email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email);
+        if (!string.IsNullOrEmpty(email))
+        {
+            return $"https://www.gravatar.com/avatar/{ComputeMd5Hash(email.Trim().ToLower())}?d=retro&s=200";
+        }
+        
+        return null;
+    }
+
+    private string? GetGoogleUserName()
+    {
+        // Google provides the name in a standard claim
+        var nameClaim = externalLoginInfo.Principal.FindFirst(ClaimTypes.Name) ??
+                        externalLoginInfo.Principal.FindFirst("urn:google:name") ??
+                        externalLoginInfo.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name") ??
+                        externalLoginInfo.Principal.FindFirst("name") ??
+                        externalLoginInfo.Principal.FindFirst("nickname");
+
+        return nameClaim?.Value;
+    }
+
+    // Helper method to generate an MD5 hash for Gravatar
+    private static string ComputeMd5Hash(string input)
+    {
+        using (var md5 = System.Security.Cryptography.MD5.Create())
+        {
+            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            var hashBytes = md5.ComputeHash(inputBytes);
+            
+            var sb = new System.Text.StringBuilder();
+            foreach (var b in hashBytes)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
+        }
+    }
+
     private IUserEmailStore<ApplicationUser> GetEmailStore()
     {
         if (!UserManager.SupportsUserEmail)
@@ -192,5 +336,4 @@
     {
         [Required] [EmailAddress] public string Email { get; set; } = "";
     }
-
 }

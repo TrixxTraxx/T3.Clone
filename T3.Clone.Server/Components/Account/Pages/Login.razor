@@ -5,6 +5,7 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IConfiguration Configuration
 
 <PageTitle>Log in - T3.Clone</PageTitle>
 
@@ -100,6 +101,18 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
+            
+            // Check if we should redirect to the client URL instead of the return URL
+            if (string.IsNullOrEmpty(ReturnUrl) || ReturnUrl == "/")
+            {
+                var clientUrl = Configuration["AppSettings:ClientUrl"] + Configuration["AppSettings:ClientAfterLoginPath"];
+                if (!string.IsNullOrEmpty(clientUrl))
+                {
+                    NavigationManager.NavigateTo(clientUrl, forceLoad: true);
+                    return;
+                }
+            }
+            
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
