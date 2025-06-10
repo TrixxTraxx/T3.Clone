@@ -1,4 +1,5 @@
 ﻿@page "/Account/Register"
+@layout AuthLayout
 @using System.Text
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.WebUtilities
@@ -11,45 +12,71 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Register - T3.Clone</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Register</MudText>
+<div class="login-container">
+    <div class="login-card">        
+        <div class="login-brand">
+            <div class="login-brand-title">T3.Clone</div>
+            <div class="login-brand-subtitle">Join us today</div>
+        </div>
 
-<MudGrid>
-    <MudItem md="6">
-        <StatusMessage Message="@Message"/>
-        <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator/>
+        <div class="login-form-section">
+            <div class="login-welcome-title">Create your account</div>
+            <div class="login-welcome-subtitle">Get started with T3.Clone by creating your account</div>
 
-            <MudText Typo="Typo.body1" GutterBottom="true">Create a new account.</MudText>
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <div class="login-status-message">
+                    @Message
+                </div>
+            }
 
-            <MudGrid>
-                <MudItem md="12">
+            <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                <DataAnnotationsValidator/>
+
+                <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                        Label="Email" Placeholder="name@example.com"
+                                        Label="Email" Placeholder="name@example.com" Variant="Variant.Filled"
                                         UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem md="12">
+                </div>
+                
+                <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                        Label="Password" InputType="InputType.Password" Placeholder="password"
+                                        Label="Password" InputType="InputType.Password" Placeholder="Create a secure password" Variant="Variant.Filled"
                                         UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem md="12">
+                </div>
+                
+                <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.ConfirmPassword)" @bind-Value="Input.ConfirmPassword"
-                                        Label="Confirm Password" InputType="InputType.Password" Placeholder="confirm password"
+                                        Label="Confirm Password" InputType="InputType.Password" Placeholder="Confirm your password" Variant="Variant.Filled"
                                         UserAttributes="@(new() { { "autocomplete", "new-password" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem md="12">
-                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Register</MudStaticButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-    </MudItem>
-    <MudItem md="6">
-        <MudText Typo="Typo.body1" GutterBottom="true">Use another service to register.</MudText>
-        <ExternalLoginPicker/>
-    </MudItem>
-</MudGrid>
+                </div>
+                
+                <div class="login-form-field">
+                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                                     FormAction="FormAction.Submit" Size="Size.Large">
+                        Create Account
+                    </MudStaticButton>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="login-links-section">
+            <div>
+                <MudLink Href="Account/Login" Class="login-link">Already have an account? Sign in</MudLink>
+            </div>
+        </div>
+
+        <div class="login-divider">
+            <span>or continue with</span>
+        </div>
+
+        <div class="login-external-section">
+            <ExternalLoginPicker/>
+        </div>
+    </div>
+</div>
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
@@ -138,5 +165,4 @@
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
     }
-
 }

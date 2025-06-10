@@ -3,10 +3,13 @@
 
 @if (externalLogins.Length == 0)
 {
-    <MudAlert Variant="Variant.Text" Severity="Severity.Warning">There are no external authentication services configured.</MudAlert>
-    <MudText Typo="Typo.body1" Class="pt-4">
-        See <MudLink Target="_blank" Href="https://go.microsoft.com/fwlink/?LinkID=532715">this article</MudLink>
-        about setting up this ASP.NET application to support logging in via external services
+    <MudAlert Variant="Variant.Text" Severity="Severity.Info" Class="login-external-alert">
+        <AlertContent>
+            No external authentication services configured
+        </AlertContent>
+    </MudAlert>
+    <MudText Typo="Typo.body2" Class="login-external-info">
+        External login providers like Google, Microsoft, or GitHub can be configured for easier sign-in.
     </MudText>
 }
 else
@@ -15,12 +18,22 @@ else
         <div>
             <AntiforgeryToken/>
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
-            <p>
+            <div class="login-external-buttons">
                 @foreach (var provider in externalLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    <MudButton ButtonType="ButtonType.Submit" 
+                               Variant="Variant.Outlined" 
+                               Color="Color.Secondary"
+                               FullWidth="true" 
+                               Size="Size.Large"
+                               StartIcon="@GetProviderIcon(provider.Name)"
+                               Class="login-external-button"
+                               name="provider" 
+                               value="@provider.Name">
+                        Continue with @provider.DisplayName
+                    </MudButton>
                 }
-            </p>
+            </div>
         </div>
     </form>
 }
@@ -35,4 +48,13 @@ else
         externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
     }
 
+    private string GetProviderIcon(string providerName) => providerName.ToLower() switch
+    {
+        "google" => Icons.Custom.Brands.Google,
+        "microsoft" => Icons.Custom.Brands.Microsoft,
+        "github" => Icons.Custom.Brands.GitHub,
+        "facebook" => Icons.Custom.Brands.Facebook,
+        "twitter" => Icons.Custom.Brands.Twitter,
+        _ => Icons.Material.Filled.Login
+    };
 }

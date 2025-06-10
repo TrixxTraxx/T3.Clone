@@ -1,56 +1,84 @@
 ﻿@page "/Account/Login"
+@layout AuthLayout
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Log in - T3.Clone</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Log in</MudText>
+<div class="login-container">
+    <div class="login-card">        
+        <div class="login-brand">
+            <div class="login-brand-title">T3.Clone</div>
+            <div class="login-brand-subtitle">Welcome back</div>
+        </div>
 
-<MudGrid>
-    <MudItem md="6">
-        <StatusMessage Message="@errorMessage"/>
-        <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-            <DataAnnotationsValidator/>
+        <div class="login-form-section">
+            <div class="login-welcome-title">Sign in to your account</div>
+            <div class="login-welcome-subtitle">Enter your credentials to access your account</div>
 
-            <MudText GutterBottom="true" Typo="Typo.body1">Use a local account to log in.</MudText>
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="login-status-message">
+                    @errorMessage
+                </div>
+            }
 
-            <MudGrid>
-                <MudItem md="12">
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator/>
+
+                <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
-                                        Label="Email" Placeholder="name@example.com"
+                                        Label="Email" Placeholder="name@example.com" Variant="Variant.Filled"
                                         UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem md="12">
+                </div>
+                
+                <div class="login-form-field">
                     <MudStaticTextField For="@(() => Input.Password)" @bind-Value="Input.Password"
-                                        Label="Password" InputType="InputType.Password" Placeholder="password"
+                                        Label="Password" InputType="InputType.Password" Placeholder="Enter your password" Variant="Variant.Filled"
                                         UserAttributes="@(new() { { "autocomplete", "current-password" }, { "aria-required", "true" } })"/>
-                </MudItem>
-                <MudItem md="12">
-                    <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe">Remember me</MudStaticCheckBox>
-                </MudItem>
-                <MudItem md="12">
-                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Log in</MudStaticButton>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
+                </div>
+                
+                <div class="login-form-field">
+                    <MudStaticCheckBox For="@(() => Input.RememberMe)" @bind-Value="Input.RememberMe" Color="Color.Primary">
+                        Remember me for 30 days
+                    </MudStaticCheckBox>
+                </div>
+                
+                <div class="login-form-field">
+                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                                     FormAction="FormAction.Submit" Size="Size.Large">
+                        Sign in
+                    </MudStaticButton>
+                </div>
+            </EditForm>
+        </div>
 
-        <MudGrid Class="mt-4">
-            <MudItem md="12">
-                <MudLink Href="Account/ForgotPassword">Forgot your password?</MudLink><br/>
-                <MudLink Href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</MudLink><br/>
-                <MudLink Href="Account/ResendEmailConfirmation">Resend email confirmation</MudLink>
-            </MudItem>
-        </MudGrid>
-    </MudItem>
-    <MudItem md="6">
-        <MudText GutterBottom="true" Typo="Typo.body1">Use another service to log in.</MudText>
+        <div class="login-links-section">
+            <div>
+                <MudLink Href="Account/ForgotPassword" Class="login-link">Forgot your password?</MudLink>
+            </div>
+            <div>
+                <MudLink Href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" Class="login-link">
+                    Don't have an account? Sign up
+                </MudLink>
+            </div>
+            <div>
+                <MudLink Href="Account/ResendEmailConfirmation" Class="login-link">Resend email confirmation</MudLink>
+            </div>
+        </div>
 
-        <ExternalLoginPicker/>
-    </MudItem>
-</MudGrid>
+        <div class="login-divider">
+            <span>or continue with</span>
+        </div>
+
+        <div class="login-external-section">
+            <ExternalLoginPicker/>
+        </div>
+    </div>
+</div>
 
 @code {
     private string? errorMessage;
@@ -93,7 +121,7 @@
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Invalid email or password. Please try again.";
         }
     }
 
@@ -107,5 +135,4 @@
 
         [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
     }
-
 }

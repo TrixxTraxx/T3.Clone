@@ -58,3 +58,242 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Login Page Styles */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #070d22 0%, #111936 50%, #1a2332 100%);
+    background-attachment: fixed;
+}
+
+.login-card {
+    background: rgba(17, 25, 54, 0.95);
+    border-radius: 24px;
+    padding: 3rem;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.login-brand {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.login-brand-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.login-brand-subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.login-form-section {
+    margin-bottom: 2rem;
+}
+
+.login-welcome-title {
+    color: #f8fafc;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.login-welcome-subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-form-field {
+    margin-bottom: 1.5rem;
+}
+
+.login-form-field:last-child {
+    margin-bottom: 2rem;
+}
+
+.login-links-section {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.login-link {
+    color: #6366f1;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+    display: inline-block;
+    margin: 0.25rem 0;
+}
+
+.login-link:hover {
+    color: #8b5cf6;
+    text-decoration: none;
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(148, 163, 184, 0.2);
+}
+
+.login-divider span {
+    padding: 0 1rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.login-external-section {
+    text-align: center;
+}
+
+.login-external-title {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Status Message Styling */
+.login-status-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #fca5a5;
+    font-size: 0.9rem;
+}
+
+/* Custom MudBlazor overrides for login */
+.login-card .mud-input-root {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 12px;
+}
+
+.login-card .mud-input-root:hover {
+    background: rgba(30, 41, 59, 0.7);
+}
+
+.login-card .mud-input-root.mud-input-root-focused {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: #6366f1;
+}
+
+.login-card .mud-button-filled-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transition: all 0.2s ease;
+}
+
+.login-card .mud-button-filled-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.login-card .mud-checkbox-root .mud-checkbox {
+    border-radius: 6px;
+}
+
+.login-card .mud-checkbox-root .mud-checkbox.mud-checkbox-checked {
+    background: #6366f1;
+    border-color: #6366f1;
+}
+
+.login-card .mud-input-label {
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.login-card .mud-input-root input {
+    color: #f8fafc;
+}
+
+.login-card .mud-input-root input::placeholder {
+    color: #64748b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .login-card {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+        border-radius: 16px;
+    }
+    
+    .login-brand-title {
+        font-size: 2rem;
+    }
+    
+    .login-welcome-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* External Login Styles */
+.login-external-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.login-card .login-external-button {
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #f8fafc;
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.login-card .login-external-button:hover {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-1px);
+}
+
+.login-external-alert {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.login-external-info {
+    color: #94a3b8;
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
