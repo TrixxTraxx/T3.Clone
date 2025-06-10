@@ -309,8 +309,8 @@
     z-index: 1;
 }
 
-.hypermodern-model-select {
-    width: 140px;
+.hypermodern-model-btn {
+    min-width: 140px;
     padding: 8px 12px;
     background: linear-gradient(135deg, 
         color-mix(in srgb, var(--mud-palette-surface) 90%, transparent) 0%,
@@ -325,15 +325,12 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
     cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 8px center;
-    background-repeat: no-repeat;
-    background-size: 14px;
-    padding-right: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.hypermodern-model-select:hover {
+.hypermodern-model-btn:hover {
     border-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
     background: linear-gradient(135deg, 
         color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
@@ -341,30 +338,62 @@
     box-shadow: 
         0 4px 12px rgba(0, 0, 0, 0.08),
         inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+    transform: translateY(-1px);
 }
 
-.hypermodern-model-select:focus {
+.hypermodern-model-btn.active {
     border-color: var(--mud-palette-primary);
     background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--mud-palette-primary) 10%, transparent) 0%,
-        color-mix(in srgb, var(--mud-palette-primary) 5%, transparent) 100%);
+        color-mix(in srgb, var(--mud-palette-primary) 15%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 100%);
     box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 20%, transparent),
-        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+        0 8px 20px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
 }
 
-.hypermodern-model-select:disabled {
+.hypermodern-model-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background: color-mix(in srgb, var(--mud-palette-text-disabled) 5%, transparent);
-    border-color: color-mix(in srgb, var(--mud-palette-text-disabled) 15%, transparent);
+    transform: none;
 }
 
-.hypermodern-model-select option {
-    background: var(--mud-palette-surface);
-    color: var(--mud-palette-text-primary);
-    padding: 8px 12px;
+.model-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.model-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--mud-palette-primary);
+    flex-shrink: 0;
+}
+
+.model-name {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--mud-palette-text-secondary);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.hypermodern-model-btn.active .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.hypermodern-model-select {
+    display: none; /* Hide the old select element */
 }
 
 .loading-spinner {
@@ -445,7 +474,7 @@
         justify-content: center;
     }
     
-    .hypermodern-model-select {
+    .hypermodern-model-btn {
         width: 160px;
     }
 }

@@ -103,9 +103,10 @@ window.downloadFile = function(url, filename) {
 }
 
 // Trigger file input selection
-window.triggerFileInput = function() {
+window.triggerFileInput = function(supportedContentTypes) {
     try {
         const fileInput = document.getElementById('hiddenFileInput');
+        fileInput.setAttribute('accept', supportedContentTypes || '*/*');
         if (fileInput && fileInput.click) {
             fileInput.click();
         }
