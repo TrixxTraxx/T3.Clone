@@ -65,6 +65,7 @@ builder.Services.AddAuthentication(options =>
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
         options.DefaultChallengeScheme = "Google";
+        options.DefaultSignOutScheme = IdentityConstants.ExternalScheme;
     })
     .AddGoogle(googleOptions =>
     {
@@ -115,7 +116,19 @@ builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "t3CloneDb",
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services
+    .AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedEmail = false;
+        
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredLength = 6;
+    })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
@@ -191,7 +204,8 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 
-app.UseDefaultFiles();
+app.MapStaticAssets();
+
 app.UseStaticFiles(new StaticFileOptions()
 {
     ServeUnknownFileTypes = true
