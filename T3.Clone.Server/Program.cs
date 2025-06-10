@@ -50,6 +50,7 @@ builder.Services.AddScoped<ThreadService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<AttachmentService>();
 builder.Services.AddScoped<AiModelService>();
+builder.Services.AddScoped<AiKeyService>();
 builder.Services.AddScoped<AiGenerationService>();
 
 builder.Services.AddScoped<ChatModelProvider>();
@@ -112,8 +113,6 @@ var connectionString = builder.Configuration.GetConnectionString("t3CloneDb") ??
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString + ";MultipleActiveResultSets=true;"));
 
-
-
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -122,6 +121,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+Console.WriteLine("Using connection string: " + connectionString);
 builder.Services.AddHangfire(configuration => configuration
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
@@ -156,7 +156,8 @@ _ = Task.Run(async () =>
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during database migration: {ex.Message}");
+            Console.WriteLine($"Error during database migration:");
+            Console.WriteLine(ex);
             throw;
         }
     }

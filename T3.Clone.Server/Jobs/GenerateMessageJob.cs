@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using T3.Clone.Client.Services;
 using T3.Clone.Dtos.Messages;
@@ -6,6 +7,7 @@ using T3.Clone.Server.Service;
 
 namespace T3.Clone.Server.Jobs;
 
+[AutomaticRetry(Attempts = 0)]
 public class GenerateMessageJob(
     ApplicationDbContext dbContext,
     AiGenerationService aiGenerationService,
@@ -15,6 +17,7 @@ public class GenerateMessageJob(
     public async Task GenerateMessageAsync(int messageId) 
     {
         var message = await dbContext.Messages
+            .Include(x => x.Thread)
             .Include(x => x.Attachments)
             .Include(x => x.Model)
             .FirstOrDefaultAsync(x => x.Id == messageId);
