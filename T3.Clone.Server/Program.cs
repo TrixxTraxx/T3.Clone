@@ -71,8 +71,9 @@ builder.Services.AddScoped<ServerSettingsService>();
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+        options.DefaultChallengeScheme = "Google";
+        options.DefaultChallengeScheme = IdentityConstants.ExternalScheme;
         options.DefaultSignOutScheme = IdentityConstants.ApplicationScheme;
     })
     .AddGoogle(googleOptions =>
@@ -129,13 +130,6 @@ builder.Services
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.SignIn.RequireConfirmedEmail = false;
-        
-        options.User.RequireUniqueEmail = true;
-        options.Password.RequireDigit = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequiredLength = 6;
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -155,6 +149,7 @@ builder.Services.AddHangfire(configuration => configuration
         DisableGlobalLocks = true
     })
 );
+
 
 builder.Services.AddHangfireServer();
 
