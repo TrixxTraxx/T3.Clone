@@ -1,9 +1,11 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using T3.Clone.Client.Services;
 using T3.Clone.Server.Data;
 
 namespace T3.Clone.Server.Jobs;
 
+[AutomaticRetry(Attempts = 0)]
 public class GenerateThreadTitleJob(
     ApplicationDbContext dbContext,
     ChatModelProvider chatModelProvider

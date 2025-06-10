@@ -7,12 +7,22 @@ using T3.Clone.Server.Data;
 namespace T3.Clone.Server.Service.Models;
 
 public class OpenAiChat(
+    ApplicationDbContext dbContext,
     AttachmentService attachmentService
 ) : IChatModel
 {
     public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config, Action<string> tokenCallback, Action<string> errorCallback)
     {
-        ChatClient client = new(model: config.ModelId, new ApiKeyCredential(config.ApiKey), new OpenAIClientOptions()
+        var keyOverride = dbContext.AiModelKeys
+            .Where(x => x.UserId == entity.Thread.UserId)
+            .ToList();
+        var apiKey = config.ApiKey;
+        if (keyOverride.Count > 0)
+        {
+            //use the first key override for the user
+            apiKey = apiKey.Replace("{" + keyOverride[0].Identifier + "}", keyOverride[0].ApiKey);
+        }
+        ChatClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey), new OpenAIClientOptions()
         {
             Endpoint = new Uri(config.ApiUrl)
         });

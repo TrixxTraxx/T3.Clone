@@ -21,7 +21,7 @@ public class AiModel
     public string ModelId { get; set; } = string.Empty;
     public string Provider { get; set; } = string.Empty;
     public string? ApiUrl { get; set; } = null;
-    public string? ApiKey { get; set; } = null;
+    public string ApiKey { get; set; } = null;
     
     // Cost per 1m tokens
     public double InputTokenCost { get; set; } = 0.0;

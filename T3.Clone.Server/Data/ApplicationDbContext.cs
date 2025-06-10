@@ -9,4 +9,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MessageThread> MessageThreads { get; set; }
     public DbSet<MessageAttachment> MessageAttachments { get; set; }
     public DbSet<AiModel> AiModels { get; set; }
+    public DbSet<AiModelKeys> AiModelKeys { get; set; }
 }
