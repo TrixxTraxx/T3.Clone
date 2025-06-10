@@ -11,6 +11,7 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IConfiguration Configuration
 
 <PageTitle>Register - T3.Clone</PageTitle>
 
@@ -90,6 +91,7 @@
     public async Task RegisterUser(EditContext editContext)
     {
         var user = CreateUser();
+        user.DisplayName = Input.Email;
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
@@ -121,6 +123,18 @@
         }
 
         await SignInManager.SignInAsync(user, isPersistent: false);
+        
+        // Check if we should redirect to the client URL instead of the return URL
+        if (string.IsNullOrEmpty(ReturnUrl) || ReturnUrl == "/")
+        {
+            var clientUrl = Configuration["AppSettings:ClientUrl"] + Configuration["AppSettings:ClientAfterLoginPath"];
+            if (!string.IsNullOrEmpty(clientUrl))
+            {
+                NavigationManager.NavigateTo(clientUrl, forceLoad: true);
+                return;
+            }
+        }
+        
         RedirectManager.RedirectTo(ReturnUrl);
     }
 
