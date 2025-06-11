@@ -3,18 +3,24 @@ using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Responses;
 using T3.Clone.Client.Services;
+using T3.Clone.Dtos.Messages;
 using T3.Clone.Server.Data;
 
 namespace T3.Clone.Server.Service.Models;
 
-public class OpenAiChat(
+public class OpenAiReasoningChat(
     ApplicationDbContext dbContext,
     AttachmentService attachmentService
 ) : IChatModel
 {
-    public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config,
+        public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config,
         Action<string> tokenCallback, Action<string> thinkingTokenCallback, Action<string> errorCallback)
     {
+        if (false)//(entity.ReasoningEffort == ReasoningEffortLevel.None)
+        {
+            return await new OpenAiChat(dbContext, attachmentService)
+                .GenerateResponse(entity, messagesChain, config, tokenCallback, thinkingTokenCallback, errorCallback);
+        }
         var keyOverride = dbContext.AiModelKeys
             .Where(x => x.UserId == entity.Thread.UserId)
             .ToList();
@@ -27,66 +33,83 @@ public class OpenAiChat(
             }
         }
 
-        ChatClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey), new OpenAIClientOptions()
+        OpenAIResponseClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey), new OpenAIClientOptions()
         {
             Endpoint = new Uri(config.ApiUrl)
         });
 
         //create the chat messages
-        List<ChatMessage> messages = new();
+        List<ResponseItem> messages = new();
         if (!string.IsNullOrEmpty(config.SystemPrompt))
         {
-            messages.Add(new SystemChatMessage(config.SystemPrompt));
+            messages.Add(ResponseItem.CreateSystemMessageItem(config.SystemPrompt));
         }
 
         //Reverse the messages chain to maintain the order of conversation
         messagesChain.Reverse();
         foreach (var message in messagesChain)
         {
-            var userContentParts = new ChatMessageContentPart[]
+            var userContentParts = new ResponseContentPart[]
             {
-                ChatMessageContentPart.CreateTextPart(message.Text)
+                ResponseContentPart.CreateInputTextPart(message.Text)
             };
             foreach (var attachment in message.Attachments ?? new())
             {
                 var content = attachmentService.GetAttachmentContent(attachment.Id, true);
                 if (content.data != null && content.data.Length > 0)
                 {
-                    userContentParts = userContentParts.Append(ChatMessageContentPart.CreateImagePart(
+                    userContentParts = userContentParts.Append(ResponseContentPart.CreateInputImagePart(
                         BinaryData.FromBytes(content.data),
                         content.contentType
                     )).ToArray();
                 }
             }
 
-            messages.Add(new UserChatMessage(userContentParts));
+            messages.Add(ResponseItem.CreateUserMessageItem(userContentParts));
 
             if (!string.IsNullOrEmpty(message.ModelResponse) && message.Complete)
             {
-                var assistantContentParts = new ChatMessageContentPart[]
+                if (!string.IsNullOrEmpty(message.ThinkingResponse))
                 {
-                    ChatMessageContentPart.CreateTextPart(message.ModelResponse)
-                };
-                messages.Add(new AssistantChatMessage(assistantContentParts));
+                    // Add thinking response if available
+                    messages.Add(ResponseItem.CreateReasoningItem(new []{message.ThinkingResponse}));
+                } 
+                messages.Add(ResponseItem.CreateAssistantMessageItem(message.Text));
             }
         }
         
         //generate streaming response
-        var response = client.CompleteChatStreamingAsync(messages, new ChatCompletionOptions()
+        var response = client.CreateResponseStreamingAsync(messages, new ResponseCreationOptions()
         {
             //TODO: set other options like temperature, max tokens, etc.
-            
+            ReasoningOptions = new ResponseReasoningOptions()
+            {
+                ReasoningEffortLevel = entity.ReasoningEffort switch{
+                    ReasoningEffortLevel.Low => ResponseReasoningEffortLevel.Low,
+                    ReasoningEffortLevel.Medium => ResponseReasoningEffortLevel.Medium,
+                    ReasoningEffortLevel.High => ResponseReasoningEffortLevel.High,
+                    _ => ResponseReasoningEffortLevel.Low
+                }
+            }
         }, CancellationToken.None);
+        
+        Console.WriteLine($"[Reasoning] Starting Reasoning Chat!");
 
         //process the response
-        await foreach (StreamingChatCompletionUpdate? update in response)
+        await foreach (var update in response)
         {
-            if (update.ContentUpdate.Count > 0)
+            Console.WriteLine($"[Reasoning] Update: {update.GetType().Name}");
+            /*if (update is StreamingResponseUpdate itemUpdate
+                && itemUpdate.Item is ReasoningResponseItem reasoningItem)
+            {
+                Console.WriteLine($"[Reasoning] ({reasoningItem.Status})");
+            }*/
+            if (update is StreamingResponseOutputTextDeltaUpdate deltaUpdate)
             {
                 try
                 {
-                    entity.ModelResponse += update.ContentUpdate[0].Text;
-                    tokenCallback?.Invoke(update.ContentUpdate[0].Text);
+                    entity.ModelResponse += deltaUpdate.Delta;
+                    tokenCallback?.Invoke(deltaUpdate.Delta);
                 }
                 catch (Exception ex)
                 {

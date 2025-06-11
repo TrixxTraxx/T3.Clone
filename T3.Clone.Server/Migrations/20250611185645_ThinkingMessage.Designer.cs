@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using T3.Clone.Server.Data;
 
@@ -11,9 +12,11 @@ using T3.Clone.Server.Data;
 namespace T3.Clone.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250611185645_ThinkingMessage")]
+    partial class ThinkingMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -377,9 +380,6 @@ namespace T3.Clone.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PreviousMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReasoningEffort")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")

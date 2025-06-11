@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OpenAI.Responses;
+using T3.Clone.Dtos.Messages;
 
 namespace T3.Clone.Server.Data;
 
@@ -8,6 +10,10 @@ public class Message
     public int Id { get; set; }
     
     public string Text { get; set; } = string.Empty;
+    
+    public ReasoningEffortLevel ReasoningEffort { get; set; } = ReasoningEffortLevel.None;
+    
+    public string ThinkingResponse { get; set; } = string.Empty;
     
     public string ModelResponse { get; set; } = string.Empty;
     

@@ -10,7 +10,8 @@ public class ChatModelProvider(
 {
     private Dictionary<string, Type> _chatModels = new Dictionary<string, Type>()
     {
-        { "OpenAi", typeof(OpenAiChat)}
+        { "OpenAi", typeof(OpenAiChat)},
+        { "OpenAiReasoning", typeof(OpenAiReasoningChat)}
     };
     
     public IChatModel GetChatModel(AiModel aiModel)

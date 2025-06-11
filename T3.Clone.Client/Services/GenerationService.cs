@@ -63,11 +63,18 @@ public class GenerationService : IAsyncDisposable
             .Build();
 
         // Set up event handlers
-        _hubConnection.On<string>("ReceiveNewToken", (token) =>
+        _hubConnection.On<string, bool>("ReceiveNewToken", (token, isThinking) =>
         {
             Console.WriteLine($"Received new token: {token}");
-            
-            _currentMessageCache.Message.ModelResponse += token;
+
+            if (isThinking)
+            {
+                _currentMessageCache.Message.ThinkingResponse += token;
+            }
+            else
+            {
+                _currentMessageCache.Message.ModelResponse += token;
+            }
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
             
             // Emit events to the cache and external subscribers

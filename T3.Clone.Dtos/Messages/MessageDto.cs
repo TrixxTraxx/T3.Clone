@@ -31,4 +31,8 @@ public class MessageDto
 
     [Key(8)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    
+    [Key(9)]
+    public string ThinkingResponse { get; set; } = string.Empty;
 }

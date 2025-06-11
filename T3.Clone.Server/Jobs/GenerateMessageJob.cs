@@ -31,11 +31,13 @@ public class GenerateMessageJob(
         var messageChain = GetMessageChain(message);
         
         var model = chatModelProvider.GetChatModel(message.Model);
+        Console.WriteLine($"Using model: {message.Model.ModelId} for message {messageId} with provider {model.GetType().Name}");
         var result = await model.GenerateResponse(
             message,
             messageChain,
             message.Model,
-            token => aiGenerationService.SendNewToken(messageId, token),
+            token => aiGenerationService.SendNewToken(messageId, token, true),
+            thinkingToken => aiGenerationService.SendNewToken(messageId, thinkingToken, false),
             error =>
             {
                 //TODO: handle error
