@@ -169,4 +169,10 @@ public class ThreadSyncService
             ThreadsUpdated?.Invoke(threads);            
         });
     }
+    
+    public void ClearMemoryCache()
+    {
+        _threadCaches.Clear();
+        _threadCacheCollection = null;
+    }
 }
