@@ -12,7 +12,6 @@
   ],
   "Models": [
     {
-      "Id": 4,
       "Name": "Gemini 2.5 Pro",
       "Description": "Google's most capable and advanced model, excelling at complex reasoning, multimodal understanding, and long context.",
       "ModelId": "google/gemini-2.5-pro-preview",
@@ -33,7 +32,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 5,
       "Name": "GPT-4o",
       "Description": "OpenAI's fastest and most affordable flagship model. Natively multimodal, processing text, audio, and image inputs and outputs.",
       "ModelId": "openai/gpt-4o",
@@ -54,7 +52,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 6,
       "Name": "GPT-4o mini",
       "Description": "A lightweight, fast, and cost-effective version of GPT-4o, optimized for speed and efficiency in high-throughput applications.",
       "ModelId": "openai/gpt-4.1-mini",
@@ -75,7 +72,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 7,
       "Name": "GPT-4.1 Mini",
       "Description": "A speculative, highly efficient next-generation small model from OpenAI, designed for maximum performance at a low cost.",
       "ModelId": "gpt-4.1-mini",
@@ -96,7 +92,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 8,
       "Name": "Claude 3.5 Sonnet",
       "Description": "Anthropic's most balanced model between intelligence and speed, with strong vision capabilities and a large context window.",
       "ModelId": "anthropic/claude-3.5-sonnet",
@@ -117,7 +112,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 9,
       "Name": "Claude 3.7 Sonnet",
       "Description": "A hypothetical future iteration of Anthropic's Sonnet series, offering improved reasoning and efficiency.",
       "ModelId": "anthropic/claude-3.7-sonnet",
@@ -138,7 +132,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 10,
       "Name": "Claude 4.0 Sonnet",
       "Description": "A speculative next-generation model from Anthropic, aiming for new heights in AI safety, reliability, and performance.",
       "ModelId": "anthropic/claude-sonnet-4",
@@ -159,7 +152,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 11,
       "Name": "Gemini 2.5 Flash",
       "Description": "A speculative lightweight version of Gemini 2.5, optimized for speed and efficiency while retaining a massive context window.",
       "ModelId": "google/gemini-2.5-flash-preview-05-20",
@@ -180,7 +172,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 12,
       "Name": "Gemini 2.0 Flash",
       "Description": "A hypothetical fast and efficient model from Google, building on the Gemini architecture for high-speed, multimodal tasks.",
       "ModelId": "google/gemini-2.0-flash-001",
@@ -201,7 +192,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 13,
       "Name": "Llama 4 Scout",
       "Description": "A speculative next-generation open-source model from Meta, designed for advanced reasoning and tool use.",
       "ModelId": "meta-llama/llama-4-scout",
@@ -222,7 +212,6 @@
       "ThinkingCost": 0
     },
     {
-      "Id": 14,
       "Name": "Llama 4 Maverick",
       "Description": "An experimental, rotating model on OpenRouter, often pointing to a fine-tuned or new model being tested. Performance may vary.",
       "ModelId": "meta-llama/llama-4-maverick",

@@ -3,6 +3,22 @@
 @inject AiModelService AiModelService
 @inject AttachmentService AttachmentService
 
+<script>
+    window.focusElement = function (element) {
+        if (element) {
+            element.focus();
+        }
+    };
+
+    window.setupTabVisibilityFocus = function (element) {
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && element) {
+                setTimeout(() => element.focus(), 100); // slight delay for safety
+            }
+        });
+    };
+</script>
+
 <div class="hypermodern-chat-input-wrapper">
     <div class="hypermodern-input-container">
         @if (uploadedAttachments.Any())
@@ -436,8 +452,9 @@
     {
         if (firstRender)
         {
-            // Initialize auto-resize functionality
             await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", textareaRef);
+            await JSRuntime.InvokeVoidAsync("focusElement", textareaRef);
+            await JSRuntime.InvokeVoidAsync("setupTabVisibilityFocus", textareaRef);
         }
     }
 
