@@ -9,9 +9,9 @@ var database = sqlServer
 var cache = builder.AddRedis("cache");
 
 var apiService = builder
-    .AddProject<Projects.T3_Clone_Server>("t3CloneServer", "http")
-    .WithReference(database)
-    .WaitFor(database);
+    .AddProject<Projects.T3_Clone_Server>("t3CloneServer", "http");
+    // .WithReference(database)
+    // .WaitFor(database);
 
 builder.AddProject<Projects.T3_Clone_Client>("t3CloneClient", "https")
     .WithExternalHttpEndpoints()
