@@ -39,6 +39,7 @@ public class GenerateThreadTitleJob(
             new List<Message>(){message},
             config,
             token => {},
+            thinkingToken => {},
             error =>
             {
                 //TODO: handle error

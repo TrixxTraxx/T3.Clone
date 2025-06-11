@@ -63,15 +63,4 @@ public class MessageHub(
         // Call the service to stop generation
         await aiGenerationService.StopGeneration(int.Parse(messageId));
     }
-    
-    public async Task OnTokenGenerated(string token)
-    {
-        var messageId = Context.Items["MessageId"]!.ToString();
-        
-        // Call the service to start generation
-        await aiGenerationService.AddTokenToGeneration(int.Parse(messageId), token);
-        
-        // Notify clients that the token has been generated
-        await Clients.All.SendAsync("TokenGenerated", token);
-    }
 }

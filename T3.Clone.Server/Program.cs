@@ -56,6 +56,7 @@ builder.Services.AddScoped<AiGenerationService>();
 
 builder.Services.AddScoped<ChatModelProvider>();
 builder.Services.AddScoped<OpenAiChat>();
+builder.Services.AddScoped<OpenAiReasoningChat>();
 
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();

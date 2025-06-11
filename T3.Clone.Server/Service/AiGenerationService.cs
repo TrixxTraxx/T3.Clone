@@ -41,7 +41,7 @@ public class AiGenerationService(
         await hubContext.Clients.Group(messageId.ToString()).SendAsync("GenerationStopped", MessageMapper.Map(message));
     }
 
-    public async Task AddTokenToGeneration(int messageId, string token)
+    public async Task AddTokenToGeneration(int messageId, string token, bool isThinkingToken)
     {
         var message = await dbContext.Messages.FindAsync(messageId);
         if (message == null)
@@ -50,7 +50,7 @@ public class AiGenerationService(
         }
         message.ModelResponse += token;
         await dbContext.SaveChangesAsync();
-        SendNewToken(messageId, token);
+        SendNewToken(messageId, token, isThinkingToken);
     }
 
     public async Task SendExistingMessage(ApplicationUser user, int messageId, HubCallerContext context)
@@ -73,7 +73,7 @@ public class AiGenerationService(
         }
     }
     
-    public void SendNewToken(int messageId, string token)
+    public void SendNewToken(int messageId, string token, bool isThinkingToken)
     {
         // get all Clients for the messageId
         var clients = hubContext.Clients.Group(messageId.ToString());
@@ -83,6 +83,6 @@ public class AiGenerationService(
         }
         
         // Send the new token to all clients in the group
-        clients.SendAsync("ReceiveNewToken", token).GetAwaiter().GetResult();
+        clients.SendAsync("ReceiveNewToken", token, isThinkingToken).GetAwaiter().GetResult();
     }
 }
