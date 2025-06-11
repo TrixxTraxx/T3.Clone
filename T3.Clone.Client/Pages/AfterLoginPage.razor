@@ -1,6 +1,7 @@
 @page "/afterLogin"
 @inject StorageService StorageService
 @inject NavigationManager NavigationManager
+@inject ThreadSyncService ThreadSyncService
 
 <div>clearing cache...</div>
 
@@ -12,6 +13,8 @@
         {
             await StorageService.RemoveObjectAsync(key);
         }
+        ThreadSyncService.ClearMemoryCache();
+        await ThreadSyncService.Update();
         NavigationManager.NavigateTo("/chat");
     }
 

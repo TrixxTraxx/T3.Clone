@@ -18,14 +18,15 @@
 else
 {
     <div class="profile-section">
-        <MudAvatar
-            Color="Color.Primary"
-            Size="Size.Medium"
-        >
-            <MudImage
-                Src="@GetProfilePictureUrl(User)"
-            />
-        </MudAvatar>
+        @if (!string.IsNullOrEmpty(User.ProfilePictureUrl))
+        {
+            <MudAvatar
+                Color="Color.Primary"
+                Size="Size.Medium">
+                <MudImage
+                    Src="@GetProfilePictureUrl(User)"/>
+            </MudAvatar>
+        }
         <MudText>
             @User.DisplayName
         </MudText>
@@ -37,8 +38,7 @@ else
             Color="Color.Primary"
             Size="Size.Medium"
             OnClick="Login"
-            Class="login-button"
-        >
+            Class="login-button">
             Switch Account
         </MudButton>
     </div>
@@ -67,5 +67,4 @@ else
     {
         return $"{AppsettingsService.ServerUrl}/api/Authentication/profilePicture";
     }
-
 }
