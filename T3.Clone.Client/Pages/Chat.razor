@@ -85,7 +85,11 @@
             currentBranchPath = 0;
             StateHasChanged();
         }
-        await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(50);
+            await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
+        }); 
     }
 
     private void InitializeBranchPath()
