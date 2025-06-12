@@ -1,6 +1,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sqlServer = builder.AddSqlServer("t3CloneSqlserver", port: 1433)
+    .WithDataVolume("t3CloneSqlserverData")
     .WithLifetime(ContainerLifetime.Persistent);
 
 var database = sqlServer
