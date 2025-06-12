@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using T3.Clone.Server.Data;
 
 namespace T3.Clone.Server.Service;
@@ -9,7 +10,7 @@ public class AiKeyService(
 {
     public List<string> GetKeys()
     {
-        var userId = httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+        var userId = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
             throw new UnauthorizedAccessException("User is not authenticated.");
@@ -23,7 +24,7 @@ public class AiKeyService(
 
     public void AddKey(string identifier, string key)
     {
-        var userId = httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+        var userId = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
             throw new UnauthorizedAccessException("User is not authenticated.");

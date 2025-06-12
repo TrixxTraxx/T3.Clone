@@ -1,0 +1,82 @@
+.color-picker-container {
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.color-input-field {
+    flex: 1;
+}
+
+.color-picker-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px; /* Align with text field bottom */
+}
+
+.color-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-preview:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-preview:active {
+    transform: scale(0.95);
+}
+
+.color-preview::after {
+    content: '🎨';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.color-preview:hover::after {
+    opacity: 0.8;
+}
+
+/* Ensure the color preview is visible even with very light colors */
+.color-preview {
+    border: 2px solid var(--mud-palette-lines-default) !important;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+/* Make sure the preview maintains aspect ratio */
+.color-preview {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .color-picker-container {
+        gap: 0.5rem;
+    }
+    
+    .color-preview {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .color-preview::after {
+        font-size: 14px;
+    }
+} 

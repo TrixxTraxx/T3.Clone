@@ -1,0 +1,364 @@
+@inject SettingsService SettingsService
+@inject ThemeService ThemeService
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h6" GutterBottom="true">Theme Settings</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+    Customize the appearance of your LLM Lab interface
+</MudText>
+
+<div class="theme-selection-container">
+    <div class="d-flex flex-wrap gap-4 mb-6 theme-grid">
+        @foreach (var theme in AvailableThemes)
+        {
+            <MudPaper 
+                @onclick="@(() => SelectTheme(theme.Key))" 
+                Elevation="@(CurrentTheme == theme.Key ? 8 : 2)" 
+                Class="@($"theme-selector {(CurrentTheme == theme.Key ? "selected" : "")}")"
+                Style="@($"background: {theme.Value.Background}; border: 2px solid {(CurrentTheme == theme.Key ? theme.Value.Primary : "transparent")}; cursor: pointer; width: 120px; height: 80px; position: relative; border-radius: 12px;")">
+                
+                <div style="position: absolute; top: 8px; right: 8px;">
+                    @if (CurrentTheme == theme.Key)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Surface" Size="Size.Small" />
+                    }
+                </div>
+                
+                <div style="position: absolute; bottom: 8px; left: 8px; right: 8px;">
+                    <MudText Typo="Typo.caption" Style="@($"color: {theme.Value.Text}; font-weight: 500;")">
+                        @theme.Value.Name
+                    </MudText>
+                </div>
+                
+                <!-- Theme preview elements -->
+                <div style="@($"position: absolute; top: 8px; left: 8px; width: 24px; height: 16px; background: {theme.Value.Primary}; border-radius: 4px;")"></div>
+                <div style="@($"position: absolute; top: 28px; left: 8px; width: 32px; height: 8px; background: {theme.Value.Surface}; border-radius: 2px;")"></div>
+                <div style="@($"position: absolute; top: 40px; left: 8px; width: 40px; height: 6px; background: {theme.Value.Secondary}; border-radius: 2px;")"></div>
+            </MudPaper>
+        }
+    </div>
+    
+    <div class="custom-theme-section" style="@($"min-height: {(CurrentTheme == "custom" ? "auto" : "0")}; overflow: hidden; transition: all 0.3s ease;")">
+        @if (CurrentTheme == "custom")
+        {
+            <MudDivider Class="mb-4" />
+            <MudText Typo="Typo.h6" Class="mb-3">Custom Colors</MudText>
+            
+            <div class="d-flex flex-column gap-4">
+                <!-- Primary Colors -->
+                <MudText Typo="Typo.subtitle1" Class="mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Palette" Class="mr-2" />
+                    Primary Colors
+                </MudText>
+                
+                <div class="color-input-grid">
+                    <ColorPicker Value="@PrimaryColor" 
+                                 ValueChanged="@(async (string value) => { PrimaryColor = value; await PrimaryColorChanged.InvokeAsync(value); })"
+                                 Label="Primary Color"
+                                 Placeholder="#6366f1"
+                                 Icon="@Icons.Material.Filled.Circle"
+                                 AdornmentColor="Color.Primary"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                    
+                    <ColorPicker Value="@SecondaryColor" 
+                                 ValueChanged="@(async (string value) => { SecondaryColor = value; await SecondaryColorChanged.InvokeAsync(value); })"
+                                 Label="Secondary Color"
+                                 Placeholder="#7c3aed"
+                                 Icon="@Icons.Material.Filled.Circle"
+                                 AdornmentColor="Color.Secondary"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                </div>
+                
+                <!-- Background Colors -->
+                <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Layers" Class="mr-2" />
+                    Background Colors
+                </MudText>
+                
+                <div class="color-input-grid">
+                    <ColorPicker Value="@BackgroundColor" 
+                                 ValueChanged="@(async (string value) => { BackgroundColor = value; await BackgroundColorChanged.InvokeAsync(value); })"
+                                 Label="Background Color"
+                                 Placeholder="#070d22"
+                                 Icon="@Icons.Material.Filled.Rectangle"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                    
+                    <ColorPicker Value="@SurfaceColor" 
+                                 ValueChanged="@(async (string value) => { SurfaceColor = value; await SurfaceColorChanged.InvokeAsync(value); })"
+                                 Label="Surface Color"
+                                 Placeholder="#111936"
+                                 Icon="@Icons.Material.Filled.CropSquare"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                </div>
+                
+                <!-- Text Colors -->
+                <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">
+                    <MudIcon Icon="@Icons.Material.Filled.TextFields" Class="mr-2" />
+                    Text Colors
+                </MudText>
+                
+                <div class="color-input-grid">
+                    <ColorPicker Value="@TextColor" 
+                                 ValueChanged="@(async (string value) => { TextColor = value; await TextColorChanged.InvokeAsync(value); })"
+                                 Label="Primary Text Color"
+                                 Placeholder="#FFFFFF"
+                                 Icon="@Icons.Material.Filled.Title"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                    
+                    <ColorPicker Value="@SecondaryTextColor" 
+                                 ValueChanged="@(async (string value) => { SecondaryTextColor = value; await SecondaryTextColorChanged.InvokeAsync(value); })"
+                                 Label="Secondary Text Color"
+                                 Placeholder="#B0B0B0"
+                                 Icon="@Icons.Material.Filled.TextFormat"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                </div>
+                
+                <!-- Status Colors -->
+                <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Circle" Class="mr-2" />
+                    Status Colors
+                </MudText>
+                
+                <div class="color-input-grid">
+                    <ColorPicker Value="@SuccessColor" 
+                                 ValueChanged="@(async (string value) => { SuccessColor = value; await SuccessColorChanged.InvokeAsync(value); })"
+                                 Label="Success Color"
+                                 Placeholder="#10b981"
+                                 Icon="@Icons.Material.Filled.CheckCircle"
+                                 AdornmentColor="Color.Success"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                    
+                    <ColorPicker Value="@ErrorColor" 
+                                 ValueChanged="@(async (string value) => { ErrorColor = value; await ErrorColorChanged.InvokeAsync(value); })"
+                                 Label="Error Color"
+                                 Placeholder="#ef4444"
+                                 Icon="@Icons.Material.Filled.Error"
+                                 AdornmentColor="Color.Error"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                    
+                    <ColorPicker Value="@WarningColor" 
+                                 ValueChanged="@(async (string value) => { WarningColor = value; await WarningColorChanged.InvokeAsync(value); })"
+                                 Label="Warning Color"
+                                 Placeholder="#f59e0b"
+                                 Icon="@Icons.Material.Filled.Warning"
+                                 AdornmentColor="Color.Warning"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                    
+                    <ColorPicker Value="@InfoColor" 
+                                 ValueChanged="@(async (string value) => { InfoColor = value; await InfoColorChanged.InvokeAsync(value); })"
+                                 Label="Info Color"
+                                 Placeholder="#3b82f6"
+                                 Icon="@Icons.Material.Filled.Info"
+                                 AdornmentColor="Color.Info"
+                                 OnColorChanged="@(async () => await SaveThemeSettings())" />
+                </div>
+                
+                <MudDivider Class="my-4" />
+                
+                <div class="d-flex gap-3">
+                    <MudButton 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        StartIcon="@Icons.Material.Filled.Save"
+                        OnClick="SaveThemeSettings"
+                        Class="flex-grow-1">
+                        Save Custom Theme
+                    </MudButton>
+                    
+                    <MudButton 
+                        Variant="Variant.Outlined" 
+                        Color="Color.Secondary" 
+                        StartIcon="@Icons.Material.Filled.Refresh"
+                        OnClick="ResetCustomTheme">
+                        Reset to Default
+                    </MudButton>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string CurrentTheme { get; set; } = "default";
+    [Parameter] public EventCallback<string> CurrentThemeChanged { get; set; }
+    [Parameter] public string PrimaryColor { get; set; } = "#6366f1";
+    [Parameter] public EventCallback<string> PrimaryColorChanged { get; set; }
+    [Parameter] public string SecondaryColor { get; set; } = "#7c3aed";
+    [Parameter] public EventCallback<string> SecondaryColorChanged { get; set; }
+    [Parameter] public string BackgroundColor { get; set; } = "#070d22";
+    [Parameter] public EventCallback<string> BackgroundColorChanged { get; set; }
+    [Parameter] public string SurfaceColor { get; set; } = "#111936";
+    [Parameter] public EventCallback<string> SurfaceColorChanged { get; set; }
+    [Parameter] public string TextColor { get; set; } = "#FFFFFF";
+    [Parameter] public EventCallback<string> TextColorChanged { get; set; }
+    [Parameter] public string SecondaryTextColor { get; set; } = "#B0B0B0";
+    [Parameter] public EventCallback<string> SecondaryTextColorChanged { get; set; }
+    [Parameter] public string SuccessColor { get; set; } = "#10b981";
+    [Parameter] public EventCallback<string> SuccessColorChanged { get; set; }
+    [Parameter] public string ErrorColor { get; set; } = "#ef4444";
+    [Parameter] public EventCallback<string> ErrorColorChanged { get; set; }
+    [Parameter] public string WarningColor { get; set; } = "#f59e0b";
+    [Parameter] public EventCallback<string> WarningColorChanged { get; set; }
+    [Parameter] public string InfoColor { get; set; } = "#3b82f6";
+    [Parameter] public EventCallback<string> InfoColorChanged { get; set; }
+
+    private readonly Dictionary<string, ThemePreview> AvailableThemes = new()
+    {
+        {
+            "default", 
+            new("Default", "#6366f1", "#7c3aed", "#070d22", "#111936", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "dark", 
+            new("Dark", "#ef4444", "#dc2626", "#000000", "#121212", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "light", 
+            new("Light", "#3b82f6", "#2563eb", "#f3f4f6", "#ffffff", "#1F2937", "#4B5563")
+        },
+        {
+            "green", 
+            new("Green", "#10b981", "#059669", "#0f1720", "#162231", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "purple", 
+            new("Purple", "#8b5cf6", "#7c3aed", "#0f0a1a", "#1a1625", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "custom", 
+            new("Custom", "#9333ea", "#7c3aed", "#1a1a1a", "#2a2a2a", "#FFFFFF", "#B0B0B0")
+        }
+    };
+
+    private async Task SelectTheme(string theme)
+    {
+        CurrentTheme = theme;
+        await CurrentThemeChanged.InvokeAsync(CurrentTheme);
+        
+        // Only update colors for non-custom themes
+        // For custom theme, preserve the current colors
+        if (theme != "custom" && AvailableThemes.TryGetValue(theme, out var themePreview))
+        {
+            PrimaryColor = themePreview.Primary;
+            await PrimaryColorChanged.InvokeAsync(PrimaryColor);
+            
+            SecondaryColor = themePreview.Secondary;
+            await SecondaryColorChanged.InvokeAsync(SecondaryColor);
+            
+            BackgroundColor = themePreview.Background;
+            await BackgroundColorChanged.InvokeAsync(BackgroundColor);
+            
+            SurfaceColor = themePreview.Surface;
+            await SurfaceColorChanged.InvokeAsync(SurfaceColor);
+            
+            TextColor = themePreview.Text;
+            await TextColorChanged.InvokeAsync(TextColor);
+            
+            SecondaryTextColor = themePreview.SecondaryText;
+            await SecondaryTextColorChanged.InvokeAsync(SecondaryTextColor);
+            
+            // Set appropriate status colors for each theme
+            switch (theme)
+            {
+                case "light":
+                    TextColor = "#1F2937";
+                    SecondaryTextColor = "#4B5563";
+                    SuccessColor = "#059669";
+                    ErrorColor = "#dc2626";
+                    WarningColor = "#d97706";
+                    InfoColor = "#2563eb";
+                    break;
+                case "dark":
+                    SuccessColor = "#10b981";
+                    ErrorColor = "#ef4444";
+                    WarningColor = "#f59e0b";
+                    InfoColor = "#3b82f6";
+                    break;
+                case "green":
+                    SuccessColor = "#34d399";
+                    ErrorColor = "#f87171";
+                    WarningColor = "#fbbf24";
+                    InfoColor = "#60a5fa";
+                    break;
+                case "purple":
+                    SuccessColor = "#a78bfa";
+                    ErrorColor = "#f472b6";
+                    WarningColor = "#fbbf24";
+                    InfoColor = "#60a5fa";
+                    break;
+                default: // default theme
+                    SuccessColor = "#10b981";
+                    ErrorColor = "#ef4444";
+                    WarningColor = "#f59e0b";
+                    InfoColor = "#3b82f6";
+                    break;
+            }
+            
+            await TextColorChanged.InvokeAsync(TextColor);
+            await SecondaryTextColorChanged.InvokeAsync(SecondaryTextColor);
+            await SuccessColorChanged.InvokeAsync(SuccessColor);
+            await ErrorColorChanged.InvokeAsync(ErrorColor);
+            await WarningColorChanged.InvokeAsync(WarningColor);
+            await InfoColorChanged.InvokeAsync(InfoColor);
+        }
+        
+        await SaveThemeSettings();
+    }
+
+    private async Task SaveThemeSettings()
+    {
+        await SettingsService.SetSettingAsync("CurrentTheme", CurrentTheme);
+        await SettingsService.SetSettingAsync("PrimaryColor", PrimaryColor);
+        await SettingsService.SetSettingAsync("SecondaryColor", SecondaryColor);
+        await SettingsService.SetSettingAsync("BackgroundColor", BackgroundColor);
+        await SettingsService.SetSettingAsync("SurfaceColor", SurfaceColor);
+        await SettingsService.SetSettingAsync("TextColor", TextColor);
+        await SettingsService.SetSettingAsync("SecondaryTextColor", SecondaryTextColor);
+        await SettingsService.SetSettingAsync("SuccessColor", SuccessColor);
+        await SettingsService.SetSettingAsync("ErrorColor", ErrorColor);
+        await SettingsService.SetSettingAsync("WarningColor", WarningColor);
+        await SettingsService.SetSettingAsync("InfoColor", InfoColor);
+        
+        ThemeService.Update();
+        Snackbar.Add("Theme updated successfully", Severity.Success);
+    }
+
+    private async Task ResetCustomTheme()
+    {
+        PrimaryColor = SettingsService.Defaults.PrimaryColor;
+        await PrimaryColorChanged.InvokeAsync(PrimaryColor);
+        
+        SecondaryColor = SettingsService.Defaults.SecondaryColor;
+        await SecondaryColorChanged.InvokeAsync(SecondaryColor);
+        
+        BackgroundColor = SettingsService.Defaults.BackgroundColor;
+        await BackgroundColorChanged.InvokeAsync(BackgroundColor);
+        
+        SurfaceColor = SettingsService.Defaults.SurfaceColor;
+        await SurfaceColorChanged.InvokeAsync(SurfaceColor);
+        
+        TextColor = SettingsService.Defaults.TextColor;
+        await TextColorChanged.InvokeAsync(TextColor);
+        
+        SecondaryTextColor = SettingsService.Defaults.SecondaryTextColor;
+        await SecondaryTextColorChanged.InvokeAsync(SecondaryTextColor);
+        
+        SuccessColor = SettingsService.Defaults.SuccessColor;
+        await SuccessColorChanged.InvokeAsync(SuccessColor);
+        
+        ErrorColor = SettingsService.Defaults.ErrorColor;
+        await ErrorColorChanged.InvokeAsync(ErrorColor);
+        
+        WarningColor = SettingsService.Defaults.WarningColor;
+        await WarningColorChanged.InvokeAsync(WarningColor);
+        
+        InfoColor = SettingsService.Defaults.InfoColor;
+        await InfoColorChanged.InvokeAsync(InfoColor);
+        
+        await SaveThemeSettings();
+        Snackbar.Add("Theme reset to defaults", Severity.Info);
+    }
+
+    // Helper classes
+    private record ThemePreview(string Name, string Primary, string Secondary, string Background, string Surface, string Text, string SecondaryText);
+} 
