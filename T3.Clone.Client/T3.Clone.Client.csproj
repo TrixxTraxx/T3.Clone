@@ -8,9 +8,9 @@
         <Configurations>Debug;Release;Configuration</Configurations>
         <Platforms>AnyCPU</Platforms>
         
-        <PublishTrimmed>true</PublishTrimmed>
-        <RunAOTCompilation>true</RunAOTCompilation>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
+<!--        <PublishTrimmed>true</PublishTrimmed>-->
+<!--        <RunAOTCompilation>true</RunAOTCompilation>-->
+<!--        <WasmEnableSIMD>false</WasmEnableSIMD>-->
     </PropertyGroup>
 
     <ItemGroup>

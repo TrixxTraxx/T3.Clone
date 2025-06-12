@@ -182,7 +182,7 @@
     private bool showModelModal = false;
 
     private MessageDto message = new MessageDto();
-    private ElementReference textareaRef;
+    public ElementReference textareaRef;
     private int _selectedModelId = 1;
     private bool enableThinking = false;
     
@@ -436,7 +436,6 @@
     {
         if (firstRender)
         {
-            // Initialize auto-resize functionality
             await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", textareaRef);
         }
     }
