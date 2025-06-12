@@ -114,3 +114,9 @@ window.triggerFileInput = function(supportedContentTypes) {
         console.error('Failed to trigger file input:', err);
     }
 }
+
+window.focusElement = function (element) {
+    if (element) {
+        element.focus();
+    }
+};

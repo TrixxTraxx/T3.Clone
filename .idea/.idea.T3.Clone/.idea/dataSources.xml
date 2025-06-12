@@ -57,5 +57,12 @@
       <jdbc-url>jdbc:redis://fkDVcA07RPtPQxgaaGGDmv@localhost:65139</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="cache" uuid="50546286-a414-4df2-b2b9-80e9c103325d">
+      <driver-ref>redis</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>jdbc.RedisDriver</jdbc-driver>
+      <jdbc-url>jdbc:redis://5pp4x0BkCnjVfcHRSeGTVV@localhost:42487</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
