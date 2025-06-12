@@ -85,3 +85,88 @@ html, body {
 .login-button{
     width: 100% !important;
 }
+
+
+
+/* Custom Highlight.js Theme with MudBlazor CSS Variables */
+.hljs {
+    background: var(--mud-palette-background, #ffffff);
+    color: var(--mud-palette-text-primary, #333333);
+}
+
+/* Customize the code block to stand out with a border and padding */
+.hljs {
+    border-radius: 4px;
+    padding: 1em;
+    border: 1px solid var(--mud-palette-divider, #e0e0e0);
+}
+
+/* Syntax element styles */
+.hljs-comment,
+.hljs-quote {
+    color: var(--mud-palette-text-secondary, #6c757d);
+    font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-link {
+    color: var(--mud-palette-primary, #3f51b5);
+    font-weight: bold;
+}
+
+.hljs-function .hljs-title {
+    color: var(--mud-palette-secondary, #f50057);
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-name,
+.hljs-type,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-number,
+.hljs-meta .hljs-number {
+    color: var(--mud-palette-success, #43a047);
+}
+
+.hljs-class .hljs-title {
+    color: var(--mud-palette-warning, #ffb300);
+}
+
+.hljs-attribute {
+    color: var(--mud-palette-info, #2196f3);
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-regexp,
+.hljs-deletion {
+    color: var(--mud-palette-error, #d32f2f);
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+    color: var(--mud-palette-accent, #e040fb);
+}
+
+.hljs-meta {
+    color: var(--mud-palette-text-disabled, #9e9e9e);
+    font-style: italic;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
+}
+
+.markdown-content{
+    margin-left: 8px;
+}
