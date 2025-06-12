@@ -71,7 +71,23 @@
         @if (!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))
         {
             <div class="message-content">
-                <div class="message-text ai-text">@((MarkupString)FormatMessage(Message.Message.ModelResponse))</div>
+                <div class="message-text ai-text">
+                    @foreach (var segment in GetMessageSegments(Message.Message.ModelResponse))
+                    {
+                        if (segment.Type == MessageFormatter.SegmentType.Markdown)
+                        {
+                            <div class="markdown-content">
+                                @((MarkupString)segment.Content)
+                            </div>
+                        }
+                        else if(segment.Type == MessageFormatter.SegmentType.CodeBlock)
+                        {
+                            <pre class="code-block">
+                                <code>@segment.Content</code>
+                            </pre>
+                        }
+                    }
+                </div>
                 <div class="message-actions">
                     <button class="action-button" @onclick="() => CopyToClipboard(Message.Message.ModelResponse)"
                             title="Copy message">
@@ -106,6 +122,8 @@
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
+    
+    private DateTime lastHighlightTime = DateTime.MinValue;
 
     protected override async Task OnInitializedAsync()
     {
@@ -127,6 +145,11 @@
         {
             Console.WriteLine($"Failed to load AI models: {ex.Message}");
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await HighlightDebounced();
     }
 
     private void OnUpdated()
@@ -153,27 +176,11 @@
         return model?.Name ?? "Assistant";
     }
 
-    private string FormatMessage(string message)
+    private List<MessageFormatter.Segment> GetMessageSegments(string message)
     {
-        if (string.IsNullOrWhiteSpace(message)) return string.Empty;
-
-        // Basic markdown-like formatting
-        var formatted = message
-            .Replace("\n", "<br/>")
-            .Replace("**", "<strong>", StringComparison.OrdinalIgnoreCase)
-            .Replace("*", "<em>", StringComparison.OrdinalIgnoreCase);
-
-        // Handle code blocks (basic implementation)
-        if (formatted.Contains("```"))
-        {
-            formatted = System.Text.RegularExpressions.Regex.Replace(
-                formatted,
-                @"```(.*?)```",
-                "<pre class=\"code-block\">$1</pre>",
-                System.Text.RegularExpressions.RegexOptions.Singleline);
-        }
-
-        return formatted;
+        var formatter = new MessageFormatter();
+        var parts = formatter.SplitIntoSegments(message);
+        return parts;
     }
 
     private async Task CopyToClipboard(string text)
@@ -202,6 +209,22 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to stop generation: {ex.Message}");
+        }
+    }
+
+    private async Task HighlightDebounced()
+    {
+        if (Message.Message.ModelResponse.Contains("```"))
+        {
+            if (DateTime.Now - lastHighlightTime < TimeSpan.FromMilliseconds(250)) return;
+
+            lastHighlightTime = DateTime.Now;
+
+            // Ensure the message is fully rendered before highlighting
+            await Task.Delay(50);
+
+            // Use JS interop to highlight the message text
+            await JSRuntime.InvokeVoidAsync("hightlightCodeBlocks", Message.Message.Id);
         }
     }
 

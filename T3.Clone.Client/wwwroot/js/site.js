@@ -120,3 +120,22 @@ window.focusElement = function (element) {
         element.focus();
     }
 };
+
+window.hightlightCodeBlocks = function() {
+    if (typeof hljs !== 'undefined') {
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    } else {
+        console.warn('Highlight.js is not loaded');
+    }
+    
+    if(typeof marked !== 'undefined') {
+        document.querySelectorAll('.markdown-content').forEach((el) => {
+            el.innerHTML = marked.parse(el.innerHTML);
+        });
+    }
+    else {
+        console.warn('Marked.js is not loaded');
+    }
+}

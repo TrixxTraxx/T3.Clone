@@ -57,7 +57,7 @@
       <jdbc-url>jdbc:redis://fkDVcA07RPtPQxgaaGGDmv@localhost:65139</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="t3CloneDb" uuid="4c829f2a-1ccf-4c84-955a-5fbbee91f48b">
+    <data-source source="LOCAL" name="t3CloneDb" uuid="ed8f0803-5d1e-43f7-86d2-16c04cf9c498">
       <driver-ref>sqlserver.jb</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
