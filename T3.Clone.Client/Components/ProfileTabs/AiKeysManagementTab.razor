@@ -1,0 +1,86 @@
+@inject AiKeyService AiKeyService
+
+<MudText Typo="Typo.h6" GutterBottom="true">API Key Management</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+    Configure your AI service API keys to enable chat functionality
+</MudText>
+
+<div class="d-flex flex-column gap-4">
+    @foreach (var provider in AiProviders)
+    {
+        <MudCard>
+            <MudCardContent>
+                <div class="d-flex align-center justify-space-between mb-3">
+                    <div class="d-flex align-center gap-3">
+                        <MudIcon Icon="@provider.Icon" Color="@provider.Color" />
+                        <div>
+                            <MudText Typo="Typo.h6">@provider.Name</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Description</MudText>
+                        </div>
+                    </div>
+                    <MudChip T="string"
+                        Color="@(KeyStates.ContainsKey(provider.Identifier) && KeyStates[provider.Identifier] ? Color.Success : Color.Default)"
+                        Size="Size.Small">
+                        @(KeyStates.ContainsKey(provider.Identifier) && KeyStates[provider.Identifier] ? "Configured" : "Not Set")
+                    </MudChip>
+                </div>
+                
+                <MudTextField 
+                    @bind-Value="@KeyValues[provider.Identifier]"
+                    Label="@($"{provider.Name} API Key")"
+                    InputType="@(ShowApiKeys.ContainsKey(provider.Identifier) && ShowApiKeys[provider.Identifier] ? InputType.Text : InputType.Password)"
+                    Variant="Variant.Outlined"
+                    Placeholder="Enter your API key..."
+                    Adornment="Adornment.End"
+                    AdornmentIcon="@(ShowApiKeys.ContainsKey(provider.Identifier) && ShowApiKeys[provider.Identifier] ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                    OnAdornmentClick="@(() => ToggleApiKeyVisibility(provider.Identifier))"
+                    Class="mb-3" />
+                
+                <MudButton 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    StartIcon="@Icons.Material.Filled.Save"
+                    OnClick="@(() => SaveApiKey(provider.Identifier))"
+                    Disabled="@string.IsNullOrWhiteSpace(KeyValues[provider.Identifier])">
+                    Save Key
+                </MudButton>
+            </MudCardContent>
+        </MudCard>
+    }
+</div>
+
+@code {
+    [Parameter] public List<AiProvider> AiProviders { get; set; } = new();
+    [Parameter] public Dictionary<string, bool> KeyStates { get; set; } = new();
+    [Parameter] public Dictionary<string, string> KeyValues { get; set; } = new();
+    [Parameter] public Dictionary<string, bool> ShowApiKeys { get; set; } = new();
+    [Parameter] public EventCallback<string> OnSaveApiKey { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Initialize dictionaries if they're empty
+        foreach (var provider in AiProviders)
+        {
+            if (!KeyValues.ContainsKey(provider.Identifier))
+                KeyValues[provider.Identifier] = "";
+            if (!ShowApiKeys.ContainsKey(provider.Identifier))
+                ShowApiKeys[provider.Identifier] = false;
+        }
+    }
+
+    private void ToggleApiKeyVisibility(string identifier)
+    {
+        ShowApiKeys[identifier] = !ShowApiKeys.GetValueOrDefault(identifier, false);
+    }
+
+    private async Task SaveApiKey(string identifier)
+    {
+        var key = KeyValues[identifier];
+        if (string.IsNullOrWhiteSpace(key)) return;
+
+        await OnSaveApiKey.InvokeAsync(identifier);
+    }
+
+    // Helper class for AI providers
+    public record AiProvider(string Identifier, string Name, string Description, string Icon, Color Color);
+} 

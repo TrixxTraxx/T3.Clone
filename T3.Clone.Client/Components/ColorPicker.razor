@@ -1,0 +1,73 @@
+@inject IJSRuntime JSRuntime
+
+<div class="color-picker-container">
+    <MudTextField 
+        @bind-Value="@Value" 
+        Label="@Label"
+        Placeholder="@Placeholder"
+        Variant="Variant.Outlined"
+        Adornment="Adornment.Start"
+        AdornmentIcon="@Icon"
+        AdornmentColor="@AdornmentColor"
+        OnBlur="@OnColorChanged"
+        Class="color-input-field" />
+    
+    <div class="color-picker-actions">
+        <div class="color-preview" 
+             style="@($"background-color: {Value}; border: 2px solid var(--mud-palette-lines-default);")"
+             @onclick="OpenColorPicker">
+        </div>
+        
+        <input type="color" 
+               @ref="colorInput"
+               @onchange="OnColorInputChanged"
+               value="@Value"
+               style="opacity: 0; position: absolute; pointer-events: none;" />
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = "#000000";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string Label { get; set; } = "Color";
+    [Parameter] public string Placeholder { get; set; } = "#000000";
+    [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Palette;
+    [Parameter] public Color AdornmentColor { get; set; } = Color.Default;
+    [Parameter] public EventCallback OnColorChanged { get; set; }
+
+    private ElementReference colorInput;
+
+    private async Task OpenColorPicker()
+    {
+        await JSRuntime.InvokeVoidAsync("clickElement", colorInput);
+    }
+
+    private async Task OnColorInputChanged(ChangeEventArgs e)
+    {
+        var newColor = e.Value?.ToString() ?? "#000000";
+        
+        // Ensure the color is in the correct format
+        if (!newColor.StartsWith("#"))
+            newColor = "#" + newColor;
+            
+        Value = newColor;
+        await ValueChanged.InvokeAsync(Value);
+        await OnColorChanged.InvokeAsync();
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Inject JavaScript function if not already present
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                if (!window.clickElement) {
+                    window.clickElement = function(element) {
+                        element.click();
+                    };
+                }
+            ");
+        }
+    }
+} 

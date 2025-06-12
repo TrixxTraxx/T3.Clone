@@ -26,6 +26,7 @@
     border-radius: 12px;
     overflow: hidden;
     border: 2px solid transparent;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .theme-selector:hover {
@@ -63,8 +64,8 @@
 
 .color-input-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 1rem;
 }
 
@@ -121,11 +122,34 @@
     border: 1px solid rgba(156, 163, 175, 0.2);
 }
 
+/* Theme selection container with consistent sizing */
+.theme-selection-container {
+    width: 100%;
+}
+
+/* Theme grid with fixed sizing to prevent layout shifts */
 .theme-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 2rem;
+    /* Reserve space for 6 themes in a row with proper wrapping */
+    min-height: 96px; /* 80px height + 16px gap */
+    justify-content: flex-start;
+}
+
+/* Ensure theme selectors maintain consistent size */
+.theme-grid .theme-selector {
+    width: 120px;
+    height: 80px;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+/* Custom theme section with smooth transitions */
+.custom-theme-section {
+    width: 100%;
+    transition: all 0.3s ease;
 }
 
 /* Custom scrollbar styling */
@@ -162,8 +186,8 @@
 
 @media (max-width: 768px) {
     .theme-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        justify-content: center;
+        min-height: 176px; /* 2 rows: (80px * 2) + (16px gap) */
     }
     
     .color-input-grid {
@@ -172,8 +196,8 @@
     }
     
     .theme-selector {
-        width: 100%;
-        height: 70px;
+        width: 120px;
+        height: 80px;
     }
     
     .profile-section {
@@ -196,7 +220,14 @@
     }
     
     .theme-grid {
-        grid-template-columns: 1fr;
+        justify-content: center;
+        min-height: 336px; /* 4 rows for small screens */
+        gap: 0.75rem;
+    }
+    
+    .theme-selector {
+        width: 110px;
+        height: 75px;
     }
 }
 

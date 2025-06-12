@@ -3,7 +3,7 @@ using T3.Clone.Server.Service;
 
 namespace T3.Clone.Server.Controller;
 
-[Microsoft.AspNetCore.Components.Route("api/[controller]")]
+[Route("api/[controller]")]
 public class AiKeyController(
     AiKeyService service
 ) : ControllerBase

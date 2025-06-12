@@ -1,0 +1,78 @@
+@using T3.Clone.Dtos.User
+@inject NavigationManager Navigation
+@inject AppsettingsService AppsettingsService
+
+<MudText Typo="Typo.h6" GutterBottom="true">Account Management</MudText>
+
+@if (User != null)
+{
+    <MudCard Class="mb-4">
+        <MudCardContent>
+            <div class="d-flex align-center gap-4 mb-4">
+                @if (!string.IsNullOrEmpty(User.ProfilePictureUrl))
+                {
+                    <MudAvatar Size="Size.Large" Color="Color.Primary">
+                        <MudImage Src="@GetProfilePictureUrl(User)" />
+                    </MudAvatar>
+                }
+                else
+                {
+                    <MudAvatar Size="Size.Large" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" />
+                    </MudAvatar>
+                }
+                <div>
+                    <MudText Typo="Typo.h6">@User.DisplayName</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@User.Email</MudText>
+                </div>
+            </div>
+        </MudCardContent>
+    </MudCard>
+}
+
+<div class="d-flex flex-column gap-3">
+    <MudButton 
+        Variant="Variant.Filled" 
+        Color="Color.Primary" 
+        StartIcon="@Icons.Material.Filled.ManageAccounts"
+        OnClick="RedirectToManageProfile"
+        Size="Size.Large"
+        FullWidth="true">
+        Manage Profile
+    </MudButton>
+    
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-center">
+        Update your password, email, and other account settings
+    </MudText>
+    
+    <MudDivider Class="my-3" />
+    
+    <MudButton 
+        Variant="Variant.Filled" 
+        Color="Color.Error" 
+        StartIcon="@Icons.Material.Filled.Logout"
+        OnClick="BeginLogOut"
+        Size="Size.Large"
+        FullWidth="true">
+        Logout
+    </MudButton>
+</div>
+
+@code {
+    [Parameter] public UserDto? User { get; set; }
+
+    private void RedirectToManageProfile()
+    {
+        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Manage", true);
+    }
+
+    private void BeginLogOut()
+    {
+        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/LogoutRemote", true);
+    }
+
+    private string? GetProfilePictureUrl(UserDto user)
+    {
+        return $"{AppsettingsService.ServerUrl}/api/Authentication/profilePicture";
+    }
+} 
