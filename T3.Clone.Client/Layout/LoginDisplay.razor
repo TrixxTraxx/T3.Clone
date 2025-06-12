@@ -31,16 +31,27 @@ else
             @User.DisplayName
         </MudText>
 
+        <div class="d-flex flex-column gap-2">
+            <MudButton
+                StartIcon="@Icons.Material.Filled.Person"
+                Variant="Variant.Filled"
+                Color="Color.Primary"
+                Size="Size.Medium"
+                OnClick="GoToProfile"
+                Class="login-button">
+                Profile
+            </MudButton>
 
-        <MudButton
-            StartIcon="@Icons.Material.Filled.SwitchAccount"
-            Variant="Variant.Filled"
-            Color="Color.Primary"
-            Size="Size.Medium"
-            OnClick="Login"
-            Class="login-button">
-            Switch Account
-        </MudButton>
+            <MudButton
+                StartIcon="@Icons.Material.Filled.SwitchAccount"
+                Variant="Variant.Outlined"
+                Color="Color.Primary"
+                Size="Size.Medium"
+                OnClick="Login"
+                Class="login-button">
+                Switch Account
+            </MudButton>
+        </div>
     </div>
 }
 
@@ -56,6 +67,11 @@ else
     public void Login()
     {
         Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Login", true);
+    }
+
+    public void GoToProfile()
+    {
+        Navigation.NavigateTo("/profile");
     }
 
     public void BeginLogOut()

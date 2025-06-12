@@ -23,6 +23,7 @@ builder.Services.AddScoped<ThreadSyncService>();
 builder.Services.AddScoped<MessageSyncService>();
 builder.Services.AddScoped<AiModelService>();
 builder.Services.AddScoped<AttachmentService>();
+builder.Services.AddScoped<AiKeyService>();
 builder.Services.AddTransient<GenerationService>();
 
 // Add GenerationService factory for MessageSyncService
