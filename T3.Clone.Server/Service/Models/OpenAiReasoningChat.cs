@@ -16,120 +16,168 @@ public class OpenAiReasoningChat(
         public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config,
         Action<string> tokenCallback, Action<string> thinkingTokenCallback, Action<string> errorCallback)
     {
-        if (false)//(entity.ReasoningEffort == ReasoningEffortLevel.None)
+        try
         {
-            return await new OpenAiChat(dbContext, attachmentService)
-                .GenerateResponse(entity, messagesChain, config, tokenCallback, thinkingTokenCallback, errorCallback);
-        }
-        var keyOverride = dbContext.AiModelKeys
-            .Where(x => x.UserId == entity.Thread.UserId)
-            .ToList();
-        var apiKey = config.ApiKey;
-        if (keyOverride.Count > 0)
-        {
-            foreach (var key in keyOverride)
+            if (false) //(entity.ReasoningEffort == ReasoningEffortLevel.None)
             {
-                apiKey = apiKey.Replace("{" + key.Identifier + "}", key.ApiKey);   
+                return await new OpenAiChat(dbContext, attachmentService)
+                    .GenerateResponse(entity, messagesChain, config, tokenCallback, thinkingTokenCallback,
+                        errorCallback);
             }
-        }
 
-        OpenAIResponseClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey), new OpenAIClientOptions()
-        {
-            Endpoint = new Uri(config.ApiUrl)
-        });
-
-        //create the chat messages
-        List<ResponseItem> messages = new();
-        if (!string.IsNullOrEmpty(config.SystemPrompt))
-        {
-            messages.Add(ResponseItem.CreateSystemMessageItem(config.SystemPrompt));
-        }
-
-        //Reverse the messages chain to maintain the order of conversation
-        messagesChain.Reverse();
-        foreach (var message in messagesChain)
-        {
-            var userContentParts = new ResponseContentPart[]
+            var keyOverride = dbContext.AiModelKeys
+                .Where(x => x.UserId == entity.Thread.UserId)
+                .ToList();
+            var apiKey = config.ApiKey;
+            if (keyOverride.Count > 0)
             {
-                ResponseContentPart.CreateInputTextPart(message.Text)
-            };
-            foreach (var attachment in message.Attachments ?? new())
-            {
-                var content = attachmentService.GetAttachmentContent(attachment.Id, true);
-                if (content.data != null && content.data.Length > 0)
+                foreach (var key in keyOverride)
                 {
-                    userContentParts = userContentParts.Append(ResponseContentPart.CreateInputImagePart(
-                        BinaryData.FromBytes(content.data),
-                        content.contentType
-                    )).ToArray();
+                    apiKey = apiKey.Replace("{" + key.Identifier + "}", key.ApiKey);
                 }
             }
 
-            messages.Add(ResponseItem.CreateUserMessageItem(userContentParts));
-
-            if (!string.IsNullOrEmpty(message.ModelResponse) && message.Complete)
-            {
-                if (!string.IsNullOrEmpty(message.ThinkingResponse))
+            OpenAIResponseClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey),
+                new OpenAIClientOptions()
                 {
-                    // Add thinking response if available
-                    messages.Add(ResponseItem.CreateReasoningItem(new []{message.ThinkingResponse}));
-                } 
-                messages.Add(ResponseItem.CreateAssistantMessageItem(message.Text));
-            }
-        }
-        
-        //generate streaming response
-        var response = client.CreateResponseStreamingAsync(messages, new ResponseCreationOptions()
-        {
-            //TODO: set other options like temperature, max tokens, etc.
-            ReasoningOptions = new ResponseReasoningOptions()
+                    Endpoint = new Uri(config.ApiUrl)
+                });
+
+            //create the chat messages
+            List<ResponseItem> messages = new();
+            if (!string.IsNullOrEmpty(config.SystemPrompt))
             {
-                ReasoningEffortLevel = entity.ReasoningEffort switch{
-                    ReasoningEffortLevel.Low => ResponseReasoningEffortLevel.Low,
-                    ReasoningEffortLevel.Medium => ResponseReasoningEffortLevel.Medium,
-                    ReasoningEffortLevel.High => ResponseReasoningEffortLevel.High,
-                    _ => ResponseReasoningEffortLevel.Low
+                messages.Add(ResponseItem.CreateSystemMessageItem(config.SystemPrompt));
+            }
+
+            //Reverse the messages chain to maintain the order of conversation
+            messagesChain.Reverse();
+            foreach (var message in messagesChain)
+            {
+                var userContentParts = new ResponseContentPart[]
+                {
+                    ResponseContentPart.CreateInputTextPart(message.Text)
+                };
+                foreach (var attachment in message.Attachments ?? new())
+                {
+                    var content = attachmentService.GetAttachmentContent(attachment.Id, true);
+                    if (content.data != null && content.data.Length > 0)
+                    {
+                        userContentParts = userContentParts.Append(ResponseContentPart.CreateInputImagePart(
+                            BinaryData.FromBytes(content.data),
+                            content.contentType
+                        )).ToArray();
+                    }
+                }
+
+                messages.Add(ResponseItem.CreateUserMessageItem(userContentParts));
+
+                if (!string.IsNullOrEmpty(message.ModelResponse) && message.Complete)
+                {
+                    if (!string.IsNullOrEmpty(message.ThinkingResponse))
+                    {
+                        // Add thinking response if available
+                        messages.Add(ResponseItem.CreateReasoningItem(new[] { message.ThinkingResponse }));
+                    }
+
+                    messages.Add(ResponseItem.CreateAssistantMessageItem(message.Text));
                 }
             }
-        }, CancellationToken.None);
-        
-        Console.WriteLine($"[Reasoning] Starting Reasoning Chat!");
 
-        //process the response
-        await foreach (var update in response)
-        {
-            Console.WriteLine($"[Reasoning] Update: {update.GetType().Name}");
-            /*if (update is StreamingResponseUpdate itemUpdate
-                && itemUpdate.Item is ReasoningResponseItem reasoningItem)
+            //generate streaming response
+            var response = client.CreateResponseStreamingAsync(messages, new ResponseCreationOptions()
             {
-                Console.WriteLine($"[Reasoning] ({reasoningItem.Status})");
-            }*/
-            if (update is StreamingResponseOutputTextDeltaUpdate deltaUpdate)
-            {
-                try
+                //TODO: set other options like temperature, max tokens, etc.
+                ReasoningOptions = new ResponseReasoningOptions()
                 {
-                    entity.ModelResponse += deltaUpdate.Delta;
-                    tokenCallback?.Invoke(deltaUpdate.Delta);
+                    ReasoningEffortLevel = entity.ReasoningEffort switch
+                    {
+                        ReasoningEffortLevel.Low => ResponseReasoningEffortLevel.Low,
+                        ReasoningEffortLevel.Medium => ResponseReasoningEffortLevel.Medium,
+                        ReasoningEffortLevel.High => ResponseReasoningEffortLevel.High,
+                        _ => ResponseReasoningEffortLevel.High
+                    }
                 }
-                catch (Exception ex)
+            });
+
+            Console.WriteLine($"[Reasoning] Starting Reasoning Chat!");
+
+            //process the response
+            await foreach (var update in response)
+            {
+                Console.WriteLine($"[Reasoning] Update: {update?.GetType().Name}");
+                /*if (update is StreamingResponseUpdate itemUpdate
+                    && itemUpdate.Item is ReasoningResponseItem reasoningItem)
+                {
+                    Console.WriteLine($"[Reasoning] ({reasoningItem.Status})");
+                }*/
+                if(update is StreamingResponseOutputItemAddedUpdate itemAddedUpdate)
                 {
                     try
                     {
-                        //handle error in token callback
-                        errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                        if(itemAddedUpdate.Item is ReasoningResponseItem reasoningItem)
+                        {
+                            Console.WriteLine($"[Reasoning] ({reasoningItem.SummaryTextParts})");
+                            foreach (var textPart in reasoningItem.SummaryTextParts)
+                            {
+                                entity.ThinkingResponse += textPart;
+                                tokenCallback?.Invoke(textPart);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[Reasoning] Unknown item type: {itemAddedUpdate.Item.GetType().Name}");
+                        }
                     }
-                    catch (Exception innerEx)
+                    catch (Exception ex)
                     {
-                        //log the error if the error callback fails
-                        Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                        try
+                        {
+                            //handle error in token callback
+                            errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                            Console.WriteLine($"Error in token callback: {ex.Message}");
+                        }
+                        catch (Exception innerEx)
+                        {
+                            //log the error if the error callback fails
+                            Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                        }
+                    }
+                }
+                if (update is StreamingResponseOutputTextDeltaUpdate deltaUpdate)
+                {
+                    try
+                    {
+                        entity.ModelResponse += deltaUpdate.Delta;
+                        tokenCallback?.Invoke(deltaUpdate.Delta);
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            //handle error in token callback
+                            errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                        }
+                        catch (Exception innerEx)
+                        {
+                            //log the error if the error callback fails
+                            Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                        }
                     }
                 }
             }
-        }
 
-        //finalize the response
-        return new ChatModelResponse()
+            //finalize the response
+            return new ChatModelResponse()
+            {
+            };
+        }
+        catch (Exception ex)
         {
-        };
+            //handle error
+            Console.WriteLine($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
+            errorCallback?.Invoke($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
+            return null;
+        }
     }
 }
