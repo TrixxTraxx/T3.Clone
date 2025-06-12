@@ -130,12 +130,15 @@ window.hightlightCodeBlocks = function() {
         console.warn('Highlight.js is not loaded');
     }
     
-    if(typeof marked !== 'undefined') {
+    if(typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
         document.querySelectorAll('.markdown-content').forEach((el) => {
-            el.innerHTML = marked.parse(el.innerHTML);
+            el.innerHTML =
+                DOMPurify.sanitize(
+                    marked.parse(el.innerHTML)
+                );
         });
     }
     else {
-        console.warn('Marked.js is not loaded');
+        console.warn('Marked.js or DOMPurify is not loaded');
     }
 }
