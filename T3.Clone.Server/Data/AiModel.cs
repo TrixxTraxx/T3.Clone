@@ -5,17 +5,17 @@ public class AiModel
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
 
 
     public bool IsDefault { get; set; } = false;
 
     public bool HasImageSupport { get; set; } = false;
     public string SupportedContentTypes { get; set; } = string.Empty;
-    
+
     public bool HasImageGenerationSupport { get; set; } = false;
-    
+
     public bool HasThinkingSupport { get; set; } = false;
-    
 
     public string SystemPrompt { get; set; } = string.Empty;
     public string ModelId { get; set; } = string.Empty;
