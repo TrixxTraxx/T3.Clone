@@ -17,6 +17,11 @@ public class SettingsService
         public const string SurfaceColor = "#111936"; // Surface color (slightly lighter than background)
         public const string TextColor = "#FFFFFF"; // Default white text
         public const string SecondaryTextColor = "#B0B0B0"; // Light gray text
+        public const string SecondaryColor = "#7c3aed"; // Secondary/accent color
+        public const string ErrorColor = "#ef4444"; // Error color
+        public const string WarningColor = "#f59e0b"; // Warning color
+        public const string InfoColor = "#3b82f6"; // Info color
+        public const string SuccessColor = "#10b981"; // Success color
     }
 
     public SettingsService(ILocalStorageService localStorage)

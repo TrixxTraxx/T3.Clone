@@ -50,7 +50,8 @@ public class Seeder
             UserName = _seeds.AdminUsername,
             Email = _seeds.AdminEmail,
             EmailConfirmed = true,
-            ProfilePictureUrl = ""
+            ProfilePictureUrl = "",
+            DisplayName = "Admin",
         };
         var user = _userManager.FindByNameAsync(adminUser.UserName).Result;
         if (user == null)

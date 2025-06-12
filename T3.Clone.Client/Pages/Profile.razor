@@ -1,0 +1,535 @@
+@page "/profile"
+@using T3.Clone.Dtos.User
+@inject NavigationManager Navigation
+@inject AppsettingsService AppsettingsService
+@inject SettingsService SettingsService
+@inject ThemeService ThemeService
+@inject AiKeyService AiKeyService
+@inject ISnackbar Snackbar
+
+<PageTitle>Profile - LLM Lab</PageTitle>
+
+<div class="profile-page">
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="py-8 profile-container">
+        <MudPaper Class="pa-6" Elevation="2">
+            <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-6">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3" />
+                Profile Settings
+            </MudText>
+
+            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4 scrollable-panel">
+                <!-- Profile Management Tab -->
+                <MudTabPanel Text="Profile" Icon="@Icons.Material.Filled.Person">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Account Management</MudText>
+                    
+                    @if (User != null)
+                    {
+                        <MudCard Class="mb-4">
+                            <MudCardContent>
+                                <div class="d-flex align-center gap-4 mb-4">
+                                    @if (!string.IsNullOrEmpty(User.ProfilePictureUrl))
+                                    {
+                                        <MudAvatar Size="Size.Large" Color="Color.Primary">
+                                            <MudImage Src="@GetProfilePictureUrl(User)" />
+                                        </MudAvatar>
+                                    }
+                                    else
+                                    {
+                                        <MudAvatar Size="Size.Large" Color="Color.Primary">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                        </MudAvatar>
+                                    }
+                                    <div>
+                                        <MudText Typo="Typo.h6">@User.DisplayName</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@User.Email</MudText>
+                                    </div>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+
+                    <div class="d-flex flex-column gap-3">
+                        <MudButton 
+                            Variant="Variant.Filled" 
+                            Color="Color.Primary" 
+                            StartIcon="@Icons.Material.Filled.ManageAccounts"
+                            OnClick="RedirectToManageProfile"
+                            Size="Size.Large"
+                            FullWidth="true">
+                            Manage Profile
+                        </MudButton>
+                        
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-center">
+                            Update your password, email, and other account settings
+                        </MudText>
+                        
+                        <MudDivider Class="my-3" />
+                        
+                        <MudButton 
+                            Variant="Variant.Filled" 
+                            Color="Color.Error" 
+                            StartIcon="@Icons.Material.Filled.Logout"
+                            OnClick="BeginLogOut"
+                            Size="Size.Large"
+                            FullWidth="true">
+                            Logout
+                        </MudButton>
+                    </div>
+                </MudTabPanel>
+
+                <!-- AI Keys Tab -->
+                <MudTabPanel Text="AI Keys" Icon="@Icons.Material.Filled.Key">
+                    <MudText Typo="Typo.h6" GutterBottom="true">API Key Management</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                        Configure your AI service API keys to enable chat functionality
+                    </MudText>
+
+                    <div class="d-flex flex-column gap-4">
+                        @foreach (var provider in aiProviders)
+                        {
+                            <MudCard>
+                                <MudCardContent>
+                                    <div class="d-flex align-center justify-space-between mb-3">
+                                        <div class="d-flex align-center gap-3">
+                                            <MudIcon Icon="@provider.Icon" Color="@provider.Color" />
+                                            <div>
+                                                <MudText Typo="Typo.h6">@provider.Name</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Description</MudText>
+                                            </div>
+                                        </div>
+                                        <MudChip T="string"
+                                            Color="@(aiKeyStates.ContainsKey(provider.Identifier) && aiKeyStates[provider.Identifier] ? Color.Success : Color.Default)"
+                                            Size="Size.Small">
+                                            @(aiKeyStates.ContainsKey(provider.Identifier) && aiKeyStates[provider.Identifier] ? "Configured" : "Not Set")
+                                        </MudChip>
+                                    </div>
+                                    
+                                    <MudTextField 
+                                        @bind-Value="@aiKeyValues[provider.Identifier]"
+                                        Label="@($"{provider.Name} API Key")"
+                                        InputType="@(showApiKeys.ContainsKey(provider.Identifier) && showApiKeys[provider.Identifier] ? InputType.Text : InputType.Password)"
+                                        Variant="Variant.Outlined"
+                                        Placeholder="Enter your API key..."
+                                        Adornment="Adornment.End"
+                                        AdornmentIcon="@(showApiKeys.ContainsKey(provider.Identifier) && showApiKeys[provider.Identifier] ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                        OnAdornmentClick="@(() => ToggleApiKeyVisibility(provider.Identifier))"
+                                        Class="mb-3" />
+                                    
+                                    <MudButton 
+                                        Variant="Variant.Filled" 
+                                        Color="Color.Primary" 
+                                        StartIcon="@Icons.Material.Filled.Save"
+                                        OnClick="@(() => SaveApiKey(provider.Identifier))"
+                                        Disabled="@string.IsNullOrWhiteSpace(aiKeyValues[provider.Identifier])">
+                                        Save Key
+                                    </MudButton>
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                    </div>
+                </MudTabPanel>
+
+                <!-- Theme Tab -->
+                <MudTabPanel Text="Theme" Icon="@Icons.Material.Filled.Palette">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Theme Settings</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                        Customize the appearance of your LLM Lab interface
+                    </MudText>
+
+                    <div class="d-flex flex-wrap gap-4 mb-6">
+                        @foreach (var theme in availableThemes)
+                        {
+                            <MudPaper 
+                                @onclick="@(() => SelectTheme(theme.Key))" 
+                                Elevation="@(CurrentTheme == theme.Key ? 8 : 2)" 
+                                Class="@($"theme-selector {(CurrentTheme == theme.Key ? "selected" : "")}")"
+                                Style="@($"background: {theme.Value.Background}; border: 2px solid {(CurrentTheme == theme.Key ? theme.Value.Primary : "transparent")}; cursor: pointer; width: 120px; height: 80px; position: relative; border-radius: 12px;")">
+                                
+                                <div style="position: absolute; top: 8px; right: 8px;">
+                                    @if (CurrentTheme == theme.Key)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Surface" Size="Size.Small" />
+                                    }
+                                </div>
+                                
+                                <div style="position: absolute; bottom: 8px; left: 8px; right: 8px;">
+                                    <MudText Typo="Typo.caption" Style="@($"color: {theme.Value.Text}; font-weight: 500;")">
+                                        @theme.Value.Name
+                                    </MudText>
+                                </div>
+                                
+                                <!-- Theme preview elements -->
+                                <div style="@($"position: absolute; top: 8px; left: 8px; width: 24px; height: 16px; background: {theme.Value.Primary}; border-radius: 4px;")"></div>
+                                <div style="@($"position: absolute; top: 28px; left: 8px; width: 32px; height: 8px; background: {theme.Value.Surface}; border-radius: 2px;")"></div>
+                                <div style="@($"position: absolute; top: 40px; left: 8px; width: 40px; height: 6px; background: {theme.Value.Secondary}; border-radius: 2px;")"></div>
+                            </MudPaper>
+                        }
+                    </div>
+
+                    @if (CurrentTheme == "custom")
+                    {
+                        <MudDivider Class="mb-4" />
+                        <MudText Typo="Typo.h6" Class="mb-3">Custom Colors</MudText>
+                        
+                        <div class="d-flex flex-column gap-4">
+                            <!-- Primary Colors -->
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Palette" Class="mr-2" />
+                                Primary Colors
+                            </MudText>
+                            
+                            <div class="color-input-grid">
+                                <MudTextField 
+                                    @bind-Value="_primaryColor" 
+                                    Label="Primary Color"
+                                    Placeholder="#6366f1"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Circle"
+                                    AdornmentColor="Color.Primary"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                                
+                                <MudTextField 
+                                    @bind-Value="_secondaryColor" 
+                                    Label="Secondary Color"
+                                    Placeholder="#7c3aed"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Circle"
+                                    AdornmentColor="Color.Secondary"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                            </div>
+                            
+                            <!-- Background Colors -->
+                            <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">
+                                <MudIcon Icon="@Icons.Material.Filled.Layers" Class="mr-2" />
+                                Background Colors
+                            </MudText>
+                            
+                            <div class="color-input-grid">
+                                <MudTextField 
+                                    @bind-Value="_backgroundColor" 
+                                    Label="Background Color"
+                                    Placeholder="#070d22"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Rectangle"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                                
+                                <MudTextField 
+                                    @bind-Value="_surfaceColor" 
+                                    Label="Surface Color"
+                                    Placeholder="#111936"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.CropSquare"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                            </div>
+                            
+                            <!-- Text Colors -->
+                            <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">
+                                <MudIcon Icon="@Icons.Material.Filled.TextFields" Class="mr-2" />
+                                Text Colors
+                            </MudText>
+                            
+                            <div class="color-input-grid">
+                                <MudTextField 
+                                    @bind-Value="_textColor" 
+                                    Label="Primary Text Color"
+                                    Placeholder="#FFFFFF"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Title"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                                
+                                <MudTextField 
+                                    @bind-Value="_secondaryTextColor" 
+                                    Label="Secondary Text Color"
+                                    Placeholder="#B0B0B0"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.TextFormat"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                            </div>
+                            
+                            <!-- Status Colors -->
+                            <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">
+                                <MudIcon Icon="@Icons.Material.Filled.Circle" Class="mr-2" />
+                                Status Colors
+                            </MudText>
+                            
+                            <div class="color-input-grid">
+                                <MudTextField 
+                                    @bind-Value="_successColor" 
+                                    Label="Success Color"
+                                    Placeholder="#10b981"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.CheckCircle"
+                                    AdornmentColor="Color.Success"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                                
+                                <MudTextField 
+                                    @bind-Value="_errorColor" 
+                                    Label="Error Color"
+                                    Placeholder="#ef4444"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Error"
+                                    AdornmentColor="Color.Error"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                                
+                                <MudTextField 
+                                    @bind-Value="_warningColor" 
+                                    Label="Warning Color"
+                                    Placeholder="#f59e0b"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Warning"
+                                    AdornmentColor="Color.Warning"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                                
+                                <MudTextField 
+                                    @bind-Value="_infoColor" 
+                                    Label="Info Color"
+                                    Placeholder="#3b82f6"
+                                    Variant="Variant.Outlined"
+                                    Adornment="Adornment.Start"
+                                    AdornmentIcon="@Icons.Material.Filled.Info"
+                                    AdornmentColor="Color.Info"
+                                    OnBlur="@(async () => await SaveThemeSettings())" />
+                            </div>
+                            
+                            <MudDivider Class="my-4" />
+                            
+                            <div class="d-flex gap-3">
+                                <MudButton 
+                                    Variant="Variant.Filled" 
+                                    Color="Color.Primary" 
+                                    StartIcon="@Icons.Material.Filled.Save"
+                                    OnClick="SaveThemeSettings"
+                                    Class="flex-grow-1">
+                                    Save Custom Theme
+                                </MudButton>
+                                
+                                <MudButton 
+                                    Variant="Variant.Outlined" 
+                                    Color="Color.Secondary" 
+                                    StartIcon="@Icons.Material.Filled.Refresh"
+                                    OnClick="ResetCustomTheme">
+                                    Reset to Default
+                                </MudButton>
+                            </div>
+                        </div>
+                    }
+                </MudTabPanel>
+            </MudTabs>
+        </MudPaper>
+    </MudContainer>
+</div>
+
+@code {
+    [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
+
+    // AI Key Management
+    private readonly Dictionary<string, bool> aiKeyStates = new();
+    private readonly Dictionary<string, string> aiKeyValues = new();
+    private readonly Dictionary<string, bool> showApiKeys = new();
+    
+    private readonly List<AiProvider> aiProviders = new()
+    {
+        new("openrouter", "OpenRouter", "Access multiple AI models through OpenRouter", Icons.Material.Filled.Router, Color.Primary),
+        new("openai", "OpenAI", "GPT models from OpenAI", Icons.Material.Filled.Psychology, Color.Info),
+        new("anthropic", "Anthropic", "Claude models from Anthropic", Icons.Material.Filled.AutoAwesome, Color.Warning),
+        new("google", "Google", "Gemini models from Google", Icons.Material.Filled.Stars, Color.Error)
+    };
+
+    // Theme Management
+    private string CurrentTheme { get; set; } = "default";
+    private string _primaryColor = "#6366f1";
+    private string _secondaryColor = "#7c3aed";
+    private string _backgroundColor = "#070d22";
+    private string _surfaceColor = "#111936";
+    private string _textColor = "#FFFFFF";
+    private string _secondaryTextColor = "#B0B0B0";
+    private string _successColor = "#10b981";
+    private string _errorColor = "#ef4444";
+    private string _warningColor = "#f59e0b";
+    private string _infoColor = "#3b82f6";
+
+    private readonly Dictionary<string, ThemePreview> availableThemes = new()
+    {
+        {
+            "default", 
+            new("Default", "#6366f1", "#070d22", "#111936", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "dark", 
+            new("Dark", "#ef4444", "#000000", "#121212", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "light", 
+            new("Light", "#3b82f6", "#f3f4f6", "#ffffff", "#1F2937", "#4B5563")
+        },
+        {
+            "green", 
+            new("Green", "#10b981", "#0f1720", "#162231", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "purple", 
+            new("Purple", "#8b5cf6", "#0f0a1a", "#1a1625", "#FFFFFF", "#B0B0B0")
+        },
+        {
+            "custom", 
+            new("Custom", "#9333ea", "#1a1a1a", "#2a2a2a", "#FFFFFF", "#B0B0B0")
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAiKeyStates();
+        await LoadThemeSettings();
+        
+        // Initialize AI key values and visibility states
+        foreach (var provider in aiProviders)
+        {
+            if (!aiKeyValues.ContainsKey(provider.Identifier))
+                aiKeyValues[provider.Identifier] = "";
+            if (!showApiKeys.ContainsKey(provider.Identifier))
+                showApiKeys[provider.Identifier] = false;
+        }
+    }
+
+    private async Task LoadAiKeyStates()
+    {
+        try
+        {
+            var keys = await AiKeyService.GetKeysAsync();
+            foreach (var provider in aiProviders)
+            {
+                aiKeyStates[provider.Identifier] = keys.Any(k => k.Contains(provider.Identifier));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading AI key states: {ex.Message}");
+        }
+    }
+
+    private async Task LoadThemeSettings()
+    {
+        CurrentTheme = await SettingsService.GetSettingAsync("CurrentTheme", "default");
+        _primaryColor = await SettingsService.GetSettingAsync("PrimaryColor", SettingsService.Defaults.PrimaryColor);
+        _secondaryColor = await SettingsService.GetSettingAsync("SecondaryColor", SettingsService.Defaults.SecondaryColor);
+        _backgroundColor = await SettingsService.GetSettingAsync("BackgroundColor", SettingsService.Defaults.BackgroundColor);
+        _surfaceColor = await SettingsService.GetSettingAsync("SurfaceColor", SettingsService.Defaults.SurfaceColor);
+        _textColor = await SettingsService.GetSettingAsync("TextColor", SettingsService.Defaults.TextColor);
+        _secondaryTextColor = await SettingsService.GetSettingAsync("SecondaryTextColor", SettingsService.Defaults.SecondaryTextColor);
+        _successColor = await SettingsService.GetSettingAsync("SuccessColor", SettingsService.Defaults.SuccessColor);
+        _errorColor = await SettingsService.GetSettingAsync("ErrorColor", SettingsService.Defaults.ErrorColor);
+        _warningColor = await SettingsService.GetSettingAsync("WarningColor", SettingsService.Defaults.WarningColor);
+        _infoColor = await SettingsService.GetSettingAsync("InfoColor", SettingsService.Defaults.InfoColor);
+    }
+
+    private void ToggleApiKeyVisibility(string identifier)
+    {
+        showApiKeys[identifier] = !showApiKeys.GetValueOrDefault(identifier, false);
+    }
+
+    private async Task SaveApiKey(string identifier)
+    {
+        var key = aiKeyValues[identifier];
+        if (string.IsNullOrWhiteSpace(key)) return;
+
+        var success = await AiKeyService.AddKeyAsync(identifier, key);
+        if (success)
+        {
+            aiKeyStates[identifier] = true;
+            aiKeyValues[identifier] = ""; // Clear the input after saving
+            StateHasChanged();
+        }
+    }
+
+    private async Task SelectTheme(string theme)
+    {
+        CurrentTheme = theme;
+        
+        if (availableThemes.TryGetValue(theme, out var themePreview))
+        {
+            _primaryColor = themePreview.Primary;
+            _backgroundColor = themePreview.Background;
+            _surfaceColor = themePreview.Surface;
+            _textColor = themePreview.Text;
+            _secondaryTextColor = themePreview.Secondary;
+            
+            // Set appropriate default colors for the theme
+            switch (theme)
+            {
+                case "light":
+                    _textColor = "#1F2937";
+                    _secondaryTextColor = "#4B5563";
+                    break;
+                default:
+                    _textColor = "#FFFFFF";
+                    _secondaryTextColor = "#B0B0B0";
+                    break;
+            }
+        }
+        
+        await SaveThemeSettings();
+    }
+
+    private async Task SaveThemeSettings()
+    {
+        await SettingsService.SetSettingAsync("CurrentTheme", CurrentTheme);
+        await SettingsService.SetSettingAsync("PrimaryColor", _primaryColor);
+        await SettingsService.SetSettingAsync("SecondaryColor", _secondaryColor);
+        await SettingsService.SetSettingAsync("BackgroundColor", _backgroundColor);
+        await SettingsService.SetSettingAsync("SurfaceColor", _surfaceColor);
+        await SettingsService.SetSettingAsync("TextColor", _textColor);
+        await SettingsService.SetSettingAsync("SecondaryTextColor", _secondaryTextColor);
+        await SettingsService.SetSettingAsync("SuccessColor", _successColor);
+        await SettingsService.SetSettingAsync("ErrorColor", _errorColor);
+        await SettingsService.SetSettingAsync("WarningColor", _warningColor);
+        await SettingsService.SetSettingAsync("InfoColor", _infoColor);
+        
+        ThemeService.Update();
+        Snackbar.Add("Theme updated successfully", Severity.Success);
+    }
+
+    private async Task ResetCustomTheme()
+    {
+        _primaryColor = SettingsService.Defaults.PrimaryColor;
+        _secondaryColor = SettingsService.Defaults.SecondaryColor;
+        _backgroundColor = SettingsService.Defaults.BackgroundColor;
+        _surfaceColor = SettingsService.Defaults.SurfaceColor;
+        _textColor = SettingsService.Defaults.TextColor;
+        _secondaryTextColor = SettingsService.Defaults.SecondaryTextColor;
+        _successColor = SettingsService.Defaults.SuccessColor;
+        _errorColor = SettingsService.Defaults.ErrorColor;
+        _warningColor = SettingsService.Defaults.WarningColor;
+        _infoColor = SettingsService.Defaults.InfoColor;
+        
+        await SaveThemeSettings();
+        Snackbar.Add("Theme reset to defaults", Severity.Info);
+    }
+
+    private void RedirectToManageProfile()
+    {
+        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Manage", true);
+    }
+
+    private void BeginLogOut()
+    {
+        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Logout", true);
+    }
+
+    private string? GetProfilePictureUrl(UserDto user)
+    {
+        return $"{AppsettingsService.ServerUrl}/api/Authentication/profilePicture";
+    }
+
+    // Helper classes
+    private record AiProvider(string Identifier, string Name, string Description, string Icon, Color Color);
+    private record ThemePreview(string Name, string Primary, string Background, string Surface, string Text, string Secondary);
+} 
