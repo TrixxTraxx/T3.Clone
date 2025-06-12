@@ -33,7 +33,7 @@ public class GenerateThreadTitleJob(
         var config = message.Model;
         config.SystemPrompt = "Generate a short and Concise title for this Thread that is at most 30 characters long!";
         
-        var model = chatModelProvider.GetChatModel(message.Model);
+        var model = chatModelProvider.GetThreadGenerationModel();
         var result = await model.GenerateResponse(
             message,
             new List<Message>(){message},
