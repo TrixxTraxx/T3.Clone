@@ -1,23 +1,21 @@
 ﻿@using T3.Clone.Server.Components.Layout
 @inherits LayoutComponentBase
-@layout MainLayout
+@layout AuthLayout
 
-<div class="manage-container">
-    <div class="manage-card">
-        <div class="manage-header">
-            <div class="manage-brand">
-                <div class="manage-brand-title">Account Settings</div>
-                <div class="manage-brand-subtitle">Manage your account preferences</div>
-            </div>
+<div class="manage-card">
+    <div class="manage-header">
+        <div class="manage-brand">
+            <div class="manage-brand-title">Account Settings</div>
+            <div class="manage-brand-subtitle">Manage your account preferences</div>
         </div>
+    </div>
 
-        <div class="manage-content">
-            <div class="manage-nav">
-                <ManageNavMenu/>
-            </div>
-            <div class="manage-body">
-                @Body
-            </div>
+    <div class="manage-content">
+        <div class="manage-nav">
+            <ManageNavMenu/>
+        </div>
+        <div class="manage-body">
+            @Body
         </div>
     </div>
 </div>
