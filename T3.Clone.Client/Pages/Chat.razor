@@ -2,11 +2,14 @@
 @page "/chat"
 @page "/chat/{ThreadId:int}"
 @using T3.Clone.Client.Caches
+@using T3.Clone.Dtos.Messages
+@using T3.Clone.Client.Models
 @inject MessageSyncService MessageSyncService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
+<PageTitle>LLM Lab - AI Chat Assistant</PageTitle>
 <script>
     window.setupChatInputAutoFocus = function (element) {
         if (!element) return;
@@ -48,7 +51,6 @@
     </div>
     
     <ChatInput 
-        @ref="ChatInput"
         OnSendMessage="HandleSendMessage" 
         OnAttachmentAdded="HandleAttachment"
         IsLoading="isSending" />
@@ -57,8 +59,6 @@
 @code {
     [Parameter]
     public int? ThreadId { get; set; }
-
-    public ChatInput ChatInput { get; set; }
 
     private MessageTreeDto? messageTree;
     private bool isLoading = false;
@@ -106,12 +106,6 @@
             currentBranchPath = 0;
             StateHasChanged();
         }
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(50);
-            await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
-            await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.textareaRef);
-        }); 
     }
 
     private void InitializeBranchPath()
