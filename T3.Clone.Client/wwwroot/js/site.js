@@ -121,6 +121,32 @@ window.focusElement = function (element) {
     }
 };
 
+window.setupChatInputAutoFocus = function (element) {
+    if (!element) return;
+    // Store handler on element so we can remove it later
+    element._chatInputAutoFocusHandler = function (e) {
+        const tag = document.activeElement.tagName;
+        const editable = document.activeElement.isContentEditable;
+        if (
+            !e.ctrlKey && !e.metaKey && !e.altKey &&
+            !editable &&
+            tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT'
+        ) {
+            if (e.key.length === 1) {
+                element.focus();
+            }
+        }
+    };
+    document.addEventListener('keydown', element._chatInputAutoFocusHandler);
+};
+
+// Call this to remove it:
+window.removeChatInputAutoFocus = function (element) {
+    if (!element || !element._chatInputAutoFocusHandler) return;
+    document.removeEventListener('keydown', element._chatInputAutoFocusHandler);
+    delete element._chatInputAutoFocusHandler;
+};
+
 window.hightlightCodeBlocks = function() {
     if (typeof hljs !== 'undefined') {
         document.querySelectorAll('pre code').forEach((block) => {

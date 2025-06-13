@@ -152,4 +152,19 @@
         // TODO: Implement message regeneration
         Console.WriteLine($"Regenerating message: {messageId}");
     }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (ChatInput?.textareaRef != null)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("removeChatInputAutoFocus", ChatInput.textareaRef);
+            }
+            catch
+            {
+                // Swallow, JS runtime might already be gone
+            }
+        }
+    }
 } 
