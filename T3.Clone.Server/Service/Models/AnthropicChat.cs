@@ -2,9 +2,8 @@ using Anthropic.SDK;
 using Anthropic.SDK.Common;
 using Anthropic.SDK.Messaging;
 using T3.Clone.Client.Services;
+using T3.Clone.Dtos.Messages;
 using T3.Clone.Server.Data;
-using DataMessage = T3.Clone.Server.Data.Message;
-using AnthropicMessage = Anthropic.SDK.Messaging.Message;
 
 namespace T3.Clone.Server.Service.Models;
 
@@ -39,8 +38,7 @@ public class AnthropicChat(
                     }
                 };
 
-                // Add basic support for images (simplified for now)
-                // TODO: Add proper image attachment support
+                // TODO: Add proper image attachment support for reasoning
 
                 messages.Add(new Anthropic.SDK.Messaging.Message()
                 {
@@ -64,42 +62,64 @@ public class AnthropicChat(
                 }
             }
 
-            // Create message parameters
+            // Create message parameters for reasoning models (Claude 3.7 Sonnet or Claude 4 Sonnet)
             var parameters = new MessageParameters()
             {
                 Messages = messages,
-                MaxTokens = config.MaxOutputTokens > 0 ? config.MaxOutputTokens : 4000,
-                Model = config.ModelId,
-                Stream = true
+                MaxTokens = config.MaxOutputTokens > 0 ? config.MaxOutputTokens : 8000,
+                Model = config.ModelId, // Should be claude-3-7-sonnet-20250101 or similar for thinking
+                Stream = true,
+                Thinking = new ThinkingParameters()
+                {
+                    BudgetTokens = entity.ReasoningEffortLevel switch
+                    {
+                        ReasoningEffortLevel.None => 0,
+                        ReasoningEffortLevel.Low => 2048,
+                        ReasoningEffortLevel.Medium => 4096,
+                        ReasoningEffortLevel.High => 8192,
+                    }
+                }
             };
+
+            Console.WriteLine($"[Anthropic Reasoning] Starting Reasoning Chat with model: {config.ModelId}");
 
             // Generate streaming response
             var response = client.Messages.StreamClaudeMessageAsync(parameters);
 
             var inputTokens = 0;
             var outputTokens = 0;
+            var isThinkingContent = entity.ReasoningEffortLevel != ReasoningEffortLevel.None;
 
             await foreach (var res in response)
             {
-                // Handle different response types based on the streaming response
-                if (res.Delta?.Text != null)
+                Console.WriteLine($"[Anthropic Reasoning] Update: {res.Type}");
+                
+                // Handle thinking content vs regular content
+                // For Claude 3.7 Sonnet and Claude 4 with thinking, there will be different content blocks
+                if (res.Type == "content_block_start")
                 {
-                    try
-                    {
-                        entity.ModelResponse += res.Delta.Text;
-                        tokenCallback?.Invoke(res.Delta.Text);
-                    }
-                    catch (Exception ex)
-                    {
-                        try
-                        {
-                            errorCallback?.Invoke($"Error in token callback: {ex.Message}");
-                        }
-                        catch (Exception innerEx)
-                        {
-                            Console.WriteLine($"Error in error callback: {innerEx.Message}");
-                        }
-                    }
+                    // Check if this is a thinking block or regular text block
+                    isThinkingContent = res.ContentBlock?.Type == "thinking";
+                    Console.WriteLine($"[Anthropic Reasoning] Content block start - Thinking: {isThinkingContent}");
+                }
+                else if (res.Delta?.Thinking != null)
+                {
+                    // This is thinking/reasoning content
+                    entity.ThinkingResponse += res.Delta.Thinking;
+                    thinkingTokenCallback?.Invoke(res.Delta.Thinking);
+                    Console.WriteLine(
+                        $"[Anthropic Reasoning] Thinking: {res.Delta.Thinking}...");
+                }
+                else if (res.Delta?.Text != null)
+                {
+                    // This is regular response content
+                    entity.ModelResponse += res.Delta.Text;
+                    tokenCallback?.Invoke(res.Delta.Text);
+                }
+                else if (res.Type == "content_block_stop")
+                {
+                    Console.WriteLine($"[Anthropic Reasoning] Content block stop - Was thinking: {isThinkingContent}");
+                    isThinkingContent = false;
                 }
 
                 // Track token usage if available
@@ -109,6 +129,10 @@ public class AnthropicChat(
                     outputTokens = res.Usage.OutputTokens;
                 }
             }
+
+            Console.WriteLine($"[Anthropic Reasoning] Completed. Input tokens: {inputTokens}, Output tokens: {outputTokens}");
+            Console.WriteLine($"[Anthropic Reasoning] Thinking response length: {entity.ThinkingResponse?.Length ?? 0}");
+            Console.WriteLine($"[Anthropic Reasoning] Final response length: {entity.ModelResponse?.Length ?? 0}");
 
             return new ChatModelResponse
             {
@@ -124,8 +148,8 @@ public class AnthropicChat(
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during Anthropic Chat generation: {ex.Message}");
-            errorCallback?.Invoke($"Error during Anthropic Chat generation: {ex.Message}");
+            Console.WriteLine($"Error during Anthropic Reasoning Chat generation: {ex.Message}");
+            errorCallback?.Invoke($"Error during Anthropic Reasoning Chat generation: {ex.Message}");
             
             return new ChatModelResponse
             {

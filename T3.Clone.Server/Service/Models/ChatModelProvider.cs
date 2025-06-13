@@ -13,7 +13,6 @@ public class ChatModelProvider(
         { "OpenAi", typeof(OpenAiChat)},
         { "OpenAiReasoning", typeof(OpenAiReasoningChat)},
         { "Anthropic", typeof(AnthropicChat)},
-        { "AnthropicReasoning", typeof(AnthropicReasoningChat)},
         { "Google", typeof(GoogleChat)}
     };
     

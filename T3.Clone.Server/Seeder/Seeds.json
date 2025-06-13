@@ -135,7 +135,7 @@
       "Name": "Claude 4.0 Sonnet",
       "Description": "A speculative next-generation model from Anthropic, aiming for new heights in AI safety, reliability, and performance.",
       "ModelId": "claude-sonnet-4-20250514",
-      "Provider": "AnthropicReasoning",
+      "Provider": "Anthropic",
       "ApiKey": "{Anthropic}|{OpenRouter}",
       "ApiUrl": "https://openrouter.ai/api/v1",
       "SystemPrompt": "You are T3.Clone, a powerful AI assistant. You are designed to assist users with a wide range of tasks, including answering questions, providing information, and generating creative content.",

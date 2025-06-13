@@ -58,7 +58,6 @@ builder.Services.AddScoped<ChatModelProvider>();
 builder.Services.AddScoped<OpenAiChat>();
 builder.Services.AddScoped<OpenAiReasoningChat>();
 builder.Services.AddScoped<AnthropicChat>();
-builder.Services.AddScoped<AnthropicReasoningChat>();
 builder.Services.AddScoped<GoogleChat>();
 
 builder.Services.AddScoped<IdentityUserAccessor>();
