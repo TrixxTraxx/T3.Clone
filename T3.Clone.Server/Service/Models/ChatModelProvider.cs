@@ -11,7 +11,9 @@ public class ChatModelProvider(
     private Dictionary<string, Type> _chatModels = new Dictionary<string, Type>()
     {
         { "OpenAi", typeof(OpenAiChat)},
-        { "OpenAiReasoning", typeof(OpenAiReasoningChat)}
+        { "OpenAiReasoning", typeof(OpenAiReasoningChat)},
+        { "Anthropic", typeof(AnthropicChat)},
+        { "AnthropicReasoning", typeof(AnthropicReasoningChat)}
     };
     
     public IChatModel GetChatModel(AiModel aiModel)
