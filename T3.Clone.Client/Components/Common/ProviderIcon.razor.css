@@ -1,0 +1,23 @@
+.provider-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.provider-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.tinted-logo {
+    /* First make the logo black, then we can tint it to any color */
+    filter: var(--logo-color-filter);
+    transition: filter 0.2s ease;
+}
+
+.provider-icon-container:hover .tinted-logo {
+    /* Slightly brighter on hover for better interaction feedback */
+    filter: var(--logo-color-filter) brightness(1.1);
+}
