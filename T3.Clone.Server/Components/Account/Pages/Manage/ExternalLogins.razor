@@ -6,56 +6,69 @@
 @inject IUserStore<ApplicationUser> UserStore
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Manage your external logins</PageTitle>
+<PageTitle>Manage External Logins</PageTitle>
+
+<div class="manage-section-title">External Login Management</div>
+<div class="manage-section-subtitle">Connect or disconnect external authentication providers</div>
 
 <StatusMessage/>
+
 @if (currentLogins?.Count > 0)
 {
-    <h3>Registered Logins</h3>
-    <table class="table">
-        <tbody>
+    <div class="manage-section-title" style="font-size: 1.25rem; margin-top: 2rem;">Connected Accounts</div>
+    
+    <MudGrid Spacing="2">
         @foreach (var login in currentLogins)
         {
-            <tr>
-                <td>@login.ProviderDisplayName</td>
-                <td>
-                    @if (showRemoveButton)
-                    {
-                        <form @formname="@($"remove-login-{login.LoginProvider}")" @onsubmit="OnSubmitAsync" method="post">
-                            <AntiforgeryToken/>
+            <MudItem md="12">
+                <MudCard Elevation="2" Class="pa-4">
+                    <MudCardContent Class="d-flex align-center justify-space-between">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@GetProviderIcon(login.LoginProvider)" Color="Color.Primary" Class="mr-3"/>
                             <div>
+                                <MudText Typo="Typo.subtitle1">@login.ProviderDisplayName</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Connected</MudText>
+                            </div>
+                        </div>
+                        @if (showRemoveButton)
+                        {
+                            <form @formname="@($"remove-login-{login.LoginProvider}")" @onsubmit="OnSubmitAsync" method="post">
+                                <AntiforgeryToken/>
                                 <input type="hidden" name="@nameof(LoginProvider)" value="@login.LoginProvider"/>
                                 <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey"/>
-                                <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
-                            </div>
-                        </form>
-                    }
-                    else
-                    {
-                        @: &nbsp;
-                    }
-                </td>
-            </tr>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" 
+                                           Color="Color.Error" Size="Size.Small">
+                                    Remove
+                                </MudButton>
+                            </form>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
         }
-        </tbody>
-    </table>
+    </MudGrid>
 }
+
 @if (otherLogins?.Count > 0)
 {
-    <h4>Add another service to log in.</h4>
-    <MudDivider/>
+    <div class="manage-section-title" style="font-size: 1.25rem; margin-top: 3rem;">Available Providers</div>
+    <div class="manage-section-subtitle">Add another service to log in with</div>
+    
     <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
         <AntiforgeryToken/>
-        <div>
-            <p>
-                @foreach (var provider in otherLogins)
-                {
-                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                        @provider.DisplayName
-                    </button>
-                }
-            </p>
-        </div>
+        <MudGrid Spacing="2">
+            @foreach (var provider in otherLogins)
+            {
+                <MudItem md="6">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" 
+                               Color="Color.Primary" FullWidth="true" Size="Size.Large"
+                               StartIcon="@GetProviderIcon(provider.Name)"
+                               name="Provider" value="@provider.Name">
+                        Connect @provider.DisplayName
+                    </MudButton>
+                </MudItem>
+            }
+        </MudGrid>
     </form>
 }
 
@@ -130,4 +143,13 @@
         RedirectManager.RedirectToCurrentPageWithStatus("The external login was added.", HttpContext);
     }
 
+    private string GetProviderIcon(string providerName) => providerName.ToLower() switch
+    {
+        "google" => Icons.Custom.Brands.Google,
+        "microsoft" => Icons.Custom.Brands.Microsoft,
+        "github" => Icons.Custom.Brands.GitHub,
+        "facebook" => Icons.Custom.Brands.Facebook,
+        "twitter" => Icons.Custom.Brands.Twitter,
+        _ => Icons.Material.Filled.Login
+    };
 }

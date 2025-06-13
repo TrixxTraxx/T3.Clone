@@ -7,24 +7,30 @@
 
 <PageTitle>Profile</PageTitle>
 
-<MudText Typo="Typo.h6" GutterBottom="true">Profile</MudText>
+<div class="manage-section-title">Profile Information</div>
+<div class="manage-section-subtitle">Manage your personal profile information</div>
 
 <StatusMessage/>
 
 <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
     <DataAnnotationsValidator/>
 
-    <MudGrid>
+    <MudGrid Spacing="3">
         <MudItem md="12">
-            <MudStaticTextField Value="@username" Label="Username" Disabled="true" Placeholder="Please choose your username."/>
+            <MudStaticTextField Value="@username" Label="Username" Disabled="true" 
+                                Placeholder="Please choose your username." Variant="Variant.Outlined"/>
         </MudItem>
         <MudItem md="12">
             <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
-                                Label="Phone Number" HelperText="Please enter your phone number." Variant="Variant.Outlined"
+                                Label="Phone Number" HelperText="Please enter your phone number." 
+                                Variant="Variant.Outlined"
                                 UserAttributes="@(new() { { "autocomplete", "tel-national" } })"/>
         </MudItem>
         <MudItem md="12">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Save</MudStaticButton>
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                             FormAction="FormAction.Submit" Size="Size.Large">
+                Save Changes
+            </MudStaticButton>
         </MudItem>
     </MudGrid>
 </EditForm>

@@ -59,6 +59,17 @@ h1:focus {
     text-align: start;
 }
 
+/* Auth Layout Styles */
+.auth-layout {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--mud-palette-background) 0%, var(--mud-palette-surface) 50%, var(--mud-palette-dark) 100%);
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
 /* Login Page Styles - Using MudBlazor CSS Variables */
 .login-container {
     min-height: 100vh;
@@ -72,8 +83,7 @@ h1:focus {
 
 .login-card {
     background: var(--mud-palette-surface);
-    border-radius: var(--mud-default-borderradius);
-    border-radius: 24px; /* Override for more modern look */
+    border-radius: 24px;
     padding: 3rem;
     max-width: 450px;
     width: 100%;
@@ -187,8 +197,7 @@ h1:focus {
 .login-status-message {
     background: color-mix(in srgb, var(--mud-palette-error) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--mud-palette-error) 30%, transparent);
-    border-radius: var(--mud-default-borderradius);
-    border-radius: 12px; /* Override for consistency */
+    border-radius: 12px;
     padding: 1rem;
     margin-bottom: 1.5rem;
     color: var(--mud-palette-error-lighten);
@@ -201,26 +210,28 @@ h1:focus {
     color: var(--mud-palette-success-lighten);
 }
 
-/* Custom MudBlazor overrides for login */
+/* Custom MudBlazor overrides for login - Updated for golden/yellowish inputs */
 .login-card .mud-input-root {
-    background: color-mix(in srgb, var(--mud-palette-surface) 80%, var(--mud-palette-dark) 20%);
-    border-radius: var(--mud-default-borderradius);
-    border-radius: 12px; /* Override for consistency */
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    transition: all 0.2s ease;
 }
 
 .login-card .mud-input-root:hover {
-    background: color-mix(in srgb, var(--mud-palette-surface) 70%, var(--mud-palette-dark) 30%);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+    border-color: rgba(251, 191, 36, 0.4);
 }
 
 .login-card .mud-input-root.mud-input-root-focused {
-    background: color-mix(in srgb, var(--mud-palette-surface) 60%, var(--mud-palette-dark) 40%);
-    border-color: var(--mud-palette-primary);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(245, 158, 11, 0.25) 100%);
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
 }
 
 .login-card .mud-button-filled-primary {
     background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);
-    border-radius: var(--mud-default-borderradius);
-    border-radius: 12px; /* Override for consistency */
+    border-radius: 12px;
     font-weight: 600;
     text-transform: none;
     box-shadow: var(--mud-elevation-4);
@@ -266,8 +277,7 @@ h1:focus {
     border: 1px solid var(--mud-palette-lines-inputs);
     color: var(--mud-palette-text-primary);
     background: color-mix(in srgb, var(--mud-palette-surface) 50%, transparent);
-    border-radius: var(--mud-default-borderradius);
-    border-radius: 12px; /* Override for consistency */
+    border-radius: 12px;
     transition: all 0.2s ease;
     text-transform: none;
     font-weight: 500;
@@ -282,8 +292,7 @@ h1:focus {
 .login-external-alert {
     background: color-mix(in srgb, var(--mud-palette-info) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--mud-palette-info) 30%, transparent);
-    border-radius: var(--mud-default-borderradius);
-    border-radius: 12px; /* Override for consistency */
+    border-radius: 12px;
     margin-bottom: 1rem;
 }
 
@@ -294,19 +303,293 @@ h1:focus {
     line-height: 1.5;
 }
 
+/* Manage Pages Styles */
+.manage-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.manage-card {
+    background: var(--mud-palette-surface);
+    border-radius: 24px;
+    padding: 3rem;
+    max-width: 900px;
+    width: 100%;
+    box-shadow: var(--mud-elevation-8);
+    border: 1px solid var(--mud-palette-lines-default);
+    backdrop-filter: blur(10px);
+}
+
+.manage-header {
+    margin-bottom: 3rem;
+}
+
+.manage-brand {
+    text-align: center;
+}
+
+.manage-brand-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.manage-brand-subtitle {
+    color: var(--mud-palette-text-secondary);
+    font-size: 1rem;
+}
+
+.manage-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 3rem;
+}
+
+.manage-nav {
+    border-right: 1px solid var(--mud-palette-lines-default);
+    padding-right: 2rem;
+}
+
+.manage-body {
+    padding-left: 1rem;
+}
+
+.manage-section-title {
+    color: var(--mud-palette-text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.manage-section-subtitle {
+    color: var(--mud-palette-text-secondary);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Custom MudBlazor overrides for manage pages */
+.manage-card .mud-input-root {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.manage-card .mud-input-root:hover {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+.manage-card .mud-input-root.mud-input-root-focused {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(245, 158, 11, 0.25) 100%);
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+}
+
+.manage-card .mud-button-filled-primary {
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: var(--mud-elevation-4);
+    transition: all 0.2s ease;
+}
+
+.manage-card .mud-button-filled-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--mud-elevation-6);
+    background: linear-gradient(135deg, var(--mud-palette-primary-lighten) 0%, var(--mud-palette-primary) 100%);
+}
+
+.manage-card .mud-nav-menu {
+    background: transparent;
+}
+
+.manage-card .mud-nav-link {
+    margin-bottom: 0.5rem;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.manage-card .mud-nav-link:hover {
+    background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+}
+
+.manage-card .mud-nav-link.active {
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);
+    color: var(--mud-palette-primary-contrast-text);
+}
+
+/* Status Message Enhancements for Manage Pages */
+.manage-card .mud-alert {
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(5px);
+}
+
+.manage-card .mud-alert.mud-alert-outlined-success {
+    background: color-mix(in srgb, var(--mud-palette-success) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-success) 30%, transparent);
+}
+
+.manage-card .mud-alert.mud-alert-outlined-error {
+    background: color-mix(in srgb, var(--mud-palette-error) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-error) 30%, transparent);
+}
+
+.manage-card .mud-alert.mud-alert-outlined-warning {
+    background: color-mix(in srgb, var(--mud-palette-warning) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-warning) 30%, transparent);
+}
+
+/* External Login Cards for Manage Pages */
+.manage-card .mud-card {
+    background: color-mix(in srgb, var(--mud-palette-surface) 80%, transparent);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.manage-card .mud-card:hover {
+    border-color: var(--mud-palette-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--mud-elevation-4);
+}
+
+.manage-card .mud-button-outlined {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.manage-card .mud-button-outlined:hover {
+    transform: translateY(-1px);
+}
+
+.manage-card .mud-divider {
+    border-color: var(--mud-palette-lines-default);
+    margin: 2rem 0;
+}
+
+/* Input field styling consistency */
+.manage-card .mud-input-root input {
+    color: var(--mud-palette-text-primary);
+}
+
+.manage-card .mud-input-root input::placeholder {
+    color: var(--mud-palette-text-disabled);
+}
+
+.manage-card .mud-input-label {
+    color: var(--mud-palette-text-primary);
+    font-weight: 500;
+}
+
+/* Form validation styling */
+.manage-card .mud-input-helper-text {
+    color: var(--mud-palette-text-secondary);
+}
+
+.manage-card .mud-input-error .mud-input-helper-text {
+    color: var(--mud-palette-error);
+}
+
+/* Button styling variations */
+.manage-card .mud-button-filled-warning {
+    background: linear-gradient(135deg, var(--mud-palette-warning) 0%, var(--mud-palette-warning-darken) 100%);
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: var(--mud-elevation-4);
+    transition: all 0.2s ease;
+}
+
+.manage-card .mud-button-filled-warning:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--mud-elevation-6);
+}
+
+.manage-card .mud-button-outlined-error {
+    border-color: var(--mud-palette-error);
+    color: var(--mud-palette-error);
+    border-radius: 8px;
+}
+
+.manage-card .mud-button-outlined-error:hover {
+    background: color-mix(in srgb, var(--mud-palette-error) 10%, transparent);
+}
+
+.manage-card .mud-button-outlined-primary {
+    border-color: var(--mud-palette-primary);
+    color: var(--mud-palette-primary);
+    border-radius: 12px;
+}
+
+.manage-card .mud-button-outlined-primary:hover {
+    background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+    transform: translateY(-1px);
+}
+
 /* Responsive adjustments */
+@media (max-width: 768px) {
+    .manage-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .manage-nav {
+        border-right: none;
+        border-bottom: 1px solid var(--mud-palette-lines-default);
+        padding-right: 0;
+        padding-bottom: 2rem;
+    }
+    
+    .manage-body {
+        padding-left: 0;
+    }
+    
+    .manage-card .mud-nav-menu {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .manage-card .mud-nav-link {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+    }
+}
+
 @media (max-width: 640px) {
-    .login-card {
+    .login-card, .manage-card {
         padding: 2rem 1.5rem;
         margin: 1rem;
         border-radius: 16px;
     }
     
-    .login-brand-title {
+    .login-brand-title, .manage-brand-title {
         font-size: 2rem;
     }
     
     .login-welcome-title {
         font-size: 1.5rem;
+    }
+    
+    .manage-card .mud-nav-menu {
+        flex-direction: column;
+    }
+    
+    .manage-card .mud-nav-link {
+        min-width: auto;
+        text-align: left;
     }
 }
