@@ -1,3 +1,4 @@
+@using T3.Clone.Client.Components.Common
 @inject AiKeyService AiKeyService
 @inject ISnackbar Snackbar
 
@@ -9,7 +10,7 @@
 @if (isLoading)
 {
     <div class="d-flex flex-column align-center gap-3">
-        <MudProgressCircular Indeterminate="true" />
+        <MudProgressCircular Indeterminate="true"/>
         <MudText Typo="Typo.body2" Color="Color.Secondary">Loading API keys...</MudText>
     </div>
 }
@@ -22,20 +23,25 @@ else
                 <MudCardContent>
                     <div class="d-flex align-center justify-space-between mb-3">
                         <div class="d-flex align-center gap-3">
-                            <MudIcon Icon="@provider.Icon" Color="@provider.Color" />
+                            <ProviderIcon ImagePath="@provider.LogoPath"
+                                          Icon="@provider.Icon"
+                                          Color="@provider.Color"
+                                          AltText="@provider.Name"
+                                          Size="40px"
+                            />
                             <div>
                                 <MudText Typo="Typo.h6">@provider.Name</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Description</MudText>
                             </div>
                         </div>
                         <MudChip T="string"
-                            Color="@(keyStates.GetValueOrDefault(provider.Identifier, false) ? Color.Success : Color.Default)"
-                            Size="Size.Small">
+                                 Color="@(keyStates.GetValueOrDefault(provider.Identifier, false) ? Color.Success : Color.Default)"
+                                 Size="Size.Small">
                             @(keyStates.GetValueOrDefault(provider.Identifier, false) ? "Configured" : "Not Set")
                         </MudChip>
                     </div>
-                    
-                    <MudTextField 
+
+                    <MudTextField
                         @bind-Value="@keyValues[provider.Identifier]"
                         Label="@($"{provider.Name} API Key")"
                         InputType="@(showApiKeys.GetValueOrDefault(provider.Identifier, false) ? InputType.Text : InputType.Password)"
@@ -46,10 +52,10 @@ else
                         OnAdornmentClick="@(() => ToggleApiKeyVisibility(provider.Identifier))"
                         Class="mb-3"
                     />
-                    
-                    <MudButton 
-                        Variant="Variant.Filled" 
-                        Color="Color.Primary" 
+
+                    <MudButton
+                        Variant="Variant.Filled"
+                        Color="Color.Primary"
                         StartIcon="@Icons.Material.Filled.Save"
                         OnClick="@(() => SaveApiKey(provider.Identifier))"
                     >
@@ -80,10 +86,10 @@ else
     {
         aiProviders = new List<AiProvider>
         {
-            new("OpenRouter", "OpenRouter", "Access to multiple AI models through OpenRouter, reasoning is unfortunately not supported using OpenRouter!", Icons.Material.Filled.Router, MudBlazor.Color.Primary),
-            new("OpenAi", "OpenAI", "ChatGPT models", Icons.Material.Filled.Psychology, MudBlazor.Color.Success),
-            new("Anthropic", "Anthropic", "Claude AI models", Icons.Material.Filled.SmartToy, MudBlazor.Color.Warning),
-            new("Google", "Google", "Gemini models", Icons.Material.Filled.Search, MudBlazor.Color.Error)
+            new("OpenRouter", "OpenRouter", "Access to multiple AI models through OpenRouter, reasoning is unfortunately not supported using OpenRouter!", "images/logos/openrouter-logo.svg", Icons.Material.Filled.Router, MudBlazor.Color.Primary),
+            new("OpenAi", "OpenAI", "ChatGPT models", "images/logos/openai-logo.svg", Icons.Material.Filled.Psychology, MudBlazor.Color.Success),
+            new("Anthropic", "Anthropic", "Claude AI models", "images/logos/anthropic-logo.svg", Icons.Material.Filled.SmartToy, MudBlazor.Color.Warning),
+            new("Google", "Google", "Gemini models", "images/logos/google-logo.svg", Icons.Material.Filled.Search, MudBlazor.Color.Error)
         };
 
         // Initialize dictionaries with default values
@@ -100,7 +106,7 @@ else
         try
         {
             var keys = await AiKeyService.GetKeysAsync();
-            
+
             foreach (var provider in aiProviders)
             {
                 keyStates[provider.Identifier] = keys.Contains(provider.Identifier);
@@ -144,7 +150,7 @@ else
             await AiKeyService.AddKeyAsync(identifier, key);
             keyStates[identifier] = true;
             keyValues[identifier] = ""; // Clear the input for security
-            
+
             Snackbar.Add($"{aiProviders.First(p => p.Identifier == identifier).Name} API key saved successfully", Severity.Success);
             StateHasChanged();
         }
@@ -156,5 +162,6 @@ else
     }
 
     // Helper class for AI providers
-    public record AiProvider(string Identifier, string Name, string Description, string Icon, Color Color);
+    public record AiProvider(string Identifier, string Name, string Description, string LogoPath, string Icon, Color Color);
+
 } 
