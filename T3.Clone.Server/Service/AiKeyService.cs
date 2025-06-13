@@ -18,7 +18,7 @@ public class AiKeyService(
 
         return dbContext.AiModelKeys
             .Where(key => key.UserId == userId)
-            .Select(key => key.ApiKey)
+            .Select(key => key.Identifier)
             .ToList();
     }
 
