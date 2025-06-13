@@ -14,9 +14,9 @@
     {
       "Name": "Gemini 2.5 Pro",
       "Description": "Google's most capable and advanced model, excelling at complex reasoning, multimodal understanding, and long context.",
-      "ModelId": "google/gemini-2.5-pro-preview",
-      "Provider": "OpenAi",
-      "ApiKey": "{OpenRouter}",
+      "ModelId": "gemini-2.5-pro-preview-06-05",
+      "Provider": "Google",
+      "ApiKey": "{Google}|{OpenRouter}",
       "ApiUrl": "https://openrouter.ai/api/v1",
       "SystemPrompt": "You are T3.Clone, a powerful AI assistant. You are designed to assist users with a wide range of tasks, including answering questions, providing information, and generating creative content.",
       "HasImageGenerationSupport": false,
