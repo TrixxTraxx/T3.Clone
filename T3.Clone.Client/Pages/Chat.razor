@@ -89,6 +89,7 @@
         {
             await Task.Delay(50);
             await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
+            await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.textareaRef);
         }); 
     }
 
