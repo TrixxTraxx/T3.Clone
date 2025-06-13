@@ -11,7 +11,7 @@ public class Message
     
     public string Text { get; set; } = string.Empty;
     
-    public ReasoningEffortLevel ReasoningEffort { get; set; } = ReasoningEffortLevel.None;
+    public ReasoningEffortLevel ReasoningEffortLevel { get; set; } = ReasoningEffortLevel.None;
     
     public string ThinkingResponse { get; set; } = string.Empty;
     

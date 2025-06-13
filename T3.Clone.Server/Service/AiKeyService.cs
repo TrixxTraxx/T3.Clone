@@ -17,9 +17,48 @@ public class AiKeyService(
         }
 
         return dbContext.AiModelKeys
-            .Where(key => key.UserId == userId)
+            .Where(key => key.UserId == userId && !string.IsNullOrEmpty(key.ApiKey))
             .Select(key => key.Identifier)
             .ToList();
+    }
+
+    //The Api Keys can be configured like this:
+    // {OpenRouter}|{OpenAi}|HardcodedApiKey
+    //it should resolve the first valid key it finds, valid keys are all keys that are not null or empty
+    // The Key Configuration will have Identifiers OpenRouter and OpenAi, the Hardcoded key will not be in the Key Configuration
+    public string ResolveKey(string userId, string key)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("User is not authenticated.");
+        }
+
+        var keys = dbContext.AiModelKeys
+            .Where(k => k.UserId == userId && !string.IsNullOrEmpty(k.ApiKey))
+            .ToList();
+
+        if (string.IsNullOrEmpty(key))
+        {
+            return keys.FirstOrDefault()?.ApiKey ?? string.Empty;
+        }
+
+        var keyParts = key.Split('|');
+        foreach (var part in keyParts)
+        {
+            var trimmedKey = part.Trim().TrimStart('{').TrimEnd('}');
+            var foundKey = keys.FirstOrDefault(k => k.Identifier.Equals(trimmedKey, StringComparison.OrdinalIgnoreCase));
+            if (foundKey != null && !string.IsNullOrEmpty(foundKey.ApiKey))
+            {
+                return foundKey.ApiKey;
+            }
+            else if (!string.IsNullOrEmpty(part) && !part.Contains("{") && !part.Contains("}"))
+            {
+                // If the part is a hardcoded key, return it directly
+                return part;
+            }
+        }
+
+        return keyParts.Last(); //return last key as fallback  
     }
 
     public void AddKey(string identifier, string key)

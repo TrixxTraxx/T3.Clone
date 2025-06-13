@@ -35,4 +35,7 @@ public class MessageDto
     
     [Key(9)]
     public string ThinkingResponse { get; set; } = string.Empty;
+    
+    [Key(10)]
+    public ReasoningEffortLevel ReasoningEffortLevel { get; set; } = ReasoningEffortLevel.None;
 }

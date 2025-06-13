@@ -9,23 +9,14 @@ namespace T3.Clone.Server.Service.Models;
 
 public class OpenAiChat(
     ApplicationDbContext dbContext,
-    AttachmentService attachmentService
+    AttachmentService attachmentService,
+    AiKeyService keyService
 ) : IChatModel
 {
     public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config,
         Action<string> tokenCallback, Action<string> thinkingTokenCallback, Action<string> errorCallback)
     {
-        var keyOverride = dbContext.AiModelKeys
-            .Where(x => x.UserId == entity.Thread.UserId)
-            .ToList();
-        var apiKey = config.ApiKey;
-        if (keyOverride.Count > 0)
-        {
-            foreach (var key in keyOverride)
-            {
-                apiKey = apiKey.Replace("{" + key.Identifier + "}", key.ApiKey);   
-            }
-        }
+        var apiKey = keyService.ResolveKey(entity.Thread.UserId, config.ApiKey);
 
         ChatClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey), new OpenAIClientOptions()
         {

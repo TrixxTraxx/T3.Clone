@@ -10,7 +10,8 @@ namespace T3.Clone.Server.Service.Models;
 
 public class OpenAiReasoningChat(
     ApplicationDbContext dbContext,
-    AttachmentService attachmentService
+    AttachmentService attachmentService,
+    AiKeyService keyService
 ) : IChatModel
 {
         public async Task<ChatModelResponse> GenerateResponse(Message entity, List<Message> messagesChain, AiModel config,
@@ -18,24 +19,14 @@ public class OpenAiReasoningChat(
     {
         try
         {
-            if (false) //(entity.ReasoningEffort == ReasoningEffortLevel.None)
+            if (entity.ReasoningEffortLevel == ReasoningEffortLevel.None)
             {
-                return await new OpenAiChat(dbContext, attachmentService)
+                return await new OpenAiChat(dbContext, attachmentService, keyService)
                     .GenerateResponse(entity, messagesChain, config, tokenCallback, thinkingTokenCallback,
                         errorCallback);
             }
 
-            var keyOverride = dbContext.AiModelKeys
-                .Where(x => x.UserId == entity.Thread.UserId)
-                .ToList();
-            var apiKey = config.ApiKey;
-            if (keyOverride.Count > 0)
-            {
-                foreach (var key in keyOverride)
-                {
-                    apiKey = apiKey.Replace("{" + key.Identifier + "}", key.ApiKey);
-                }
-            }
+            var apiKey = keyService.ResolveKey(entity.Thread.UserId, config.ApiKey);
 
             OpenAIResponseClient client = new(model: config.ModelId, new ApiKeyCredential(apiKey),
                 new OpenAIClientOptions()
@@ -90,7 +81,7 @@ public class OpenAiReasoningChat(
                 //TODO: set other options like temperature, max tokens, etc.
                 ReasoningOptions = new ResponseReasoningOptions()
                 {
-                    ReasoningEffortLevel = entity.ReasoningEffort switch
+                    ReasoningEffortLevel = entity.ReasoningEffortLevel switch
                     {
                         ReasoningEffortLevel.Low => ResponseReasoningEffortLevel.Low,
                         ReasoningEffortLevel.Medium => ResponseReasoningEffortLevel.Medium,

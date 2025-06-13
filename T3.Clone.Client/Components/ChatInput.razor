@@ -1,4 +1,5 @@
 @using T3.Clone.Dtos.Model
+@using T3.Clone.Dtos.Messages
 @inject IJSRuntime JSRuntime
 @inject AiModelService AiModelService
 @inject AttachmentService AttachmentService
@@ -116,15 +117,50 @@
                     
                     @if (SelectedModelSupportsThinking())
                     {
-                        <button class="hypermodern-toggle-btn @(enableThinking ? "active" : "")"
-                                @onclick="ToggleThinking"
-                                disabled="@IsLoading"
-                                type="button">
-                            <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
-                            </svg>
-                            <span>Thinking</span>
-                        </button>
+                        <!-- Reasoning Effort Level Selector Button -->
+                        <div class="reasoning-selector-wrapper">
+                            <button class="hypermodern-reasoning-btn @(showReasoningModal ? "active" : "")"
+                                    @onclick="OpenReasoningModal"
+                                    disabled="@IsLoading"
+                                    type="button">
+                                <div class="reasoning-btn-content">
+                                    <svg class="reasoning-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>
+                                    </svg>
+                                    <span class="reasoning-name">@GetSelectedReasoningLevelName()</span>
+                                    <svg class="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M7 10L12 15L17 10H7Z"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            
+                            @if (showReasoningModal)
+                            {
+                                <div class="reasoning-dropdown">
+                                    <div class="reasoning-options">
+                                        @foreach (var level in Enum.GetValues<ReasoningEffortLevel>())
+                                        {
+                                            <button class="reasoning-option @(selectedReasoningLevel == level ? "selected" : "")"
+                                                    @onclick="() => OnReasoningLevelSelected(level)"
+                                                    type="button">
+                                                <div class="reasoning-option-content">
+                                                    <div class="reasoning-option-info">
+                                                        <span class="reasoning-option-name">@GetReasoningLevelDisplayName(level)</span>
+                                                        <span class="reasoning-option-description">@GetReasoningLevelDescription(level)</span>
+                                                    </div>
+                                                    @if (selectedReasoningLevel == level)
+                                                    {
+                                                        <svg class="selected-icon" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                                        </svg>
+                                                    }
+                                                </div>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     }
 
                     @if (SelectedModelSupportsFiles())
@@ -180,11 +216,12 @@
     private bool isUploading = false;
     private int pendingUploads = 0;
     private bool showModelModal = false;
+    private bool showReasoningModal = false;
 
     private MessageDto message = new MessageDto();
     public ElementReference textareaRef;
     private int _selectedModelId = 1;
-    private bool enableThinking = false;
+    private ReasoningEffortLevel selectedReasoningLevel = ReasoningEffortLevel.None;
     
     public int SelectedModelId
     {
@@ -194,10 +231,10 @@
             if (_selectedModelId != value)
             {
                 _selectedModelId = value;
-                // Reset thinking if new model doesn't support it
+                // Reset reasoning level if new model doesn't support thinking
                 if (!SelectedModelSupportsThinking())
                 {
-                    enableThinking = false;
+                    selectedReasoningLevel = ReasoningEffortLevel.None;
                 }
             }
         }
@@ -318,6 +355,9 @@
         // Set the selected model ID on the message
         message.ModelId = _selectedModelId;
         
+        // Set the reasoning effort level
+        message.ReasoningEffortLevel = selectedReasoningLevel;
+        
         // Add attachment IDs to message
         message.AttachmentIds = uploadedAttachments.Select(a => a.Id).ToList();
         
@@ -339,15 +379,6 @@
         {
             IsLoading = false;
             StateHasChanged();
-        }
-    }
-
-    private void ToggleThinking()
-    {
-        if (SelectedModelSupportsThinking())
-        {
-            enableThinking = !enableThinking;
-            Console.WriteLine($"Thinking mode: {enableThinking}");
         }
     }
 
@@ -432,11 +463,72 @@
         });
     }
 
+    private void OpenReasoningModal()
+    {
+        showReasoningModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseReasoningModal()
+    {
+        showReasoningModal = false;
+        StateHasChanged();
+    }
+
+    private void OnReasoningLevelSelected(ReasoningEffortLevel level)
+    {
+        selectedReasoningLevel = level;
+        message.ReasoningEffortLevel = level;
+        showReasoningModal = false;
+        StateHasChanged();
+    }
+
+    private string GetSelectedReasoningLevelName()
+    {
+        return GetReasoningLevelDisplayName(selectedReasoningLevel);
+    }
+
+    private string GetReasoningLevelDisplayName(ReasoningEffortLevel level)
+    {
+        return level switch
+        {
+            ReasoningEffortLevel.None => "None",
+            ReasoningEffortLevel.Low => "Low",
+            ReasoningEffortLevel.Medium => "Medium", 
+            ReasoningEffortLevel.High => "High",
+            _ => "None"
+        };
+    }
+
+    private string GetReasoningLevelDescription(ReasoningEffortLevel level)
+    {
+        return level switch
+        {
+            ReasoningEffortLevel.None => "No thinking",
+            ReasoningEffortLevel.Low => "Basic reasoning",
+            ReasoningEffortLevel.Medium => "Enhanced reasoning",
+            ReasoningEffortLevel.High => "Maximum reasoning",
+            _ => "No thinking"
+        };
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", textareaRef);
+            await JSRuntime.InvokeVoidAsync("initializeDropdownCloseHandler", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public void CloseDropdowns()
+    {
+        if (showModelModal || showReasoningModal)
+        {
+            showModelModal = false;
+            showReasoningModal = false;
+            StateHasChanged();
         }
     }
 

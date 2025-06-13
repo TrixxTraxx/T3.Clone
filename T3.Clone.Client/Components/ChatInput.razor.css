@@ -13,7 +13,6 @@
     border-radius: 20px;
     padding: 20px;
     position: relative;
-    overflow: hidden;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.12),
         0 2px 8px rgba(0, 0, 0, 0.08),
@@ -703,4 +702,208 @@
 
 .hiddenFileInput{
     display: none;
+}
+
+.reasoning-selector-wrapper {
+    position: relative;
+    z-index: 2;
+    width: 178px;
+}
+
+.hypermodern-reasoning-btn {
+    min-width: 140px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 90%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 70%, transparent) 100%);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    border-radius: 10px;
+    color: var(--mud-palette-text-primary);
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hypermodern-reasoning-btn:hover {
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+    transform: translateY(-1px);
+}
+
+.hypermodern-reasoning-btn.active {
+    border-color: var(--mud-palette-primary);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 15%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 100%);
+    box-shadow: 
+        0 8px 20px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
+}
+
+.hypermodern-reasoning-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.reasoning-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.reasoning-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--mud-palette-primary);
+    flex-shrink: 0;
+}
+
+.reasoning-name {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hypermodern-reasoning-btn.active .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.reasoning-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 95%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 85%, transparent) 100%);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.15),
+        0 4px 16px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
+    z-index: 1000;
+    animation: dropdownSlideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes dropdownSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.reasoning-options {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reasoning-option {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    width: 100%;
+    position: relative;
+}
+
+.reasoning-option:hover {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    transform: translateY(-1px);
+}
+
+.reasoning-option.selected {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 15%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 100%);
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 25%, transparent);
+}
+
+.reasoning-option-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.reasoning-option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.reasoning-option-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mud-palette-text-primary);
+}
+
+.reasoning-option-description {
+    font-size: 12px;
+    color: var(--mud-palette-text-secondary);
+    line-height: 1.3;
+}
+
+.selected-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--mud-palette-primary);
+    flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .control-row {
+        justify-content: center;
+    }
+    
+    .control-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .toggle-buttons {
+        justify-content: center;
+    }
+    
+    .hypermodern-model-btn,
+    .hypermodern-reasoning-btn {
+        width: 160px;
+    }
 }
