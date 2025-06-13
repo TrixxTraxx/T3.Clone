@@ -1,74 +1,92 @@
 @using T3.Clone.Dtos.User
 @inject NavigationManager Navigation
 @inject AppsettingsService AppsettingsService
+@inject ISnackbar Snackbar
 
-<MudText Typo="Typo.h6" GutterBottom="true">Account Management</MudText>
+<MudText Typo="Typo.h6" GutterBottom="true">Profile Management</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+    Manage your account settings and profile information
+</MudText>
 
-@if (User != null)
-{
-    <MudCard Class="mb-4">
-        <MudCardContent>
-            <div class="d-flex align-center gap-4 mb-4">
+<div class="profile-section">
+    @if (User != null)
+    {
+        <div class="profile-avatar-section">
+            <MudAvatar Size="Size.Large" Color="Color.Primary">
                 @if (!string.IsNullOrEmpty(User.ProfilePictureUrl))
                 {
-                    <MudAvatar Size="Size.Large" Color="Color.Primary">
-                        <MudImage Src="@GetProfilePictureUrl(User)" />
-                    </MudAvatar>
+                    <MudImage Src="@GetProfilePictureUrl(User)" Alt="Profile Avatar" />
                 }
                 else
                 {
-                    <MudAvatar Size="Size.Large" Color="Color.Primary">
-                        <MudIcon Icon="@Icons.Material.Filled.Person" />
-                    </MudAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.Person" />
                 }
-                <div>
-                    <MudText Typo="Typo.h6">@User.DisplayName</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">@User.Email</MudText>
-                </div>
+            </MudAvatar>
+            
+            <div class="profile-info">
+                <MudText Typo="Typo.h5">@User.DisplayName</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@User.Email</MudText>
             </div>
-        </MudCardContent>
-    </MudCard>
-}
-
-<div class="d-flex flex-column gap-3">
-    <MudButton 
-        Variant="Variant.Filled" 
-        Color="Color.Primary" 
-        StartIcon="@Icons.Material.Filled.ManageAccounts"
-        OnClick="RedirectToManageProfile"
-        Size="Size.Large"
-        FullWidth="true">
-        Manage Profile
-    </MudButton>
-    
-    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-center">
-        Update your password, email, and other account settings
-    </MudText>
-    
-    <MudDivider Class="my-3" />
-    
-    <MudButton 
-        Variant="Variant.Filled" 
-        Color="Color.Error" 
-        StartIcon="@Icons.Material.Filled.Logout"
-        OnClick="BeginLogOut"
-        Size="Size.Large"
-        FullWidth="true">
-        Logout
-    </MudButton>
+        </div>
+        
+        <MudDivider Class="my-4" />
+        
+        <div class="d-flex flex-column gap-3">
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                StartIcon="@Icons.Material.Filled.ManageAccounts"
+                OnClick="NavigateToManageProfile"
+                FullWidth="true">
+                Manage Profile on Server
+            </MudButton>
+            
+            <MudButton 
+                Variant="Variant.Outlined" 
+                Color="Color.Error" 
+                StartIcon="@Icons.Material.Filled.Logout"
+                OnClick="LogoutUser"
+                FullWidth="true">
+                Logout
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column align-center gap-3">
+            <MudProgressCircular Indeterminate="true" />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading profile...</MudText>
+        </div>
+    }
 </div>
 
 @code {
-    [Parameter] public UserDto? User { get; set; }
+    [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
 
-    private void RedirectToManageProfile()
+    private void NavigateToManageProfile()
     {
-        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Manage", true);
+        try
+        {
+            Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Manage", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error navigating to profile management: {ex.Message}");
+            Snackbar.Add("Error opening profile management", Severity.Error);
+        }
     }
 
-    private void BeginLogOut()
+    private void LogoutUser()
     {
-        Navigation.NavigateTo(AppsettingsService.ServerUrl + "/LogoutRemote", true);
+        try
+        {
+            Navigation.NavigateTo(AppsettingsService.ServerUrl + "/LogoutRemote", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during logout: {ex.Message}");
+            Snackbar.Add("Error during logout", Severity.Error);
+        }
     }
 
     private string? GetProfilePictureUrl(UserDto user)

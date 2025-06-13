@@ -120,6 +120,7 @@
     [Parameter] public MessageTreeDto? MessageTree { get; set; }
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+    public bool rendering = false;
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
     
@@ -149,6 +150,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        rendering = false;
         await HighlightDebounced();
     }
 
@@ -161,7 +163,14 @@
 
     private void OnGenerate(string obj)
     {
+        //should theoretically never happen in production because compiled WASM is much faster, but just in case rendering doesnt happen fast enough
+        if (rendering)
+        {
+            return;
+        }
+        
         // Update UI when new tokens are received
+        rendering = true;
         InvokeAsync(StateHasChanged);
     }
 

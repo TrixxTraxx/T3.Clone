@@ -1,84 +1,158 @@
 @inject AiKeyService AiKeyService
+@inject ISnackbar Snackbar
 
 <MudText Typo="Typo.h6" GutterBottom="true">API Key Management</MudText>
 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
     Configure your AI service API keys to enable chat functionality
 </MudText>
 
-<div class="d-flex flex-column gap-4">
-    @foreach (var provider in AiProviders)
-    {
-        <MudCard>
-            <MudCardContent>
-                <div class="d-flex align-center justify-space-between mb-3">
-                    <div class="d-flex align-center gap-3">
-                        <MudIcon Icon="@provider.Icon" Color="@provider.Color" />
-                        <div>
-                            <MudText Typo="Typo.h6">@provider.Name</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Description</MudText>
+@if (isLoading)
+{
+    <div class="d-flex flex-column align-center gap-3">
+        <MudProgressCircular Indeterminate="true" />
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading API keys...</MudText>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column gap-4">
+        @foreach (var provider in aiProviders)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between mb-3">
+                        <div class="d-flex align-center gap-3">
+                            <MudIcon Icon="@provider.Icon" Color="@provider.Color" />
+                            <div>
+                                <MudText Typo="Typo.h6">@provider.Name</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@provider.Description</MudText>
+                            </div>
                         </div>
+                        <MudChip T="string"
+                            Color="@(keyStates.GetValueOrDefault(provider.Identifier, false) ? Color.Success : Color.Default)"
+                            Size="Size.Small">
+                            @(keyStates.GetValueOrDefault(provider.Identifier, false) ? "Configured" : "Not Set")
+                        </MudChip>
                     </div>
-                    <MudChip T="string"
-                        Color="@(KeyStates.ContainsKey(provider.Identifier) && KeyStates[provider.Identifier] ? Color.Success : Color.Default)"
-                        Size="Size.Small">
-                        @(KeyStates.ContainsKey(provider.Identifier) && KeyStates[provider.Identifier] ? "Configured" : "Not Set")
-                    </MudChip>
-                </div>
-                
-                <MudTextField 
-                    @bind-Value="@KeyValues[provider.Identifier]"
-                    Label="@($"{provider.Name} API Key")"
-                    InputType="@(ShowApiKeys.ContainsKey(provider.Identifier) && ShowApiKeys[provider.Identifier] ? InputType.Text : InputType.Password)"
-                    Variant="Variant.Outlined"
-                    Placeholder="Enter your API key..."
-                    Adornment="Adornment.End"
-                    AdornmentIcon="@(ShowApiKeys.ContainsKey(provider.Identifier) && ShowApiKeys[provider.Identifier] ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                    OnAdornmentClick="@(() => ToggleApiKeyVisibility(provider.Identifier))"
-                    Class="mb-3" />
-                
-                <MudButton 
-                    Variant="Variant.Filled" 
-                    Color="Color.Primary" 
-                    StartIcon="@Icons.Material.Filled.Save"
-                    OnClick="@(() => SaveApiKey(provider.Identifier))"
-                    Disabled="@string.IsNullOrWhiteSpace(KeyValues[provider.Identifier])">
-                    Save Key
-                </MudButton>
-            </MudCardContent>
-        </MudCard>
-    }
-</div>
+                    
+                    <MudTextField 
+                        @bind-Value="@keyValues[provider.Identifier]"
+                        Label="@($"{provider.Name} API Key")"
+                        InputType="@(showApiKeys.GetValueOrDefault(provider.Identifier, false) ? InputType.Text : InputType.Password)"
+                        Variant="Variant.Outlined"
+                        Placeholder="Enter your API key..."
+                        Adornment="Adornment.End"
+                        AdornmentIcon="@(showApiKeys.GetValueOrDefault(provider.Identifier, false) ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                        OnAdornmentClick="@(() => ToggleApiKeyVisibility(provider.Identifier))"
+                        Class="mb-3"
+                    />
+                    
+                    <MudButton 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        StartIcon="@Icons.Material.Filled.Save"
+                        OnClick="@(() => SaveApiKey(provider.Identifier))"
+                    >
+                        Save Key
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        }
+    </div>
+}
 
 @code {
-    [Parameter] public List<AiProvider> AiProviders { get; set; } = new();
-    [Parameter] public Dictionary<string, bool> KeyStates { get; set; } = new();
-    [Parameter] public Dictionary<string, string> KeyValues { get; set; } = new();
-    [Parameter] public Dictionary<string, bool> ShowApiKeys { get; set; } = new();
-    [Parameter] public EventCallback<string> OnSaveApiKey { get; set; }
+    private List<AiProvider> aiProviders = new();
+    private Dictionary<string, bool> keyStates = new();
+    private Dictionary<string, string> keyValues = new();
+    private Dictionary<string, bool> showApiKeys = new();
+    private bool isLoading = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Initialize dictionaries if they're empty
-        foreach (var provider in AiProviders)
+        // Initialize providers first
+        InitializeProviders();
+        // Then load the actual key states
+        await LoadAiKeysAsync();
+    }
+
+    private void InitializeProviders()
+    {
+        aiProviders = new List<AiProvider>
         {
-            if (!KeyValues.ContainsKey(provider.Identifier))
-                KeyValues[provider.Identifier] = "";
-            if (!ShowApiKeys.ContainsKey(provider.Identifier))
-                ShowApiKeys[provider.Identifier] = false;
+            new("openrouter", "OpenRouter", "Access to multiple AI models through OpenRouter, reasoning is unfortunately not supported using OpenRouter!", Icons.Material.Filled.Router, MudBlazor.Color.Primary),
+            new("openai", "OpenAI", "ChatGPT models", Icons.Material.Filled.Psychology, MudBlazor.Color.Success),
+            new("anthropic", "Anthropic", "Claude AI models", Icons.Material.Filled.SmartToy, MudBlazor.Color.Warning),
+            new("google", "Google", "Gemini models", Icons.Material.Filled.Search, MudBlazor.Color.Error)
+        };
+
+        // Initialize dictionaries with default values
+        foreach (var provider in aiProviders)
+        {
+            keyStates[provider.Identifier] = false;
+            keyValues[provider.Identifier] = "";
+            showApiKeys[provider.Identifier] = false;
         }
+    }
+
+    private async Task LoadAiKeysAsync()
+    {
+        try
+        {
+            var keys = await AiKeyService.GetKeysAsync();
+            
+            foreach (var provider in aiProviders)
+            {
+                keyStates[provider.Identifier] = keys.Contains(provider.Identifier);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading API keys: {ex.Message}");
+            Snackbar.Add("Error loading API keys", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnKeyInput(string identifier, string value)
+    {
+        Console.WriteLine("Key input changed for " + identifier + ": " + value);
+        keyValues[identifier] = value;
+        StateHasChanged(); // Force re-render to update button state
     }
 
     private void ToggleApiKeyVisibility(string identifier)
     {
-        ShowApiKeys[identifier] = !ShowApiKeys.GetValueOrDefault(identifier, false);
+        showApiKeys[identifier] = !showApiKeys.GetValueOrDefault(identifier, false);
     }
 
     private async Task SaveApiKey(string identifier)
     {
-        var key = KeyValues[identifier];
-        if (string.IsNullOrWhiteSpace(key)) return;
+        try
+        {
+            var key = keyValues[identifier];
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                Snackbar.Add("Please enter a valid API key", Severity.Warning);
+                return;
+            }
 
-        await OnSaveApiKey.InvokeAsync(identifier);
+            await AiKeyService.AddKeyAsync(identifier, key);
+            keyStates[identifier] = true;
+            keyValues[identifier] = ""; // Clear the input for security
+            
+            Snackbar.Add($"{aiProviders.First(p => p.Identifier == identifier).Name} API key saved successfully", Severity.Success);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving API key: {ex.Message}");
+            Snackbar.Add("Error saving API key", Severity.Error);
+        }
     }
 
     // Helper class for AI providers

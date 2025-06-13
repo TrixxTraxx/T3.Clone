@@ -1,3 +1,4 @@
+@rendermode InteractiveServer
 @inject ServerSettingsService SettingsService
 @using T3.Clone.Client.Services
 
@@ -6,12 +7,20 @@
 @code {
     private bool isDarkMode = true;
     private MudTheme currentTheme;
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+    protected override Task OnInitializedAsync()
     {
+        Console.WriteLine("Initializing MyMudThemeProvider");
+        InvokeAsync(async () => await UpdateThemeAsync());
+        return base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Console.WriteLine("Updating Theme");
         if (firstRender)
         {
-            await UpdateThemeAsync();
+            InvokeAsync(async () => await UpdateThemeAsync());
         }
     }
     private async Task UpdateThemeAsync()

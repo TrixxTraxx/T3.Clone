@@ -1,62 +1,27 @@
 @page "/profile"
-@using T3.Clone.Dtos.User
 @using T3.Clone.Client.Components.ProfileTabs
-@inject ClientAuthenticationService ClientAuthenticationService
-@inject NavigationManager Navigation
-@inject AppsettingsService AppsettingsService
-@inject AiKeyService AiKeyService
-@inject SettingsService SettingsService
-@inject ThemeService ThemeService
-@inject ISnackbar Snackbar
+@using T3.Clone.Dtos.User
 
 <PageTitle>Profile - LLM Lab</PageTitle>
 
 <div class="profile-page">
     <div class="profile-container">
-        <MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
             <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-6">
-                <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3" />
-                Profile Settings
+                Settings
             </MudText>
             
-            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="scrollable-panel">
+            <MudTabs Elevation="4" Rounded="true" PanelClass="pa-6" Class="mt-4">
                 <MudTabPanel Text="Profile" Icon="@Icons.Material.Filled.Person">
-                    <ProfileManagementTab User="@currentUser" />
+                    <ProfileManagementTab />
                 </MudTabPanel>
                 
-                <MudTabPanel Text="AI Keys" Icon="@Icons.Material.Filled.Key">
-                    <AiKeysManagementTab 
-                        AiProviders="@aiProviders"
-                        KeyStates="@keyStates"
-                        KeyValues="@keyValues"
-                        ShowApiKeys="@showApiKeys"
-                        OnSaveApiKey="@SaveApiKey" />
+                <MudTabPanel Text="API Keys" Icon="@Icons.Material.Filled.Key">
+                    <AiKeysManagementTab />
                 </MudTabPanel>
                 
                 <MudTabPanel Text="Theme" Icon="@Icons.Material.Filled.Palette">
-                    <ThemeSettingsTab 
-                        CurrentTheme="@currentTheme"
-                        CurrentThemeChanged="@(async (string value) => { currentTheme = value; StateHasChanged(); })"
-                        PrimaryColor="@primaryColor"
-                        PrimaryColorChanged="@(async (string value) => { primaryColor = value; StateHasChanged(); })"
-                        SecondaryColor="@secondaryColor"
-                        SecondaryColorChanged="@(async (string value) => { secondaryColor = value; StateHasChanged(); })"
-                        BackgroundColor="@backgroundColor"
-                        BackgroundColorChanged="@(async (string value) => { backgroundColor = value; StateHasChanged(); })"
-                        SurfaceColor="@surfaceColor"
-                        SurfaceColorChanged="@(async (string value) => { surfaceColor = value; StateHasChanged(); })"
-                        TextColor="@textColor"
-                        TextColorChanged="@(async (string value) => { textColor = value; StateHasChanged(); })"
-                        SecondaryTextColor="@secondaryTextColor"
-                        SecondaryTextColorChanged="@(async (string value) => { secondaryTextColor = value; StateHasChanged(); })"
-                        SuccessColor="@successColor"
-                        SuccessColorChanged="@(async (string value) => { successColor = value; StateHasChanged(); })"
-                        ErrorColor="@errorColor"
-                        ErrorColorChanged="@(async (string value) => { errorColor = value; StateHasChanged(); })"
-                        WarningColor="@warningColor"
-                        WarningColorChanged="@(async (string value) => { warningColor = value; StateHasChanged(); })"
-                        InfoColor="@infoColor"
-                        InfoColorChanged="@(async (string value) => { infoColor = value; StateHasChanged(); })" />
+                    <ThemeSettingsTab />
                 </MudTabPanel>
             </MudTabs>
         </MudContainer>
@@ -64,119 +29,5 @@
 </div>
 
 @code {
-    private UserDto? currentUser;
-    
-    // AI Keys Management
-    private List<AiKeysManagementTab.AiProvider> aiProviders = new();
-    private Dictionary<string, bool> keyStates = new();
-    private Dictionary<string, string> keyValues = new();
-    private Dictionary<string, bool> showApiKeys = new();
-    
-    // Theme Management
-    private string currentTheme = "default";
-    private string primaryColor = "#6366f1";
-    private string secondaryColor = "#7c3aed";
-    private string backgroundColor = "#070d22";
-    private string surfaceColor = "#111936";
-    private string textColor = "#FFFFFF";
-    private string secondaryTextColor = "#B0B0B0";
-    private string successColor = "#10b981";
-    private string errorColor = "#ef4444";
-    private string warningColor = "#f59e0b";
-    private string infoColor = "#3b82f6";
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadUserDataAsync();
-        await LoadAiKeysAsync();
-        await LoadThemeSettingsAsync();
-    }
-
-    private async Task LoadUserDataAsync()
-    {
-        try
-        {
-            currentUser = await ClientAuthenticationService.GetCurrentUser();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading user data: {ex.Message}");
-            Snackbar.Add("Error loading user data", Severity.Error);
-        }
-    }
-
-    private async Task LoadAiKeysAsync()
-    {
-        aiProviders = new List<AiKeysManagementTab.AiProvider>
-        {
-            new("openrouter", "OpenRouter", "Access to multiple AI models through OpenRouter", Icons.Material.Filled.Router, MudBlazor.Color.Primary),
-            new("openai", "OpenAI", "ChatGPT and GPT-4 models", Icons.Material.Filled.Psychology, MudBlazor.Color.Success),
-            new("anthropic", "Anthropic", "Claude AI models", Icons.Material.Filled.SmartToy, MudBlazor.Color.Warning),
-            new("google", "Google", "Gemini and PaLM models", Icons.Material.Filled.Search, MudBlazor.Color.Error)
-        };
-
-        try
-        {
-            var keys = await AiKeyService.GetKeysAsync();
-            
-            foreach (var provider in aiProviders)
-            {
-                keyStates[provider.Identifier] = keys.Contains(provider.Identifier);
-                keyValues[provider.Identifier] = "";
-                showApiKeys[provider.Identifier] = false;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading API keys: {ex.Message}");
-            Snackbar.Add("Error loading API keys", Severity.Error);
-        }
-    }
-
-    private async Task LoadThemeSettingsAsync()
-    {
-        try
-        {
-            currentTheme = await SettingsService.GetSettingAsync("CurrentTheme", "default");
-            primaryColor = await SettingsService.GetSettingAsync("PrimaryColor", SettingsService.Defaults.PrimaryColor);
-            secondaryColor = await SettingsService.GetSettingAsync("SecondaryColor", SettingsService.Defaults.SecondaryColor);
-            backgroundColor = await SettingsService.GetSettingAsync("BackgroundColor", SettingsService.Defaults.BackgroundColor);
-            surfaceColor = await SettingsService.GetSettingAsync("SurfaceColor", SettingsService.Defaults.SurfaceColor);
-            textColor = await SettingsService.GetSettingAsync("TextColor", SettingsService.Defaults.TextColor);
-            secondaryTextColor = await SettingsService.GetSettingAsync("SecondaryTextColor", SettingsService.Defaults.SecondaryTextColor);
-            successColor = await SettingsService.GetSettingAsync("SuccessColor", SettingsService.Defaults.SuccessColor);
-            errorColor = await SettingsService.GetSettingAsync("ErrorColor", SettingsService.Defaults.ErrorColor);
-            warningColor = await SettingsService.GetSettingAsync("WarningColor", SettingsService.Defaults.WarningColor);
-            infoColor = await SettingsService.GetSettingAsync("InfoColor", SettingsService.Defaults.InfoColor);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading theme settings: {ex.Message}");
-            Snackbar.Add("Error loading theme settings", Severity.Error);
-        }
-    }
-
-    private async Task SaveApiKey(string identifier)
-    {
-        try
-        {
-            var key = keyValues[identifier];
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                Snackbar.Add("Please enter a valid API key", Severity.Warning);
-                return;
-            }
-
-            await AiKeyService.AddKeyAsync(identifier, key);
-            keyStates[identifier] = true;
-            keyValues[identifier] = ""; // Clear the input for security
-            
-            Snackbar.Add($"{aiProviders.First(p => p.Identifier == identifier).Name} API key saved successfully", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saving API key: {ex.Message}");
-            Snackbar.Add("Error saving API key", Severity.Error);
-        }
-    }
+    // No logic needed - components handle their own state and data
 } 

@@ -5,6 +5,7 @@ namespace T3.Clone.Client.Services;
 
 public class ServerSettingsService
 {
+    private Dictionary<string, object> cachedSettings;
     private readonly ILocalStorageService _localStorage;
     private const string SettingsKey = "user_settings";
 
@@ -57,11 +58,20 @@ public class ServerSettingsService
 
     public async Task<Dictionary<string, object>> GetAllSettingsAsync()
     {
+        if(cachedSettings != null)
+        {
+            return cachedSettings;
+        }
         if (await _localStorage.ContainKeyAsync(SettingsKey))
         {
-            return await _localStorage.GetItemAsync<Dictionary<string, object>>(SettingsKey);
+            var settings = await _localStorage.GetItemAsync<Dictionary<string, object>>(SettingsKey);
+            if (settings != null)
+            {
+                cachedSettings = settings;
+                return cachedSettings;
+            }
         }
-        
+        cachedSettings = new Dictionary<string, object>();
         return new Dictionary<string, object>();
     }
 
