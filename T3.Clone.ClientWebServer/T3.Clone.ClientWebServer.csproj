@@ -6,8 +6,4 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\T3.Clone.Client\T3.Clone.Client.csproj" />
-    </ItemGroup>
-
 </Project>
