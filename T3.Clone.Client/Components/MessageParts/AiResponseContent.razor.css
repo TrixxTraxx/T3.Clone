@@ -4,6 +4,47 @@
     gap: 12px;
 }
 
+/* Error Message */
+.error-message {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, #ff4444 10%, transparent) 0%,
+        color-mix(in srgb, #ff4444 5%, transparent) 100%);
+    border: 1px solid color-mix(in srgb, #ff4444 30%, transparent);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.error-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.error-icon {
+    width: 16px;
+    height: 16px;
+    color: #ff4444;
+    flex-shrink: 0;
+}
+
+.error-title {
+    font-weight: 600;
+    color: #ff4444;
+    font-size: 14px;
+}
+
+.error-content {
+    color: var(--mud-palette-text-primary);
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 /* Model Response Container */
 .model-response {
     display: flex;
