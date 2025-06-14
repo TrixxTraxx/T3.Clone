@@ -152,7 +152,7 @@
             
             // <<== SCROLL TO BOTTOM HERE IF USER WAS AT BOTTOM BEFORE >>
             if (_wasScrolledToBottom)
-                await JSRuntime.InvokeVoidAsync("scrollChatToBottom");
+                await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
         }
         catch (Exception ex)
         {
@@ -178,8 +178,9 @@
     private async Task OnMessageContentChanged()
     {
         // Only scroll if user was at the bottom
+        Console.WriteLine("HUIENJCFK");
         if (_wasScrolledToBottom)
-            await JSRuntime.InvokeVoidAsync("scrollChatToBottom");
+            await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
     }
     
     public async ValueTask DisposeAsync()

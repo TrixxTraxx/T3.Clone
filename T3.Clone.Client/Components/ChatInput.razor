@@ -61,14 +61,16 @@
         
         <div class="input-field-wrapper">
             <div class="textarea-wrapper">
-                <textarea @bind="message.Text" 
-                         @bind:event="oninput"
-                         @onkeydown="HandleKeyDown"
-                         placeholder="Type your message..." 
-                         disabled="@IsLoading"
-                         class="hypermodern-textarea"
-                         rows="1"
-                         @ref="textareaRef"></textarea>
+                <textarea
+                    value="@message.Text"
+                    @oninput="OnInput"
+                    @onkeydown="HandleKeyDown"
+                    placeholder="Type your message..."
+                    disabled="@IsLoading"
+                    class="hypermodern-textarea"
+                    rows="1"
+                    @ref="textareaRef">
+</textarea>
             </div>
             
             <div class="send-button-wrapper">
@@ -265,6 +267,12 @@
         }
         
         // Handle auto-resize on input
+        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", textareaRef);
+    }
+    
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        message.Text = e.Value?.ToString() ?? string.Empty;
         await JSRuntime.InvokeVoidAsync("autoResizeTextarea", textareaRef);
     }
 
