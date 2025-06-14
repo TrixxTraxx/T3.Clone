@@ -1,0 +1,42 @@
+.image-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0,0,0,0.85);
+    z-index: 99999 !important;
+    display: flex; align-items: center; justify-content: center;
+}
+.image-modal-content {
+    position: relative;
+    outline: none;
+}
+.close-modal-btn {
+    position: absolute;
+    top: 0.5rem; right: 0.5rem;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 1;
+}
+.zoom-controls {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 2;
+}
+.zoom-controls button {
+    font-size: 1.2rem;
+    padding: 0.3em 0.7em;
+    background: rgba(0,0,0,0.4);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.zoom-controls button:hover {
+    background: rgba(255,255,255,0.2);
+}
