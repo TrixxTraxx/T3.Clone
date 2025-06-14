@@ -1,0 +1,33 @@
+@using Markdig
+@using T3.Clone.Client.Caches
+@using T3.Clone.Client.Models
+
+<div class="markdown-content">
+    @(MarkdownContent)
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public string Content { get; set; } = string.Empty;
+
+    public MarkupString MarkdownContent;
+
+
+    protected override void OnInitialized()
+    {
+        InitializeMarkdownContent();
+    }
+
+    private void InitializeMarkdownContent()
+    {
+        MarkdownContent = (MarkupString)Markdown.ToHtml(Content);
+    }
+
+    private void OnTokenReceived(string token)
+    {
+        Content += token;
+        InitializeMarkdownContent();
+        // Only re-render this component when regular tokens are received
+        InvokeAsync(StateHasChanged);
+    }
+} 

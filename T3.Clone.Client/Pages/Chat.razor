@@ -2,6 +2,7 @@
 @page "/chat"
 @page "/chat/{ThreadId:int}"
 @using T3.Clone.Client.Caches
+@using T3.Clone.Client.Components.Chat
 @inject MessageSyncService MessageSyncService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
@@ -103,13 +104,13 @@
             currentBranchPath = 0;
             StateHasChanged();
         }
-        _ = Task.Run(async () =>
+        _ = Task.Run((Func<Task>) (async() =>
         {
             // await Task.Delay(50);
             await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.TextareaRef);
             await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.TextareaRef);
             await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
-        }); 
+        })); 
     }
 
     private void InitializeBranchPath()
@@ -151,9 +152,7 @@
             //await JSRuntime.InvokeVoidAsync("setHistory", "/chat/" + result.ThreadId);
             NavigationManager.NavigateTo("/chat/" + result.ThreadId, replace: true);
             
-            // <<== SCROLL TO BOTTOM HERE IF USER WAS AT BOTTOM BEFORE >>
-            if (_wasScrolledToBottom)
-                await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
+            await JSRuntime.InvokeVoidAsync("scrollChatToBottom");
         }
         catch (Exception ex)
         {

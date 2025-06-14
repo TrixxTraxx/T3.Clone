@@ -9,7 +9,8 @@ public class MessageFormatter
     public enum SegmentType
     {
         Markdown,
-        CodeBlock
+        CodeBlock,
+        Latex
     }
 
     public class Segment
@@ -22,11 +23,9 @@ public class MessageFormatter
         public string? Language { get; set; }
     }
 
-    // Regex to find a code block and capture its language and content.
-    // We use named capture groups "lang" and "content" for clarity.
-    // RegexOptions.Singleline ensures that "." matches newline characters.
-    private static readonly Regex CodeBlockRegex = new Regex(
-        @"^```(?<lang>[^\n\r]*)[\r\n]?(?<content>.*)[\r\n]?```$",
+    // Regex to find LaTeX expressions (both inline and block)
+    private static readonly Regex LatexRegex = new Regex(
+        @"(?:\$\$([^$]+?)\$\$|\$([^$]+?)\$|\\begin\{([^}]+)\}(.*?)\\end\{\3\})",
         RegexOptions.Singleline | RegexOptions.Compiled
     );
 
@@ -38,6 +37,30 @@ public class MessageFormatter
             return segments;
         }
 
+        // First, handle code blocks
+        var codeBlockSegments = SplitCodeBlocks(message);
+        
+        // Then, for each non-code segment, check for LaTeX
+        foreach (var segment in codeBlockSegments)
+        {
+            if (segment.Type == SegmentType.CodeBlock)
+            {
+                segments.Add(segment);
+            }
+            else
+            {
+                // Process this markdown segment for LaTeX
+                var latexSegments = SplitLatexInMarkdown(segment.Content);
+                segments.AddRange(latexSegments);
+            }
+        }
+
+        return segments;
+    }
+
+    private List<Segment> SplitCodeBlocks(string message)
+    {
+        var segments = new List<Segment>();
         const string delimiter = "```";
         var parts = message.Split(
             new[] { delimiter },
@@ -98,6 +121,74 @@ public class MessageFormatter
 
             // Toggle for the next part
             isCodeBlock = !isCodeBlock;
+        }
+
+        return segments;
+    }
+
+    private List<Segment> SplitLatexInMarkdown(string markdownContent)
+    {
+        var segments = new List<Segment>();
+        if (string.IsNullOrEmpty(markdownContent))
+        {
+            return segments;
+        }
+
+        var matches = LatexRegex.Matches(markdownContent);
+        if (matches.Count == 0)
+        {
+            // No LaTeX found, return as single markdown segment
+            segments.Add(new Segment
+            {
+                Type = SegmentType.Markdown,
+                Content = markdownContent
+            });
+            return segments;
+        }
+
+        int lastIndex = 0;
+        foreach (Match match in matches)
+        {
+            // Add markdown content before this LaTeX match
+            if (match.Index > lastIndex)
+            {
+                var beforeContent = markdownContent.Substring(lastIndex, match.Index - lastIndex);
+                if (!string.IsNullOrEmpty(beforeContent))
+                {
+                    segments.Add(new Segment
+                    {
+                        Type = SegmentType.Markdown,
+                        Content = beforeContent
+                    });
+                }
+            }
+
+            // Add the LaTeX segment
+            var latexContent = match.Groups[1].Success ? match.Groups[1].Value : // $$...$$
+                              match.Groups[2].Success ? match.Groups[2].Value : // $...$
+                              match.Groups[4].Value; // \begin{...}...\end{...}
+
+            segments.Add(new Segment
+            {
+                Type = SegmentType.Latex,
+                Content = latexContent
+            });
+
+            lastIndex = match.Index + match.Length;
+        }
+
+        // Add any remaining markdown content after the last LaTeX match
+        if (lastIndex < markdownContent.Length)
+        {
+            var afterContent = markdownContent.Substring(lastIndex);
+            if (!string.IsNullOrEmpty(afterContent))
+            {
+                segments.Add(new Segment
+                {
+                    Type = SegmentType.Markdown,
+                    Content = afterContent
+                });
+            }
         }
 
         return segments;

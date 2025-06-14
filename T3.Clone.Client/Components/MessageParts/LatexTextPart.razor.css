@@ -1,0 +1,24 @@
+/* LaTeX Content - Display as normal text for now */
+.latex-content {
+    color: var(--mud-palette-text-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    letter-spacing: 0.01em;
+    margin: 8px 0;
+    /* Light background to indicate it's LaTeX content that could be rendered differently */
+    background: color-mix(in srgb, var(--mud-palette-info) 5%, transparent);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 3px solid color-mix(in srgb, var(--mud-palette-info) 40%, transparent);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .latex-content {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+} 

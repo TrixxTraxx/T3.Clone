@@ -1,6 +1,3 @@
-@using System.Text.Json
-@using T3.Clone.Client.Caches
-@using T3.Clone.Dtos.Model
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
 @inject AiModelService AiModelService
@@ -68,50 +65,26 @@
                 }
             </div>
         </div>
-        @if (!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))
-        {
-            <div class="message-content">
-                <div class="message-text ai-text">
-                    @foreach (var segment in GetMessageSegments(Message.Message.ModelResponse))
-                    {
-                        if (segment.Type == MessageFormatter.SegmentType.Markdown)
-                        {
-                            <div class="markdown-content">
-                                @((MarkupString)segment.Content)
-                            </div>
-                        }
-                        else if(segment.Type == MessageFormatter.SegmentType.CodeBlock)
-                        {
-                            <pre class="code-block">
-                                <code>@segment.Content</code>
-                            </pre>
-                        }
-                    }
-                </div>
-                <div class="message-actions">
-                    <button class="action-button" @onclick="() => CopyToClipboard(Message.Message.ModelResponse)"
-                            title="Copy message">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                        </svg>
-                    </button>
-                    <button class="action-button" @onclick="() => OnRegenerateMessage.InvokeAsync(Message)"
-                            title="Regenerate response">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                        </svg>
-                    </button>
-                </div>
+        
+        <div class="message-content">
+            <AiResponseContent Message="@Message" OnContentChanged="@OnContentChanged" />
+            <div class="message-actions">
+                <button class="action-button" @onclick="() => CopyToClipboard(Message.Message.ModelResponse)"
+                        title="Copy message">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                </button>
+                <button class="action-button" @onclick="() => OnRegenerateMessage.InvokeAsync(Message)"
+                        title="Regenerate response">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                </button>
             </div>
-        }
-        else
-        {
-            <div class="loading-dots">
-
-            </div>
-        }
+        </div>
     </div>
 </div>
 
@@ -122,23 +95,14 @@
     [Parameter] public EventCallback<MessageCache> OnRegenerateMessage { get; set; }
     [Parameter] public EventCallback OnContentChanged { get; set; }
 
-    private string? _lastModelResponse;
-    public bool rendering = false;
-
     private List<AiModelDto> aiModels = new List<AiModelDto>();
-    
-    private DateTime lastHighlightTime = DateTime.MinValue;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            Message.OnUpdated += OnMessageUpdated;
             aiModels = await AiModelService.GetAiModels();
-
-            Message.OnGenerate += OnGenerate;
-
-            Message.OnUpdated += OnUpdated;
-
 
             if (!Message.Message.Complete)
             {
@@ -151,38 +115,13 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void OnMessageUpdated()
     {
-        if (_lastModelResponse != Message.Message.ModelResponse)
+        InvokeAsync(() =>
         {
-            _lastModelResponse = Message.Message.ModelResponse;
-            // Notify parent ONLY if we now have a full response (not typing indicator)
-            if (!string.IsNullOrWhiteSpace(_lastModelResponse))
-                await OnContentChanged.InvokeAsync(null);
-        }
-        
-        rendering = false;
-        await HighlightDebounced();
-    }
-
-    private void OnUpdated()
-    {
-        Console.WriteLine("Updating message UI with message: " + JsonSerializer.Serialize(Message.Message));
-        // Update UI when message is updated
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void OnGenerate(string obj)
-    {
-        //should theoretically never happen in production because compiled WASM is much faster, but just in case rendering doesnt happen fast enough
-        if (rendering)
-        {
-            return;
-        }
-        
-        // Update UI when new tokens are received
-        rendering = true;
-        InvokeAsync(StateHasChanged);
+            StateHasChanged();
+            OnContentChanged.InvokeAsync();
+        });
     }
 
     private string GetModelName()
@@ -194,13 +133,6 @@
 
         var model = aiModels.FirstOrDefault(m => m.Id == Message.Message.ModelId);
         return model?.Name ?? "Assistant";
-    }
-
-    private List<MessageFormatter.Segment> GetMessageSegments(string message)
-    {
-        var formatter = new MessageFormatter();
-        var parts = formatter.SplitIntoSegments(message);
-        return parts;
     }
 
     private async Task CopyToClipboard(string text)
@@ -232,27 +164,8 @@
         }
     }
 
-    private async Task HighlightDebounced()
-    {
-        if (Message.Message.ModelResponse.Contains("```"))
-        {
-            if (DateTime.Now - lastHighlightTime < TimeSpan.FromMilliseconds(250)) return;
-
-            lastHighlightTime = DateTime.Now;
-
-            // Ensure the message is fully rendered before highlighting
-            await Task.Delay(50);
-
-            // Use JS interop to highlight the message text
-            await JSRuntime.InvokeVoidAsync("hightlightCodeBlocks", Message.Message.Id);
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
         if (GenerationService != null) await GenerationService.DisposeAsync();
-        Message.OnGenerate -= OnGenerate;
-        Message.OnUpdated -= OnUpdated;
     }
-
 } 

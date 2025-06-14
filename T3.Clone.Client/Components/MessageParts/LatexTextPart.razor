@@ -1,0 +1,48 @@
+@using T3.Clone.Client.Caches
+@using T3.Clone.Client.Models
+@implements IDisposable
+
+<div class="latex-content">
+    @Content
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public string Content { get; set; } = string.Empty;
+
+    private string? _lastContent;
+
+    protected override void OnInitialized()
+    {
+        _lastContent = Content;
+        Message.OnGenerate += OnTokenReceived;
+        Message.OnUpdated += OnMessageUpdated;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_lastContent != Content)
+        {
+            _lastContent = Content;
+            // TODO: In the future, we can add LaTeX rendering here
+        }
+    }
+
+    private void OnTokenReceived(string token)
+    {
+        // Only re-render this component when regular tokens are received
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnMessageUpdated()
+    {
+        // Update UI when message is updated
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Message.OnGenerate -= OnTokenReceived;
+        Message.OnUpdated -= OnMessageUpdated;
+    }
+} 

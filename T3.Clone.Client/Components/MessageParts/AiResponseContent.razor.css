@@ -1,0 +1,70 @@
+.ai-response-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Model Response Container */
+.model-response {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Loading Response */
+.loading-response {
+    padding: 16px 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.loading-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.loading-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--mud-palette-text-secondary);
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: loadingPulse 1.4s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.loading-dots span:nth-child(3) {
+    animation-delay: 0;
+}
+
+@keyframes loadingPulse {
+    0%, 80%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* No Response State */
+.no-response {
+    padding: 16px;
+    text-align: center;
+    opacity: 0.6;
+}
+
+.no-response-text {
+    color: var(--mud-palette-text-secondary);
+    font-style: italic;
+    font-size: 14px;
+} 

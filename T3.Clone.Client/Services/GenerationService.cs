@@ -70,15 +70,16 @@ public class GenerationService : IAsyncDisposable
             if (isThinking)
             {
                 _currentMessageCache.Message.ThinkingResponse += token;
+                // Emit events to the cache and external subscribers
+                _currentMessageCache.OnReasoningGenerate?.Invoke(token);
             }
             else
             {
                 _currentMessageCache.Message.ModelResponse += token;
+                // Emit events to the cache and external subscribers
+                _currentMessageCache.OnGenerate?.Invoke(token);
             }
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
-            
-            // Emit events to the cache and external subscribers
-            _currentMessageCache.OnGenerate?.Invoke(token);
         });
 
         _hubConnection.On<MessageDto>("GenerationStopped", (message) =>

@@ -189,25 +189,17 @@ window.removeChatInputAutoFocus = function (element) {
     delete element._chatInputAutoFocusHandler;
 };
 
-window.hightlightCodeBlocks = function() {
+window.highlightCodeBlock = function(elementId) {
     if (typeof hljs !== 'undefined') {
-        document.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightElement(block);
-        });
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.warn(`Element with ID ${elementId} not found for highlighting`);
+            return;
+        }
+        // Ensure the element has code blocks to highlight
+        hljs.highlightElement(element);
     } else {
         console.warn('Highlight.js is not loaded');
-    }
-    
-    if(typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-        document.querySelectorAll('.markdown-content').forEach((el) => {
-            el.innerHTML =
-                DOMPurify.sanitize(
-                    marked.parse(el.innerHTML)
-                );
-        });
-    }
-    else {
-        console.warn('Marked.js or DOMPurify is not loaded');
     }
 }
 

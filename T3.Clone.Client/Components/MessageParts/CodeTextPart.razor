@@ -1,0 +1,62 @@
+@using T3.Clone.Client.Caches
+@using T3.Clone.Client.Models
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<pre class="code-block" id="@ElementId">
+    <code>@Content</code>
+</pre>
+
+@code {
+    public Guid ElementId { get; set; } = Guid.NewGuid();
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public string Content { get; set; } = string.Empty;
+    [Parameter] public string? Language { get; set; }
+
+    private DateTime _lastHighlightTime = DateTime.MinValue;
+
+    protected override void OnInitialized()
+    {
+        Message.OnGenerate += OnTokenReceived;
+        Message.OnUpdated += OnMessageUpdated;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await HighlightDebounced();
+    }
+
+    private void OnTokenReceived(string token)
+    {
+        // Only re-render this component when regular tokens are received
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnMessageUpdated()
+    {
+        // Update UI when message is updated
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HighlightDebounced()
+    {
+        if (!string.IsNullOrWhiteSpace(Content))
+        {
+            if (DateTime.Now - _lastHighlightTime < TimeSpan.FromMilliseconds(250)) return;
+
+            _lastHighlightTime = DateTime.Now;
+
+            // Ensure the message is fully rendered before highlighting
+            await Task.Delay(50);
+
+            // Use JS interop to highlight the code block
+            await JSRuntime.InvokeVoidAsync("highlightCodeBlock", ElementId);
+        }
+    }
+
+    public void Dispose()
+    {
+        Message.OnGenerate -= OnTokenReceived;
+        Message.OnUpdated -= OnMessageUpdated;
+    }
+} 

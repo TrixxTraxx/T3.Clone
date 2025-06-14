@@ -1,0 +1,38 @@
+/* Code Blocks */
+.code-block {
+    background: color-mix(in srgb, var(--mud-palette-surface) 80%, var(--mud-palette-dark));
+    border: 1px solid color-mix(in srgb, var(--mud-palette-text-secondary) 20%, transparent);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    position: relative;
+}
+
+.code-block code {
+    color: var(--mud-palette-text-primary);
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .code-block {
+        padding: 12px;
+        font-size: 13px;
+    }
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+    .code-block {
+        background: color-mix(in srgb, var(--mud-palette-dark) 90%, var(--mud-palette-surface));
+        border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 25%, transparent);
+    }
+} 

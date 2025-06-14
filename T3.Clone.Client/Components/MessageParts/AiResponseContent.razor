@@ -1,0 +1,93 @@
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<div class="ai-response-content">
+    @if (Message.Message.ReasoningEffortLevel != ReasoningEffortLevel.None)
+    {
+        <ThinkingTextPart
+            @ref="thinkingText"
+            Message="@Message"
+            IsThinkingCollapsed="@(!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))"
+        />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))
+    {
+        <div class="model-response">
+            @foreach (var segment in MessageFormatter.SplitIntoSegments(Message.Message.ModelResponse))
+            {
+                if (segment.Type == MessageFormatter.SegmentType.Markdown)
+                {
+                    <MarkdownTextPart Message="@Message" Content="@segment.Content"/>
+                }
+                else if (segment.Type == MessageFormatter.SegmentType.CodeBlock)
+                {
+                    <CodeTextPart Message="@Message" Content="@segment.Content" Language="@segment.Language"/>
+                }
+                else if (segment.Type == MessageFormatter.SegmentType.Latex)
+                {
+                    <LatexTextPart Message="@Message" Content="@segment.Content"/>
+                }
+            }
+        </div>
+    }
+    else if (Message.Message.Complete)
+    {
+        <div class="no-response">
+            <span class="no-response-text">No response generated</span>
+        </div>
+    }
+    else
+    {
+        <div class="loading-response">
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public EventCallback OnContentChanged { get; set; }
+    
+    private ThinkingTextPart? thinkingText;
+    private bool receivedFirstToken = false;
+    
+    private MessageFormatter MessageFormatter = new MessageFormatter();
+
+    protected override void OnInitialized()
+    {
+        Message.OnGenerate += OnTokenReceived;
+        Message.OnReasoningGenerate += OnReasoningTokenReceived;
+    }
+
+    private void OnTokenReceived(string token)
+    {
+        if (!receivedFirstToken)
+        {
+            thinkingText?.SetThinkingCollapsed(true);
+            receivedFirstToken = true;
+        }
+        AddMessageToken(token);
+    }
+
+    private void AddMessageToken(string token)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnReasoningTokenReceived(string token)
+    {
+        thinkingText?.OnTokenReceived(token);
+    }
+
+    public void Dispose()
+    {
+        Message.OnGenerate -= OnTokenReceived;
+        Message.OnReasoningGenerate -= OnReasoningTokenReceived;
+    }
+
+} 
