@@ -18,6 +18,8 @@ using T3.Clone.ServiceDefaults;
 using MudBlazor.Services;
 using Blazored.LocalStorage;
 using MudBlazorWebApp1.Components.Account;
+using T3.Clone.Server;
+using T3.Clone.Server.Components.Account;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -167,7 +169,12 @@ builder.Services.AddHangfire(configuration => configuration
 
 builder.Services.AddHangfireServer();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+var mailgunApiKey = builder.Configuration["Mailgun:ApiKey"];
+var mailgunDomain = builder.Configuration["Mailgun:Domain"];
+var fromAddress = builder.Configuration["Mailgun:From"];
+
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>>(
+    new MailgunEmailSender(mailgunApiKey, mailgunDomain, fromAddress));
 
 var app = builder.Build();
 
