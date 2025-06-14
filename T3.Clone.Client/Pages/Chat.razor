@@ -178,7 +178,6 @@
     private async Task OnMessageContentChanged()
     {
         // Only scroll if user was at the bottom
-        Console.WriteLine("HUIENJCFK");
         if (_wasScrolledToBottom)
             await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
     }
