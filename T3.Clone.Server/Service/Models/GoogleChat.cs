@@ -141,6 +141,9 @@ public class GoogleChat(
 
             return new ChatModelResponse
             {
+                InputTokens = 0, // TODO: Get actual token usage from response if available
+                OutputTokens = 0, // TODO: Get actual token usage from response if available
+                Response = entity.ModelResponse,
                 IsError = false,
                 ModelName = config.Name,
                 ModelVersion = config.ModelId,
@@ -157,8 +160,12 @@ public class GoogleChat(
             {
                 IsError = true,
                 ErrorMessage = ex.Message,
+                Response = string.Empty,
+                InputTokens = 0,
+                OutputTokens = 0,
                 ModelProvider = "Google",
-                ModelId = config.ModelId
+                ModelId = config.ModelId,
+                ModelName = config.Name
             };
         }
     }

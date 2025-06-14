@@ -22,6 +22,8 @@ public class Message
     [NotMapped]
     public List<int> AttachmentIds => Attachments.Select(a => a.Id).ToList();
     
+    public bool Error { get; set; } = false;
+    public string ErrorMessage { get; set; } = string.Empty;
     
     
     public bool Complete { get; set; } = false;

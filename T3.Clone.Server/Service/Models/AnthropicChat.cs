@@ -178,15 +178,16 @@ public class AnthropicChat(
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during Anthropic Reasoning Chat generation: {ex.Message}");
-            errorCallback?.Invoke($"Error during Anthropic Reasoning Chat generation: {ex.Message}");
+            Console.WriteLine($"Error during Anthropic Chat generation: {ex.Message}");
+            errorCallback?.Invoke($"Error during Anthropic Chat generation: {ex.Message}");
             
             return new ChatModelResponse
             {
                 IsError = true,
                 ErrorMessage = ex.Message,
                 ModelProvider = "Anthropic",
-                ModelId = config.ModelId
+                ModelId = config.ModelId,
+                ModelName = config.Name
             };
         }
     }

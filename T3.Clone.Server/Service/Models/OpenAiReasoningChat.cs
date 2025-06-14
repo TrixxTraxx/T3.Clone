@@ -158,14 +158,29 @@ public class OpenAiReasoningChat(
             //finalize the response
             return new ChatModelResponse()
             {
+                InputTokens = 0, // TODO: Get actual token usage from response
+                OutputTokens = 0, // TODO: Get actual token usage from response
+                Response = entity.ModelResponse,
+                IsError = false,
+                ModelName = config.Name,
+                ModelVersion = config.ModelId,
+                ModelProvider = "OpenAI",
+                ModelId = config.ModelId
             };
         }
         catch (Exception ex)
         {
-            //handle error
-            //Console.WriteLine($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
+            Console.WriteLine($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
             errorCallback?.Invoke($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
-            return null;
+            
+            return new ChatModelResponse
+            {
+                IsError = true,
+                ErrorMessage = ex.Message,
+                ModelProvider = "OpenAI",
+                ModelId = config.ModelId,
+                ModelName = config.Name
+            };
         }
     }
 }

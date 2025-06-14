@@ -38,4 +38,10 @@ public class MessageDto
     
     [Key(10)]
     public ReasoningEffortLevel ReasoningEffortLevel { get; set; } = ReasoningEffortLevel.None;
+    
+    [Key(11)]
+    public bool Error { get; set; } = false;
+    
+    [Key(12)]
+    public string ErrorMessage { get; set; } = string.Empty;
 }
