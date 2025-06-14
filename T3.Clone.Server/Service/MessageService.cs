@@ -84,6 +84,7 @@ public class MessageService(
         }
         
         var message = await context.Messages
+            .Include(x => x.Attachments)
             .FirstOrDefaultAsync(m => m.Id == messageId && m.Thread.UserId == userId);
         
         if (message == null)
