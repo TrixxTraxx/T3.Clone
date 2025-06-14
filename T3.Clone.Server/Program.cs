@@ -29,6 +29,10 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.Configure<Appsettings>(
+    builder.Configuration.GetSection("Appsettings")
+);
+
 builder.Services.AddCors(x =>
 {
     x.AddPolicy("AllowFrontend",
