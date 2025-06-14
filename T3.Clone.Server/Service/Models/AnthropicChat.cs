@@ -38,7 +38,25 @@ public class AnthropicChat(
                     }
                 };
 
-                // TODO: Add proper image attachment support for reasoning
+                if (message.Attachments?.Any() == true)
+                {
+                    foreach (var attachment in message.Attachments)
+                    {
+                        var content = attachmentService.GetAttachmentContent(attachment.Id, true);
+                        if (content.data != null && content.data.Length > 0)
+                        {
+                            userContent.Add(new ImageContent()
+                            {
+                                Source = new ImageSource()
+                                {
+                                    Type = SourceType.base64,
+                                    Data = Convert.ToBase64String(content.data),
+                                    MediaType = content.contentType,
+                                },
+                            });
+                        }
+                    }
+                }
 
                 messages.Add(new Anthropic.SDK.Messaging.Message()
                 {
@@ -104,6 +122,10 @@ public class AnthropicChat(
                 }
                 else if (res.Delta?.Thinking != null)
                 {
+                    if (!isThinkingContent)
+                    {
+                        Console.WriteLine($"[Anthropic Reasoning] Warning: Received thinking content outside of a thinking block. This may indicate an issue with the model response structure.");
+                    }
                     // This is thinking/reasoning content
                     entity.ThinkingResponse += res.Delta.Thinking;
                     thinkingTokenCallback?.Invoke(res.Delta.Thinking);
@@ -112,6 +134,10 @@ public class AnthropicChat(
                 }
                 else if (res.Delta?.Text != null)
                 {
+                    if (isThinkingContent)
+                    {
+                        Console.WriteLine($"[Anthropic Reasoning] Warning: Received regular text content while in a thinking block. This may indicate an issue with the model response structure.");
+                    }
                     // This is regular response content
                     entity.ModelResponse += res.Delta.Text;
                     tokenCallback?.Invoke(res.Delta.Text);
