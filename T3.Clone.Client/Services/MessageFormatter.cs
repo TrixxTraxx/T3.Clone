@@ -11,8 +11,7 @@ public class MessageFormatter
     public enum SegmentType
     {
         Markdown,
-        CodeBlock,
-        Latex
+        CodeBlock
     }
 
     public class Segment
@@ -62,27 +61,38 @@ public class MessageFormatter
         {
             tokenLength = fullContent.Length;
         }
+        var segmentStart = Math.Max(initialLastSegment.StartIndex, fullContent.Length - tokenLength - 4);
 
-        for (int i = Math.Max(initialLastSegment.StartIndex, fullContent.Length - tokenLength - 4); i < fullContent.Length; i++)
+        for (int i = segmentStart; i < fullContent.Length; i++)
         {
+            //Console.WriteLine("Scanning index: " + i + " with character: " + fullContent[i]);
             var lastSegment = Segments.Last();
-            var newSegmentType = HasNewSegmentType(fullContent, i);
-            if (newSegmentType.HasValue)
+            if (lastSegment.StartIndex == i && lastSegment.Type != SegmentType.Markdown)
             {
-                Console.WriteLine("Found new segment Seperator: " + newSegmentType.Value);
+                continue;
+            }
+            var seperatorType = HasNewSegmentType(fullContent, i);
+            if (seperatorType.HasValue)
+            {
+                //Console.WriteLine("Found new segment Seperator: " + seperatorType.Value);
+                if (lastSegment.Type == SegmentType.CodeBlock)
+                {
+                    i += 3;
+                }
                 // If the last segment is of the same type, just append to it
-                lastSegment.EndIndex = Math.Max(lastSegment.StartIndex, i - 1);
-                Console.WriteLine($"Extracting message from index {lastSegment.StartIndex} to {lastSegment.EndIndex}");
+                lastSegment.EndIndex = Math.Max(lastSegment.StartIndex, i);
+                //Console.WriteLine($"Extracting message from index {lastSegment.StartIndex} to {lastSegment.EndIndex}");
                 lastSegment.FullContent = fullContent.Substring(lastSegment.StartIndex, lastSegment.EndIndex - lastSegment.StartIndex);
-                Console.WriteLine($"Extracting message: {lastSegment.FullContent}");
+                //Console.WriteLine($"Extracting message: {lastSegment.FullContent}");
                 UpdateContentAndLanguage(lastSegment);
                 
-                SegmentType type = newSegmentType.Value;
+                SegmentType type = seperatorType.Value;
                 if(lastSegment.Type == type && lastSegment.Type != SegmentType.Markdown)
                 {
                     // If the last segment is not of the same type, we need to create a new segment
                     type = SegmentType.Markdown;
                 }
+                
 
                 var content = fullContent
                     .Substring(i);
@@ -90,35 +100,20 @@ public class MessageFormatter
                 {
                     content = content.TrimStart('`');
                 }
-                else if (type == SegmentType.Latex)
-                {
-                    content = content.TrimStart('$');
-                }
+                
                 // Create a new segment
-                Console.WriteLine("Adding new segment: " + type + " with content: " + content);
+                //Console.WriteLine("Adding new segment: " + type + " with content: " + content);
                 var segment = new Segment
                 {
                     Type = type,
                     FullContent = fullContent.Substring(i),
                     Content = content,
                     Language = null,
-                    StartIndex = i
+                    StartIndex = i 
                 };
                 
                 // Add the segment to the list
                 Segments.Add(segment);
-                if (segment.Type == SegmentType.Markdown && lastSegment.Type == SegmentType.CodeBlock)
-                {
-                    i += 2; // Move past the Seperator
-                }
-                if (segment.Type == SegmentType.CodeBlock)
-                {
-                    i += 2; // Move past the Seperator
-                }
-                else if (segment.Type == SegmentType.Latex)
-                {
-                    i += 1; // Move past the Seperator
-                }
             }
             /*else if (lastSegment.Type != SegmentType.CodeBlock && lastSegment.Language == null &&
                      lastSegment.FullContent.Contains("\n"))
@@ -146,11 +141,11 @@ public class MessageFormatter
         {
             lastSegment.Content = lastSegment.Content.Trim('`');
         }
-        else if (lastSegment.Type == SegmentType.Latex)
+        /*else if (lastSegment.Type == SegmentType.Latex)
         {
             lastSegment.Content = lastSegment.Content.Trim('$');
-        }
-        Console.WriteLine("Finished Block with content: " + lastSegment.Content);
+        }*/
+        Console.WriteLine("Finished Block with full content: " + lastSegment.FullContent);
     }
 
     private SegmentType? HasNewSegmentType(string message, int i)
@@ -164,7 +159,7 @@ public class MessageFormatter
                 return SegmentType.CodeBlock;
             }
         }
-        else if (message[i] == '$')
+        /*else if (message[i] == '$')
         {
             // Check for LaTeX
             if (i + 1 < message.Length && message[i + 1] == '$')
@@ -172,7 +167,7 @@ public class MessageFormatter
                 // It's a LaTeX segment
                 return SegmentType.Latex;
             }
-        }
+        }*/
         return null; // Default to Markdown
     }
 }

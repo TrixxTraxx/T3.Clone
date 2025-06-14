@@ -20,9 +20,9 @@
         await HighlightDebounced();
     }
 
-    public override async Task OnTokenReceived(string token)
+    public override async Task OnTokenReceived(string fullContent)
     {
-        Content += token;
+        Content = fullContent;
         // Only re-render this component when regular tokens are received
         StateHasChanged();
     }

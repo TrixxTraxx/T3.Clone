@@ -24,10 +24,6 @@
                 {
                     <CodeTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content" Language="@segment.Language"/>
                 }
-                else if (segment.Type == MessageFormatter.SegmentType.Latex)
-                {
-                    <LatexTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content"/>
-                }
             }
         </div>
     }
@@ -96,7 +92,7 @@
     {
         var effectedSegments = MessageFormatter.AddTokenToSegments(token);
         Console.WriteLine("Updating segments: " + effectedSegments.Count);
-        effectedSegments[0].Component?.OnTokenReceived(token);
+        effectedSegments[0].Component?.OnTokenReceived(effectedSegments[0].Content);
         if (effectedSegments.Count > 1)
         {
             InvokeAsync(async () =>
@@ -106,7 +102,7 @@
                 foreach (var segment in effectedSegments.Skip(1))
                 {
                     Console.WriteLine("Adding New Message Segment: " + segment.Type);
-                    segment.Component?.OnTokenReceived(token);
+                    segment.Component?.OnTokenReceived(segment.Content);
                 }
             });
         }
