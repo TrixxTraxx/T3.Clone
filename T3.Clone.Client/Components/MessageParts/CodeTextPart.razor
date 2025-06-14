@@ -36,6 +36,18 @@
         _displayContent = Content;
         _lastHighlightedContent = Content;
     }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!string.IsNullOrWhiteSpace(Content))
+            {
+                await HighlightContent();
+            }
+        }
+    }
+
 
     public override async Task OnTokenReceived(string fullContent)
     {
