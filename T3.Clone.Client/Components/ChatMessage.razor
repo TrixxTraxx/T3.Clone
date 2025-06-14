@@ -96,7 +96,7 @@
                                 d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
                         </svg>
                     </button>
-                    <button class="action-button" @onclick="() => OnRegenerateMessage.InvokeAsync(Message.Message.Id)"
+                    <button class="action-button" @onclick="() => OnRegenerateMessage.InvokeAsync(Message)"
                             title="Regenerate response">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path
@@ -119,7 +119,7 @@
     [Parameter] public MessageCache Message { get; set; } = new();
     [Parameter] public MessageTreeDto? MessageTree { get; set; }
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
-    [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+    [Parameter] public EventCallback<MessageCache> OnRegenerateMessage { get; set; }
     [Parameter] public EventCallback OnContentChanged { get; set; }
 
     private string? _lastModelResponse;

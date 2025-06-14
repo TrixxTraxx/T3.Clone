@@ -26,7 +26,7 @@
     [Parameter] public List<MessageCache> Messages { get; set; } = new();
     [Parameter] public MessageTreeDto MessageTree { get; set; } = new MessageTreeDto();
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
-    [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+    [Parameter] public EventCallback<MessageCache> OnRegenerateMessage { get; set; }
     [Parameter] public EventCallback OnMessageContentChanged { get; set; }
     
     private int _lastMessagesCount = 0;

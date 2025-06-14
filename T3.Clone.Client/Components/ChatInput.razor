@@ -69,7 +69,7 @@
                     disabled="@IsLoading"
                     class="hypermodern-textarea"
                     rows="1"
-                    @ref="textareaRef">
+                    @ref="TextareaRef">
 </textarea>
             </div>
             
@@ -142,7 +142,7 @@
                                     <div class="reasoning-options">
                                         @foreach (var level in Enum.GetValues<ReasoningEffortLevel>())
                                         {
-                                            <button class="reasoning-option @(selectedReasoningLevel == level ? "selected" : "")"
+                                            <button class="reasoning-option @(SelectedReasoningLevel == level ? "selected" : "")"
                                                     @onclick="() => OnReasoningLevelSelected(level)"
                                                     type="button">
                                                 <div class="reasoning-option-content">
@@ -150,7 +150,7 @@
                                                         <span class="reasoning-option-name">@GetReasoningLevelDisplayName(level)</span>
                                                         <span class="reasoning-option-description">@GetReasoningLevelDescription(level)</span>
                                                     </div>
-                                                    @if (selectedReasoningLevel == level)
+                                                    @if (SelectedReasoningLevel == level)
                                                     {
                                                         <svg class="selected-icon" viewBox="0 0 24 24" fill="currentColor">
                                                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
@@ -221,22 +221,22 @@
     private bool showReasoningModal = false;
 
     private MessageDto message = new MessageDto();
-    public ElementReference textareaRef;
-    private int _selectedModelId = 1;
-    private ReasoningEffortLevel selectedReasoningLevel = ReasoningEffortLevel.None;
+    public ElementReference TextareaRef;
+    private int selectedModelId = 1;
+    public ReasoningEffortLevel SelectedReasoningLevel = ReasoningEffortLevel.None;
     
     public int SelectedModelId
     {
-        get => _selectedModelId;
+        get => selectedModelId;
         set
         {
-            if (_selectedModelId != value)
+            if (selectedModelId != value)
             {
-                _selectedModelId = value;
+                selectedModelId = value;
                 // Reset reasoning level if new model doesn't support thinking
                 if (!SelectedModelSupportsThinking())
                 {
-                    selectedReasoningLevel = ReasoningEffortLevel.None;
+                    SelectedReasoningLevel = ReasoningEffortLevel.None;
                 }
             }
         }
@@ -252,7 +252,7 @@
         var defaultModel = aiModels.FirstOrDefault(m => m.IsDefault) ?? aiModels.FirstOrDefault();
         if (defaultModel != null)
         {
-            _selectedModelId = defaultModel.Id;
+            selectedModelId = defaultModel.Id;
         }
         
         StateHasChanged();
@@ -267,19 +267,19 @@
         }
         
         // Handle auto-resize on input
-        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", textareaRef);
+        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", TextareaRef);
     }
     
     private async Task OnInput(ChangeEventArgs e)
     {
         message.Text = e.Value?.ToString() ?? string.Empty;
-        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", textareaRef);
+        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", TextareaRef);
     }
 
     private async Task SelectAttachments()
     {
         // Trigger the hidden file input
-        var currentModel = aiModels.FirstOrDefault(m => m.Id == _selectedModelId);
+        var currentModel = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
         await JSRuntime.InvokeVoidAsync("triggerFileInput", currentModel!.SupportedContentTypes);
     }
 
@@ -361,10 +361,10 @@
         if (!CanSend) return;
         
         // Set the selected model ID on the message
-        message.ModelId = _selectedModelId;
+        message.ModelId = selectedModelId;
         
         // Set the reasoning effort level
-        message.ReasoningEffortLevel = selectedReasoningLevel;
+        message.ReasoningEffortLevel = SelectedReasoningLevel;
         
         // Add attachment IDs to message
         message.AttachmentIds = uploadedAttachments.Select(a => a.Id).ToList();
@@ -381,7 +381,7 @@
             uploadedAttachments.Clear();
             
             // Reset textarea height immediately
-            await JSRuntime.InvokeVoidAsync("resetTextareaHeight", textareaRef);
+            await JSRuntime.InvokeVoidAsync("resetTextareaHeight", TextareaRef);
         }
         finally
         {
@@ -415,25 +415,25 @@
             return "Loading...";
         }
         
-        var model = aiModels.FirstOrDefault(m => m.Id == _selectedModelId);
+        var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
         return model?.Name ?? "Select Model";
     }
 
     private bool SelectedModelSupportsThinking()
     {
-        var model = aiModels.FirstOrDefault(m => m.Id == _selectedModelId);
+        var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
         return model?.HasThinkingSupport == true;
     }
 
     private bool SelectedModelSupportsImages()
     {
-        var model = aiModels.FirstOrDefault(m => m.Id == _selectedModelId);
+        var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
         return model?.HasImageSupport == true;
     }
 
     private bool SelectedModelSupportsFiles()
     {
-        var model = aiModels.FirstOrDefault(m => m.Id == _selectedModelId);
+        var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
         return model?.HasImageSupport == true;
     }
 
@@ -444,7 +444,7 @@
 
     private bool IsFileTypeSupported(string contentType)
     {
-        var model = aiModels.FirstOrDefault(m => m.Id == _selectedModelId);
+        var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
         if (model == null || string.IsNullOrEmpty(model.SupportedContentTypes))
         {
             // If no supported content types are defined, allow all file types
@@ -485,7 +485,7 @@
 
     private void OnReasoningLevelSelected(ReasoningEffortLevel level)
     {
-        selectedReasoningLevel = level;
+        SelectedReasoningLevel = level;
         message.ReasoningEffortLevel = level;
         showReasoningModal = false;
         StateHasChanged();
@@ -493,7 +493,7 @@
 
     private string GetSelectedReasoningLevelName()
     {
-        return GetReasoningLevelDisplayName(selectedReasoningLevel);
+        return GetReasoningLevelDisplayName(SelectedReasoningLevel);
     }
 
     private string GetReasoningLevelDisplayName(ReasoningEffortLevel level)
@@ -524,7 +524,7 @@
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", textareaRef);
+            await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", TextareaRef);
             await JSRuntime.InvokeVoidAsync("initializeDropdownCloseHandler", DotNetObjectReference.Create(this));
         }
     }

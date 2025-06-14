@@ -23,6 +23,7 @@
             <ChatTree
                 Messages="currentBranch"
                 OnMessageContentChanged="OnMessageContentChanged"
+                OnRegenerateMessage="RegenerateMessage"
             />
         }
     </div>
@@ -105,8 +106,8 @@
         _ = Task.Run(async () =>
         {
             // await Task.Delay(50);
-            await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
-            await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.textareaRef);
+            await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.TextareaRef);
+            await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.TextareaRef);
             await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
         }); 
     }
@@ -168,12 +169,6 @@
         // Handle attachment processing
         Console.WriteLine($"Attachment added: {attachment.Name}");
     }
-
-    private async Task RegenerateMessage(int messageId)
-    {
-        // TODO: Implement message regeneration
-        Console.WriteLine($"Regenerating message: {messageId}");
-    }
     
     private async Task OnMessageContentChanged()
     {
@@ -184,11 +179,28 @@
     
     public async ValueTask DisposeAsync()
     {
-        if (ChatInput?.textareaRef != null)
+        if (ChatInput?.TextareaRef != null)
         {
-            await JSRuntime.InvokeVoidAsync("removeChatInputAutoFocus", ChatInput.textareaRef);
+            await JSRuntime.InvokeVoidAsync("removeChatInputAutoFocus", ChatInput.TextareaRef);
         }
         await JSRuntime.InvokeVoidAsync("cleanupChatScrollHandler");
         _chatRef?.Dispose();
     }
+
+    private async Task RegenerateMessage(MessageCache message)
+    {
+        var newMessage = new MessageDto
+        {
+            Text = message.Message.Text,
+            AttachmentIds = message.Message.AttachmentIds,
+            PreviousMessageId = message.Message.PreviousMessageId,
+            ModelId = ChatInput.SelectedModelId,
+            ReasoningEffortLevel = ChatInput.SelectedReasoningLevel
+        };
+        currentBranchPath = message.Message.PreviousMessageId;
+        //reset current branch up to the message
+        currentBranch = messageTree?.GetMessagesForBranch(currentBranchPath) ?? new List<MessageCache>();
+        await HandleSendMessage(newMessage);
+    }
+
 } 
