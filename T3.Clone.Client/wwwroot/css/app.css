@@ -13,8 +13,8 @@ html, body {
 
 /* Global Scrollbar Styles - Applied to all scrollable elements */
 * {
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent) transparent;
+    scrollbar-width: thin !important;
+    scrollbar-color: color-mix(in srgb, var(--mud-palette-primary) 30%, transparent) transparent !important;
 }
 
 *::-webkit-scrollbar {
