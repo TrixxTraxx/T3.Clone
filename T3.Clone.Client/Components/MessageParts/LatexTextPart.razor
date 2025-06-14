@@ -28,7 +28,6 @@
 
     public override async Task OnTokenReceived(string token)
     {
-        Console.WriteLine("[Latex] Adding token: " + token);
         // Only re-render this component when regular tokens are received
         StateHasChanged();
     }
