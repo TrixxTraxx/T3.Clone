@@ -1,10 +1,16 @@
+/* Code Block Container */
+.code-block-container {
+    position: relative;
+    margin: 12px 0;
+}
+
 /* Code Blocks */
 .code-block {
     background: color-mix(in srgb, var(--mud-palette-surface) 80%, var(--mud-palette-dark));
     border: 1px solid color-mix(in srgb, var(--mud-palette-text-secondary) 20%, transparent);
     border-radius: 8px;
     padding: 16px;
-    margin: 12px 0;
+    margin: 0;
     overflow-x: auto;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
@@ -21,11 +27,87 @@
     white-space: pre;
 }
 
+/* Copy Button */
+.copy-code-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: color-mix(in srgb, var(--mud-palette-surface) 90%, var(--mud-palette-dark));
+    border: 1px solid color-mix(in srgb, var(--mud-palette-text-secondary) 30%, transparent);
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.copy-code-button:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--mud-palette-primary) 10%, var(--mud-palette-surface));
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 40%, transparent);
+    transform: scale(1.05);
+}
+
+.copy-code-button:active {
+    transform: scale(0.95);
+}
+
+.copy-code-button svg {
+    width: 16px;
+    height: 16px;
+    color: var(--mud-palette-text-primary);
+}
+
+.copy-code-button:hover svg {
+    color: var(--mud-palette-primary);
+}
+
+/* Sticky behavior when scrolling */
+.copy-code-button.sticky {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: color-mix(in srgb, var(--mud-palette-surface) 95%, var(--mud-palette-dark));
+    opacity: 0.9;
+}
+
+.copy-code-button.sticky:hover {
+    opacity: 1;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .code-block {
         padding: 12px;
         font-size: 13px;
+    }
+    
+    .copy-code-button {
+        top: 6px;
+        right: 6px;
+        width: 28px;
+        height: 28px;
+        padding: 6px;
+    }
+    
+    .copy-code-button svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .copy-code-button.sticky {
+        top: 16px;
+        right: 16px;
     }
 }
 
@@ -34,5 +116,15 @@
     .code-block {
         background: color-mix(in srgb, var(--mud-palette-dark) 90%, var(--mud-palette-surface));
         border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 25%, transparent);
+    }
+    
+    .copy-code-button {
+        background: color-mix(in srgb, var(--mud-palette-dark) 95%, var(--mud-palette-surface));
+        border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 35%, transparent);
+    }
+    
+    .copy-code-button.sticky {
+        background: color-mix(in srgb, var(--mud-palette-dark) 98%, var(--mud-palette-surface));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 } 
