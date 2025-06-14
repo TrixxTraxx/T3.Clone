@@ -2,9 +2,10 @@
 @using T3.Clone.Client.Models
 @inject IJSRuntime JSRuntime
 @inherits MessagePartComponent
+@implements IDisposable
 
 <pre class="code-block" id="@ElementId">
-    <code>@Content</code>
+    <code>@((MarkupString)_displayContent)</code>
 </pre>
 
 @code {
@@ -13,34 +14,130 @@
     [Parameter] public string Content { get; set; } = string.Empty;
     [Parameter] public string? Language { get; set; }
 
+    private string _displayContent = string.Empty;
+    private string _lastHighlightedContent = string.Empty;
     private DateTime _lastHighlightTime = DateTime.MinValue;
+    private bool _isStreaming = false;
+    private System.Threading.Timer? _finalHighlightTimer;
+    private const int HIGHLIGHT_INTERVAL_MS = 500; // Highlight every 500ms during streaming
+    private const int CONTENT_CHUNK_SIZE = 100; // Highlight after 100 new characters
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await HighlightDebounced();
+        _displayContent = Content;
+        _lastHighlightedContent = Content;
     }
 
     public override async Task OnTokenReceived(string fullContent)
     {
         Content = fullContent;
-        // Only re-render this component when regular tokens are received
-        StateHasChanged();
-        await HighlightDebounced();
+        _isStreaming = true;
+        
+        // Determine if we should highlight now
+        var shouldHighlight = ShouldHighlightNow();
+        
+        if (shouldHighlight)
+        {
+            // Highlight and update display
+            await HighlightContent();
+        }
+        else
+        {
+            // Only show plain text if we don't have a recent highlighted version
+            // This prevents the flash when we have highlighted content that's still mostly valid
+            if (string.IsNullOrEmpty(_lastHighlightedContent) || 
+                Content.Length - _lastHighlightedContent.Length > CONTENT_CHUNK_SIZE * 2)
+            {
+                _displayContent = Content;
+                StateHasChanged();
+            }
+        }
+        
+        // Cancel any pending final highlight timer
+        _finalHighlightTimer?.Dispose();
+        
+        // Set a timer for final highlighting when streaming stops
+        _finalHighlightTimer = new System.Threading.Timer(async _ => await FinalHighlight(), null, 1000, Timeout.Infinite);
     }
 
-    private async Task HighlightDebounced()
+    private bool ShouldHighlightNow()
     {
-        if (!string.IsNullOrWhiteSpace(Content))
+        // Always highlight if we haven't highlighted yet
+        if (string.IsNullOrEmpty(_lastHighlightedContent))
+            return true;
+        
+        // Highlight if enough time has passed
+        if ((DateTime.Now - _lastHighlightTime).TotalMilliseconds >= HIGHLIGHT_INTERVAL_MS)
+            return true;
+        
+        // Highlight if enough new content has been added
+        if (Content.Length - _lastHighlightedContent.Length >= CONTENT_CHUNK_SIZE)
+            return true;
+        
+        return false;
+    }
+
+    private async Task HighlightContent()
+    {
+        try
         {
-            if (DateTime.Now - _lastHighlightTime < TimeSpan.FromMilliseconds(500)) return;
-
-            _lastHighlightTime = DateTime.Now;
-
-            // Ensure the message is fully rendered before highlighting
-            await Task.Delay(550);
-
-            // Use JS interop to highlight the code block
-            await JSRuntime.InvokeVoidAsync("highlightCodeBlock", ElementId);
+            if (!string.IsNullOrWhiteSpace(Content))
+            {
+                var highlightedHtml = await JSRuntime.InvokeAsync<string>("getHighlightedHtml", Content, Language);
+                
+                if (!string.IsNullOrEmpty(highlightedHtml))
+                {
+                    _displayContent = highlightedHtml;
+                    _lastHighlightedContent = Content;
+                    _lastHighlightTime = DateTime.Now;
+                    StateHasChanged();
+                }
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error highlighting code: {ex.Message}");
+            // Fallback to plain text if highlighting fails
+            _displayContent = Content;
+            StateHasChanged();
+        }
+    }
+
+    private async Task FinalHighlight()
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                _isStreaming = false;
+                
+                // Only highlight if content has changed since last highlight
+                if (_lastHighlightedContent != Content)
+                {
+                    await HighlightContent();
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in final highlight: {ex.Message}");
+        }
+        finally
+        {
+            _finalHighlightTimer?.Dispose();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrWhiteSpace(Content))
+        {
+            await HighlightContent();
+        }
+    }
+
+    public void Dispose()
+    {
+        _finalHighlightTimer?.Dispose();
     }
 } 

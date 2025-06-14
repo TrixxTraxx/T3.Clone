@@ -220,6 +220,29 @@ window.removeChatInputAutoFocus = function (element) {
     delete element._chatInputAutoFocusHandler;
 };
 
+window.getHighlightedHtml = function(code, language) {
+    if (typeof hljs === 'undefined') {
+        console.warn('Highlight.js is not loaded');
+        return code;
+    }
+    
+    try {
+        if (language && language.trim() !== '') {
+            // Try to highlight with specific language
+            const result = hljs.highlight(code, { language: language.trim() });
+            return result.value;
+        } else {
+            // Auto-detect language
+            const result = hljs.highlightAuto(code);
+            return result.value;
+        }
+    } catch (error) {
+        console.warn('Error highlighting code:', error);
+        // Return the original code if highlighting fails
+        return code;
+    }
+}
+
 window.highlightCodeBlock = function(elementId) {
     if (typeof hljs !== 'undefined') {
         const element = document.getElementById(elementId);
@@ -227,8 +250,20 @@ window.highlightCodeBlock = function(elementId) {
             console.warn(`Element with ID ${elementId} not found for highlighting`);
             return;
         }
-        // Ensure the element has code blocks to highlight
-        hljs.highlightElement(element);
+        
+        // Find the code element inside the pre tag
+        const codeElement = element.querySelector('code');
+        if (!codeElement) {
+            console.warn(`Code element not found inside element with ID ${elementId}`);
+            return;
+        }
+        
+        // Clear any existing highlighting
+        codeElement.removeAttribute('data-highlighted');
+        codeElement.className = '';
+        
+        // Apply highlighting to the code element
+        hljs.highlightElement(codeElement);
     } else {
         console.warn('Highlight.js is not loaded');
     }
