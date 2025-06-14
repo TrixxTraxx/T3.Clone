@@ -11,35 +11,291 @@ html, body {
     box-sizing: border-box;
 }
 
-/* Loading States */
-.loading-progress {
+/* Enhanced Loading Screen */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1f2e 0%, #16213e 50%, #0f1419 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.loading-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 40%, rgba(96, 165, 250, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(147, 197, 253, 0.05) 0%, transparent 50%);
+    animation: backgroundPulse 8s ease-in-out infinite;
+}
+
+@keyframes backgroundPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+.loading-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    z-index: 1;
+}
+
+.loading-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.logo-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+    animation: logoGlow 3s ease-in-out infinite;
     position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
 }
 
-.loading-progress circle {
-    fill: none;
-    stroke: #30363d;
-    stroke-width: 0.6rem;
-    transform-origin: 50% 50%;
-    transform: rotate(-90deg);
+.logo-circle::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #3b82f6, #60a5fa);
+    opacity: 0.8;
+    animation: logoRotate 4s linear infinite;
 }
 
-.loading-progress circle:last-child {
-    stroke: #4a90e2;
-    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-    transition: stroke-dasharray 0.05s ease-in-out;
+.logo-inner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #1a1f2e;
+    z-index: 1;
+    position: relative;
+}
+
+@keyframes logoGlow {
+    0%, 100% { 
+        box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 60px rgba(59, 130, 246, 0.6);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes logoRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 0;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    animation: titleFade 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleFade {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+.loading-subtitle {
+    font-size: 1.1rem;
+    color: #94a3b8;
+    margin: 0.5rem 0 0 0;
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+.loading-spinner-container {
+    margin: 2rem 0;
+    z-index: 1;
+}
+
+.loading-spinner {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.spinner-ring {
+    position: absolute;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+}
+
+.spinner-ring:nth-child(1) {
+    width: 120px;
+    height: 120px;
+    border-top-color: #3b82f6;
+    animation-duration: 2s;
+}
+
+.spinner-ring:nth-child(2) {
+    width: 90px;
+    height: 90px;
+    top: 15px;
+    left: 15px;
+    border-top-color: #60a5fa;
+    animation-duration: 1.5s;
+    animation-direction: reverse;
+}
+
+.spinner-ring:nth-child(3) {
+    width: 60px;
+    height: 60px;
+    top: 30px;
+    left: 30px;
+    border-top-color: #93c5fd;
+    animation-duration: 1s;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    text-align: center;
+    margin: 2rem 0;
+    z-index: 1;
+}
+
+.loading-message {
+    font-size: 1.3rem;
+    color: #e2e8f0;
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+.loading-description {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin: 0;
+    font-weight: 300;
+    opacity: 0.8;
+}
+
+@keyframes textPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+.loading-progress-bar {
+    width: 300px;
+    margin-top: 2rem;
+    z-index: 1;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #93c5fd);
+    border-radius: 2px;
+    animation: progressFill 3s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes progressFill {
+    0% { 
+        width: 0%; 
+        transform: translateX(-100%);
+    }
+    50% { 
+        width: 70%; 
+        transform: translateX(0%);
+    }
+    100% { 
+        width: 100%; 
+        transform: translateX(0%);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loading-title {
+        font-size: 2rem;
+    }
+    
+    .logo-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .logo-inner {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .loading-spinner {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .spinner-ring:nth-child(1) {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .spinner-ring:nth-child(2) {
+        width: 60px;
+        height: 60px;
+        top: 10px;
+        left: 10px;
+    }
+    
+    .spinner-ring:nth-child(3) {
+        width: 40px;
+        height: 40px;
+        top: 20px;
+        left: 20px;
+    }
+    
+    .loading-progress-bar {
+        width: 250px;
+    }
+}
+
+/* Legacy Loading States (kept for compatibility) */
+.loading-progress {
+    display: none;
 }
 
 .loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    color: #e6edf3;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    display: none;
 }
 
 /* Error Handling */
@@ -86,14 +342,11 @@ html, body {
     width: 100% !important;
 }
 
-
-
 /* Custom Highlight.js Theme with MudBlazor CSS Variables */
 .hljs {
     background: var(--mud-palette-background, #ffffff);
     color: var(--mud-palette-text-primary, #333333);
 }
-
 
 .hljs-name {
     color: var(--mud-palette-primary, #333333) !important;

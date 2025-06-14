@@ -20,17 +20,42 @@
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="loading-container">
+            <div class="loading-header">
+                <div class="loading-logo">
+                    <div class="logo-circle">
+                        <div class="logo-inner"></div>
+                    </div>
+                    <h1 class="loading-title">LLM Lab Chat</h1>
+                </div>
+                <p class="loading-subtitle">AI Chat Assistant</p>
+            </div>
+            
+            <div class="loading-spinner-container">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+            </div>
+            
+            <div class="loading-text">
+                <p class="loading-message">Loading Application...</p>
+                <p class="loading-description">Setting up your AI assistant experience</p>
+            </div>
+            
+            <div class="loading-progress-bar">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
-        <span class="dismiss">��</span>
+        <span class="dismiss">🗙</span>
     </div>
     
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
