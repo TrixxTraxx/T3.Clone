@@ -25,11 +25,53 @@ window.copyToClipboard = async function(text) {
     }
 };
 
-// Auto-scroll to bottom of chat
+
+window.isChatScrolledToBottom = function() {
+    const chatContainer = document.querySelector('.chat-messages-container');
+    if (!chatContainer) return true;
+    return chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 10;
+};
+
 window.scrollChatToBottom = function() {
     const chatContainer = document.querySelector('.chat-messages-container');
     if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+};
+
+window.scrollChatToBottomNoAnimation = function() {
+    const chatContainer = document.querySelector('.chat-messages-container');
+    if (chatContainer) {
+        // Save current scroll-behavior
+        const oldBehavior = chatContainer.style.scrollBehavior;
+        // Force instant scroll
+        chatContainer.style.scrollBehavior = 'auto';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        // Restore old scroll-behavior
+        chatContainer.style.scrollBehavior = oldBehavior;
+    }
+};
+
+window.setupChatScrollHandler = function(dotnetRef) {
+    const chatContainer = document.querySelector('.chat-messages-container');
+    if (!chatContainer) return;
+    if (chatContainer._scrollHandler) return; // Only attach once
+
+    chatContainer._scrollHandler = function() {
+        const atBottom = (chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 10);
+        dotnetRef.invokeMethodAsync('SetScrolledToBottom', atBottom);
+    };
+    chatContainer.addEventListener('scroll', chatContainer._scrollHandler);
+
+    // Fire once on setup to sync initial state
+    chatContainer._scrollHandler();
+};
+
+window.cleanupChatScrollHandler = function() {
+    const chatContainer = document.querySelector('.chat-messages-container');
+    if (chatContainer && chatContainer._scrollHandler) {
+        chatContainer.removeEventListener('scroll', chatContainer._scrollHandler);
+        delete chatContainer._scrollHandler;
     }
 };
 
@@ -119,6 +161,32 @@ window.focusElement = function (element) {
     if (element) {
         element.focus();
     }
+};
+
+window.setupChatInputAutoFocus = function (element) {
+    if (!element) return;
+    // Store handler on element so we can remove it later
+    element._chatInputAutoFocusHandler = function (e) {
+        const tag = document.activeElement.tagName;
+        const editable = document.activeElement.isContentEditable;
+        if (
+            !e.ctrlKey && !e.metaKey && !e.altKey &&
+            !editable &&
+            tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT'
+        ) {
+            if (e.key.length === 1) {
+                element.focus();
+            }
+        }
+    };
+    document.addEventListener('keydown', element._chatInputAutoFocusHandler);
+};
+
+// Call this to remove it:
+window.removeChatInputAutoFocus = function (element) {
+    if (!element || !element._chatInputAutoFocusHandler) return;
+    document.removeEventListener('keydown', element._chatInputAutoFocusHandler);
+    delete element._chatInputAutoFocusHandler;
 };
 
 window.hightlightCodeBlocks = function() {

@@ -11,8 +11,10 @@
                 MessageTree="MessageTree"
                 OnBranchSelected="OnBranchSelected"
                 OnRegenerateMessage="OnRegenerateMessage"
+                OnContentChanged="OnMessageContentChanged"
             />
         }
+
     }
     else
     {
@@ -25,4 +27,17 @@
     [Parameter] public MessageTreeDto MessageTree { get; set; } = new MessageTreeDto();
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+    [Parameter] public EventCallback OnMessageContentChanged { get; set; }
+    
+    private int _lastMessagesCount = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // When number of messages changes (new message sent/received or message removed)
+        if (Messages.Count != _lastMessagesCount)
+        {
+            _lastMessagesCount = Messages.Count;
+            await OnMessageContentChanged.InvokeAsync(null);
+        }
+    }
 }

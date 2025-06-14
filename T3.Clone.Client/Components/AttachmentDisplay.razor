@@ -1,5 +1,6 @@
 @inject IJSRuntime JSRuntime
 @inject AttachmentService AttachmentService
+@inject ImageModalService ModalService
 
 <div class="attachment-display">
     @if (Attachment != null)
@@ -7,7 +8,11 @@
         @if (IsImageAttachment())
         {
             <div class="image-attachment">
-                <img src="@GetAttachmentUrl()" alt="@Attachment.FileName" class="attachment-image" />
+                <img src="@GetAttachmentUrl()"
+                     alt="@Attachment.FileName"
+                     class="attachment-image"
+                     style="cursor:zoom-in;"
+                     @onclick="() => ModalService.Show(GetAttachmentUrl())" />
                 <div class="attachment-info">
                     <MudText Typo="Typo.caption">@Attachment.FileName</MudText>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">@GetFormattedDate()</MudText>
@@ -31,9 +36,9 @@
                     </MudCardContent>
                     <MudCardActions>
                         <MudButton StartIcon="Icons.Material.Filled.Download" 
-                                  Size="Size.Small" 
-                                  OnClick="DownloadFile"
-                                  Color="Color.Primary">
+                                   Size="Size.Small" 
+                                   OnClick="DownloadFile"
+                                   Color="Color.Primary">
                             Download
                         </MudButton>
                     </MudCardActions>

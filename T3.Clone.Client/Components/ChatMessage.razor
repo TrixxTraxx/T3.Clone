@@ -120,6 +120,9 @@
     [Parameter] public MessageTreeDto? MessageTree { get; set; }
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
     [Parameter] public EventCallback<int> OnRegenerateMessage { get; set; }
+    [Parameter] public EventCallback OnContentChanged { get; set; }
+
+    private string? _lastModelResponse;
     public bool rendering = false;
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
@@ -150,6 +153,14 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_lastModelResponse != Message.Message.ModelResponse)
+        {
+            _lastModelResponse = Message.Message.ModelResponse;
+            // Notify parent ONLY if we now have a full response (not typing indicator)
+            if (!string.IsNullOrWhiteSpace(_lastModelResponse))
+                await OnContentChanged.InvokeAsync(null);
+        }
+        
         rendering = false;
         await HighlightDebounced();
     }

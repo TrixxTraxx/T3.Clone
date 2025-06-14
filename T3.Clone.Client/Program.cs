@@ -25,6 +25,7 @@ builder.Services.AddScoped<AiModelService>();
 builder.Services.AddScoped<AttachmentService>();
 builder.Services.AddScoped<AiKeyService>();
 builder.Services.AddTransient<GenerationService>();
+builder.Services.AddSingleton<ImageModalService>();
 
 // Add GenerationService factory for MessageSyncService
 builder.Services.AddScoped<Func<GenerationService>>(provider => () => provider.GetRequiredService<GenerationService>());

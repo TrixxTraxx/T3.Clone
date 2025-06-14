@@ -22,6 +22,7 @@
         {
             <ChatTree
                 Messages="currentBranch"
+                OnMessageContentChanged="OnMessageContentChanged"
             />
         }
     </div>
@@ -46,6 +47,22 @@
     //the down most message of the current Branch
     private int currentBranchPath;
     private List<MessageCache> currentBranch = new();
+    
+    private bool _wasScrolledToBottom = true;
+    private DotNetObjectReference<Chat>? _chatRef; // replace with your component name!
+    [JSInvokable]
+    public void SetScrolledToBottom(bool atBottom)
+    {
+        _wasScrolledToBottom = atBottom;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _chatRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("setupChatScrollHandler", _chatRef);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,8 +104,10 @@
         }
         _ = Task.Run(async () =>
         {
-            await Task.Delay(50);
+            // await Task.Delay(50);
             await JSRuntime.InvokeVoidAsync("focusElement", ChatInput.textareaRef);
+            await JSRuntime.InvokeVoidAsync("setupChatInputAutoFocus", ChatInput.textareaRef);
+            await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
         }); 
     }
 
@@ -130,6 +149,10 @@
             //set the current location to the message
             //await JSRuntime.InvokeVoidAsync("setHistory", "/chat/" + result.ThreadId);
             NavigationManager.NavigateTo("/chat/" + result.ThreadId, replace: true);
+            
+            // <<== SCROLL TO BOTTOM HERE IF USER WAS AT BOTTOM BEFORE >>
+            if (_wasScrolledToBottom)
+                await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
         }
         catch (Exception ex)
         {
@@ -150,5 +173,22 @@
     {
         // TODO: Implement message regeneration
         Console.WriteLine($"Regenerating message: {messageId}");
+    }
+    
+    private async Task OnMessageContentChanged()
+    {
+        // Only scroll if user was at the bottom
+        if (_wasScrolledToBottom)
+            await JSRuntime.InvokeVoidAsync("scrollChatToBottomNoAnimation");
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (ChatInput?.textareaRef != null)
+        {
+            await JSRuntime.InvokeVoidAsync("removeChatInputAutoFocus", ChatInput.textareaRef);
+        }
+        await JSRuntime.InvokeVoidAsync("cleanupChatScrollHandler");
+        _chatRef?.Dispose();
     }
 } 
