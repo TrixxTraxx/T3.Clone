@@ -71,6 +71,7 @@ public class GenerateMessageJob(
                 }
             );
             
+            await Task.Delay(50);
             // Mark message as complete
             message.Complete = true;
             await dbContext.SaveChangesAsync();

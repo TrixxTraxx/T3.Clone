@@ -33,7 +33,11 @@ public class MessageFormatter
     {
         fullContent = content;
         Segments.Clear();
-        Segments.Add(new Segment { });
+        Segments.Add(new Segment
+        {
+            Content = content,
+            FullContent = content,
+        });
         SplitIntoSegments();
         //Console.WriteLine("Updated Segments: " + JsonSerializer.Serialize(Segments.Select(x => x.Type).ToList()));
     }
@@ -44,10 +48,15 @@ public class MessageFormatter
         var initialSegmentCount = Segments.Count;
         if (Segments.Count == 0)
         {
-            Segments.Add(new Segment { });
+            Segments.Add(new Segment
+            {
+                FullContent = fullContent,
+                Content = fullContent,
+            });
         }
         var lastSegment = Segments[^1];
         lastSegment.Content += token;
+        lastSegment.FullContent += token;
 
         SplitIntoSegments(token.Length);
         
@@ -115,20 +124,11 @@ public class MessageFormatter
                 // Add the segment to the list
                 Segments.Add(segment);
             }
-            /*else if (lastSegment.Type != SegmentType.CodeBlock && lastSegment.Language == null &&
+            else if (lastSegment.Type == SegmentType.CodeBlock && lastSegment.Language == null &&
                      lastSegment.FullContent.Contains("\n"))
             {
-                var firstCodeBlockCharacterIndex =
-                    lastSegment.FullContent.IndexOf("\n", StringComparison.Ordinal);
-                lastSegment.Language = lastSegment.FullContent
-                    .Substring(
-                        lastSegment.FullContent.LastIndexOf("`", StringComparison.Ordinal) + 1,
-                        firstCodeBlockCharacterIndex - 1
-                        );
-                lastSegment.Content = lastSegment.Content.Substring(
-                    lastSegment.Content.LastIndexOf("`", StringComparison.Ordinal) + 1
-                );
-            }*/
+                UpdateContentAndLanguage(lastSegment);
+            }
         }
     }
 
@@ -140,12 +140,28 @@ public class MessageFormatter
         if (lastSegment.Type == SegmentType.CodeBlock)
         {
             lastSegment.Content = lastSegment.Content.Trim('`');
+            
+            //Console.WriteLine("Checking for Language in code block: " + lastSegment.Content);
+            if (lastSegment.Content.Contains("\n"))
+            {
+                var lines = lastSegment.Content.Split('\n');
+                //Console.WriteLine("Multiple line segment detected: " + string.Join(" | ", lines.Select(x => x.Trim())));
+                if (lines.Length > 1)
+                {
+                    lastSegment.Language = lines[0].Trim();
+                    lastSegment.Content = string.Join("\n", lines.Skip(1)).Trim();
+                }
+                else
+                {
+                    lastSegment.Language = "";
+                }
+            }
+            else
+            {
+                //Console.WriteLine("Single line segment detected: " + lastSegment.Content);
+                lastSegment.Language = null;
+            }
         }
-        /*else if (lastSegment.Type == SegmentType.Latex)
-        {
-            lastSegment.Content = lastSegment.Content.Trim('$');
-        }*/
-        //Console.WriteLine("Finished Block with full content: " + lastSegment.FullContent);
     }
 
     private SegmentType? HasNewSegmentType(string message, int i)

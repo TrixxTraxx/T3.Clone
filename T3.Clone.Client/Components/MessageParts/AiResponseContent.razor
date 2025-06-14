@@ -76,7 +76,8 @@
         Message.OnGenerate += OnTokenReceived;
         Message.OnReasoningGenerate += OnReasoningTokenReceived;
         MessageFormatter.InitializeSegments(Message.Message.ModelResponse);
-        Console.WriteLine("Initialized MessageFormatter with segments: " + MessageFormatter.Segments.Count + " segments for response: " + Message.Message.ModelResponse);
+        //Console.WriteLine("Initialized MessageFormatter with segments: " + MessageFormatter.Segments.Count + " segments for response: " + Message.Message.ModelResponse);
+        //Console.WriteLine("Message Segments: " + string.Join(", ", MessageFormatter.Segments.Select(s => $"{s.Type} ({s.Content})")));
     }
 
     private void OnTokenReceived(string token)

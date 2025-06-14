@@ -32,12 +32,12 @@
     {
         if (!string.IsNullOrWhiteSpace(Content))
         {
-            if (DateTime.Now - _lastHighlightTime < TimeSpan.FromMilliseconds(250)) return;
+            if (DateTime.Now - _lastHighlightTime < TimeSpan.FromMilliseconds(500)) return;
 
             _lastHighlightTime = DateTime.Now;
 
             // Ensure the message is fully rendered before highlighting
-            await Task.Delay(300);
+            await Task.Delay(550);
 
             // Use JS interop to highlight the code block
             await JSRuntime.InvokeVoidAsync("highlightCodeBlock", ElementId);

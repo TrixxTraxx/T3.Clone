@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using T3.Clone.Client.Caches;
 using T3.Clone.Dtos.Messages;
@@ -84,6 +85,7 @@ public class GenerationService : IAsyncDisposable
 
         _hubConnection.On<MessageDto>("GenerationStopped", (message) =>
         {
+            Console.WriteLine($"Message {message.Id} has been stopped. Final response: {JsonSerializer.Serialize(message)}");
             _currentMessageCache.Message = message;
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
             _currentMessageCache.OnUpdated?.Invoke();
@@ -101,6 +103,7 @@ public class GenerationService : IAsyncDisposable
 
         _hubConnection.On<MessageDto>("NewMessage", (message) =>
         {
+            Console.WriteLine($"Message {message.Id} has been updated. new message: {JsonSerializer.Serialize(message)}");
             // Handle new message events
             _currentMessageCache.Message = message;
             _currentMessageCache.LastUpdated = DateTime.UtcNow;

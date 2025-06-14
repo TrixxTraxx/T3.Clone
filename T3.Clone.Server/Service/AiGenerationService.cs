@@ -63,14 +63,16 @@ public class AiGenerationService(
             throw new ArgumentException("Message with Id not found", nameof(messageId));
         }
         
-        // Send the existing message to the client
-        await hubContext.Clients.Client(context.ConnectionId).SendAsync("NewMessage", MessageMapper.Map(message));
-
+        
         if (message.Complete || message.CreatedAt.AddMinutes(5) < DateTime.UtcNow)
         {
             // If the message is complete, notify the client
             await StopGeneration(messageId);
+            return;
         }
+        
+        // Send the existing message to the client
+        await hubContext.Clients.Client(context.ConnectionId).SendAsync("NewMessage", MessageMapper.Map(message));
     }
     
     public void SendNewToken(int messageId, string token, bool isThinkingToken)
