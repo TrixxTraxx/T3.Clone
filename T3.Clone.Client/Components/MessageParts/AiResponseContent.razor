@@ -91,7 +91,7 @@
     private void AddMessageToken(string token)
     {
         var effectedSegments = MessageFormatter.AddTokenToSegments(token);
-        Console.WriteLine("Updating segments: " + effectedSegments.Count);
+        //Console.WriteLine("Updating segments: " + effectedSegments.Count);
         effectedSegments[0].Component?.OnTokenReceived(effectedSegments[0].Content);
         if (effectedSegments.Count > 1)
         {
@@ -101,7 +101,7 @@
                 await Task.Yield();
                 foreach (var segment in effectedSegments.Skip(1))
                 {
-                    Console.WriteLine("Adding New Message Segment: " + segment.Type);
+                    //Console.WriteLine("Adding New Message Segment: " + segment.Type);
                     segment.Component?.OnTokenReceived(segment.Content);
                 }
             });

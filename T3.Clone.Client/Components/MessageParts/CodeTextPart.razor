@@ -15,7 +15,7 @@
 
     private DateTime _lastHighlightTime = DateTime.MinValue;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
         await HighlightDebounced();
     }
@@ -25,6 +25,7 @@
         Content = fullContent;
         // Only re-render this component when regular tokens are received
         StateHasChanged();
+        await HighlightDebounced();
     }
 
     private async Task HighlightDebounced()
@@ -36,7 +37,7 @@
             _lastHighlightTime = DateTime.Now;
 
             // Ensure the message is fully rendered before highlighting
-            await Task.Delay(50);
+            await Task.Delay(300);
 
             // Use JS interop to highlight the code block
             await JSRuntime.InvokeVoidAsync("highlightCodeBlock", ElementId);

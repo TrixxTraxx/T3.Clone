@@ -35,7 +35,7 @@ public class MessageFormatter
         Segments.Clear();
         Segments.Add(new Segment { });
         SplitIntoSegments();
-        Console.WriteLine("Updated Segments: " + JsonSerializer.Serialize(Segments.Select(x => x.Type).ToList()));
+        //Console.WriteLine("Updated Segments: " + JsonSerializer.Serialize(Segments.Select(x => x.Type).ToList()));
     }
 
     public List<Segment> AddTokenToSegments(string token)
@@ -145,7 +145,7 @@ public class MessageFormatter
         {
             lastSegment.Content = lastSegment.Content.Trim('$');
         }*/
-        Console.WriteLine("Finished Block with full content: " + lastSegment.FullContent);
+        //Console.WriteLine("Finished Block with full content: " + lastSegment.FullContent);
     }
 
     private SegmentType? HasNewSegmentType(string message, int i)

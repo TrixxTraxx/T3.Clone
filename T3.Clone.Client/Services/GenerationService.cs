@@ -41,6 +41,8 @@ public class GenerationService : IAsyncDisposable
     private readonly AppsettingsService _appsettingsService;
     private HubConnection? _hubConnection;
     private MessageCache? _currentMessageCache;
+    
+    private string tokenCache = string.Empty;
 
     public GenerationService(AppsettingsService appsettingsService)
     {
@@ -73,9 +75,7 @@ public class GenerationService : IAsyncDisposable
             }
             else
             {
-                _currentMessageCache.Message.ModelResponse += token;
-                // Emit events to the cache and external subscribers
-                _currentMessageCache.OnGenerate?.Invoke(token);
+                PassTokensBatched(token);
             }
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
         });
@@ -112,6 +112,28 @@ public class GenerationService : IAsyncDisposable
         {
             Console.WriteLine($"Failed to connect to Hub: {ex.Message}");
             throw;
+        }
+    }
+
+    private void PassTokensBatched(string token)
+    {
+        if (string.IsNullOrEmpty(tokenCache))
+        {
+            tokenCache = token;
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(16); // 60 times per second max
+                if (!string.IsNullOrEmpty(tokenCache))
+                {
+                    _currentMessageCache.Message.ModelResponse += tokenCache;
+                    _currentMessageCache.OnGenerate?.Invoke(tokenCache);
+                    tokenCache = string.Empty; // Clear the cache after sending
+                }
+            });
+        }
+        else
+        {
+            tokenCache += token;
         }
     }
 
