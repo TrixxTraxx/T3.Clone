@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.ServiceDefaults", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Server", "T3.Clone.Server\T3.Clone.Server.csproj", "{2050A78B-6099-474E-A098-078A08F7121A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.ClientWebServer", "T3.Clone.ClientWebServer\T3.Clone.ClientWebServer.csproj", "{E5445695-65FE-44D8-B659-5DD495427484}"
+EndProject
 Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{10DED4D6-85DB-4B34-9B06-B533A0006DEA}.Configuration|Any CPU.ActiveCfg = Configuration|Any CPU
@@ -22,6 +24,8 @@ Global
 		{3FAE83C6-496B-4C90-ADAF-F6392A439F16}.Configuration|Any CPU.Build.0 = Configuration|Any CPU
 		{2050A78B-6099-474E-A098-078A08F7121A}.Configuration|Any CPU.ActiveCfg = Debug|Any CPU
 		{2050A78B-6099-474E-A098-078A08F7121A}.Configuration|Any CPU.Build.0 = Debug|Any CPU
+		{E5445695-65FE-44D8-B659-5DD495427484}.Configuration|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5445695-65FE-44D8-B659-5DD495427484}.Configuration|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Configuration|Any CPU = Configuration|Any CPU

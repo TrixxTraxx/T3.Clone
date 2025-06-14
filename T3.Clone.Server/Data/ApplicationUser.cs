@@ -7,7 +7,7 @@ public class ApplicationUser : IdentityUser
 {
     public string ProfilePictureUrl { get; set; }
     
-    public int ThreadVersion { get; set; } = 1;
+    public int ThreadVersion { get; set; } = 2;
     public string DisplayName { get; set; }
 }
 

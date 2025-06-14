@@ -41,12 +41,14 @@ public class GenerationService : IAsyncDisposable
     private readonly AppsettingsService _appsettingsService;
     private HubConnection? _hubConnection;
     private MessageCache? _currentMessageCache;
+    private MessageSyncService _messageService;
     
     private string tokenCache = string.Empty;
 
-    public GenerationService(AppsettingsService appsettingsService)
+    public GenerationService(AppsettingsService appsettingsService, MessageSyncService messageService)
     {
         _appsettingsService = appsettingsService;
+        _messageService = messageService;
     }
 
     public async Task ConnectAsync(MessageCache cache)
@@ -85,6 +87,7 @@ public class GenerationService : IAsyncDisposable
             _currentMessageCache.Message = message;
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
             _currentMessageCache.OnUpdated?.Invoke();
+            _messageService.UpdateMessageCache(_currentMessageCache);
             
             // disconnect from the hub
             _hubConnection?.StopAsync().ContinueWith(t => 

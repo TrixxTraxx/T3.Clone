@@ -25,6 +25,37 @@ window.copyToClipboard = async function(text) {
     }
 };
 
+// Check if threads overflow and apply appropriate class to sidebar
+window.checkThreadOverflow = function() {
+    const threadsSection = document.querySelector('.threads-scroll-section');
+    const drawerCustom = document.querySelector('.drawer-custom');
+    
+    if (!threadsSection || !drawerCustom) return;
+    
+    const isOverflowing = threadsSection.scrollHeight > threadsSection.clientHeight;
+    
+    if (isOverflowing) {
+        drawerCustom.classList.add('has-overflow');
+    } else {
+        drawerCustom.classList.remove('has-overflow');
+    }
+};
+
+// Set up ResizeObserver to check for overflow changes
+window.setupOverflowObserver = function() {
+    const threadsSection = document.querySelector('.threads-scroll-section');
+    if (!threadsSection) return;
+    
+    if (window.threadsResizeObserver) {
+        window.threadsResizeObserver.disconnect();
+    }
+    
+    window.threadsResizeObserver = new ResizeObserver(() => {
+        window.checkThreadOverflow();
+    });
+    
+    window.threadsResizeObserver.observe(threadsSection);
+};
 
 window.isChatScrolledToBottom = function() {
     const chatContainer = document.querySelector('.chat-messages-container');

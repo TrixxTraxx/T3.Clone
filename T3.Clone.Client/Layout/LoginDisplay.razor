@@ -17,7 +17,7 @@
 }
 else
 {
-    <div class="profile-section">
+    <div class="profile-section" @onclick="GoToProfile" style="cursor: pointer;">
         @if (!string.IsNullOrEmpty(User.ProfilePictureUrl))
         {
             <MudAvatar
@@ -30,28 +30,6 @@ else
         <MudText>
             @User.DisplayName
         </MudText>
-
-        <div class="d-flex flex-column gap-2">
-            <MudButton
-                StartIcon="@Icons.Material.Filled.Person"
-                Variant="Variant.Filled"
-                Color="Color.Primary"
-                Size="Size.Medium"
-                OnClick="GoToProfile"
-                Class="login-button">
-                Profile
-            </MudButton>
-
-            <MudButton
-                StartIcon="@Icons.Material.Filled.SwitchAccount"
-                Variant="Variant.Outlined"
-                Color="Color.Primary"
-                Size="Size.Medium"
-                OnClick="Login"
-                Class="login-button">
-                Switch Account
-            </MudButton>
-        </div>
     </div>
 }
 

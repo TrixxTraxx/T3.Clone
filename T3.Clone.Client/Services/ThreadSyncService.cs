@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using MudBlazor;
 using T3.Clone.Client.Caches;
 using T3.Clone.Dtos.Threads;
@@ -8,7 +9,7 @@ namespace T3.Clone.Client.Services;
 public class ThreadSyncService
 {
     private ThreadCacheCollection? _threadCacheCollection = null;
-    private List<ThreadCache> _threadCaches { get; } = new List<ThreadCache>();
+    private List<ThreadCache> _threadCaches { get; set; } = new List<ThreadCache>();
 
     private readonly HttpClient _http;
     private readonly ISnackbar _snackbar;
@@ -33,14 +34,9 @@ public class ThreadSyncService
     {
         var threadCollection = await GetThreadCollection();
         
-        List<ThreadCache> threadCaches = new List<ThreadCache>();
-        foreach (var threadId in threadCollection.ThreadIds)
+        foreach (var threadId in threadCollection.ThreadIds.Distinct())
         {
-            var threadCache = await GetThreadCache(threadId);
-            if (threadCache != null)
-            {
-                threadCaches.Add(threadCache);
-            }
+            await GetThreadCache(threadId);
         }
 
         if (update != null)
@@ -59,8 +55,14 @@ public class ThreadSyncService
                 }
             });
         }
+        //Console.WriteLine("Thread Caches loaded: " + _threadCaches.Count);
+        //Console.WriteLine("Thread Caches updated: " + threadCollection.ThreadIds.Distinct().Count());
+        //Console.WriteLine("Thread Caches: " + JsonSerializer.Serialize(_threadCaches.Select(x => x.Thread), new JsonSerializerOptions { WriteIndented = true }));
         
-        return threadCaches;
+        //there is some bug where the first thread gets duplicated for some reason and then disappears later
+        // I cant find the root cause, so we just remove duplicates here
+        _threadCaches = _threadCaches.DistinctBy(x => x.Thread.Id).ToList();
+        return _threadCaches;
     }
 
     public async Task<ThreadCache?> GetThreadCache(int threadId)
@@ -72,6 +74,7 @@ public class ThreadSyncService
             threadCache = await _storageService.ReadObjectAsync<ThreadCache>($"ThreadCache_{threadId}");
             if(threadCache != null)
             {
+                //Console.WriteLine("Adding thread cache with Id: " + threadId);
                 // Add to the local cache if not already present
                 _threadCaches.Add(threadCache);
             }
@@ -104,7 +107,7 @@ public class ThreadSyncService
         
         var updateDto = await response.Content.ReadFromJsonAsync<ThreadUpdateDto>();
         
-        Console.WriteLine($"Updating {updateDto!.UpdatedThreads.Count} threads");
+        //Console.WriteLine($"Updating {updateDto!.UpdatedThreads.Count} threads");
 
         foreach (var thread in updateDto!.UpdatedThreads)
         {
@@ -122,6 +125,7 @@ public class ThreadSyncService
                         LastUpdated = DateTime.Now
                     };
                     threadCacheCollection.ThreadIds.Add(thread.Id);
+                    Console.WriteLine($"Added thread with Id: {threadCache.Thread.Id}");
                     _threadCaches.Add(threadCache);
                 }
                 else
@@ -142,14 +146,17 @@ public class ThreadSyncService
             Console.WriteLine($"Thread {thread.Id} updated");
         }
 
-        try
+        if (updateDto!.UpdatedThreads?.Any() ?? false)
         {
-            Console.WriteLine($"{_threadCaches.Count} Threads are up to date!");
-            update?.Invoke(_threadCaches);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
+            try
+            {
+                //Console.WriteLine($"{_threadCaches.Count} Threads are up to date!");
+                update?.Invoke(_threadCaches);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         
         threadCacheCollection.ClientVersion = updateDto!.UpdatedVersion;

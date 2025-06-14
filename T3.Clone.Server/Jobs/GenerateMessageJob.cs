@@ -108,7 +108,7 @@ public class GenerateMessageJob(
             
             try
             {
-                aiGenerationService.SendError(message!);
+                await aiGenerationService.StopGeneration(message!.Id);
             }
             catch (Exception notifyEx)
             {

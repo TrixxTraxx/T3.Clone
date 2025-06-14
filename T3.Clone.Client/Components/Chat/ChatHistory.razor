@@ -23,12 +23,14 @@
     {
         threads = await ThreadSyncService.GetThreads((caches) =>
         {
+            Console.WriteLine("Received threads from ThreadSyncService");
             threads = caches;
             StateHasChanged();
         });
         
         ThreadSyncService.ThreadsUpdated += (caches) =>
         {
+            Console.WriteLine("Updating threads from ThreadSyncService");
             threads = caches;
             StateHasChanged();
         };
@@ -68,12 +70,17 @@
 
     private void OnThreadSelected(int threadId)
     {
-        // Navigation is handled by the href in ThreadNavigation
-        // This can be used for additional logic if needed
+        // Navigation is handled by the ThreadNavigation component
     }
 
     public void Dispose()
     {
+        ThreadSyncService.ThreadsUpdated -= (caches) =>
+        {
+            threads = caches;
+            StateHasChanged();
+        };
+        
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }

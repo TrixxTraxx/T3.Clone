@@ -85,29 +85,4 @@ public class AiGenerationService(
         // Send the new token to all clients in the group
         clients.SendAsync("ReceiveNewToken", token, isThinkingToken).GetAwaiter().GetResult();
     }
-
-    public void SendError(Message message)
-    {
-        // Get all clients for the messageId
-        var clients = hubContext.Clients.Group(message.Id.ToString());
-        if (clients == null)
-        {
-            // Log but don't throw - error sending isn't critical
-            Console.WriteLine($"No clients found for messageId {message.Id} when sending error: {message.ErrorMessage}");
-            return;
-        }
-        
-        // Send the error to all clients in the group
-        Task.Run(async () =>
-        {
-            try
-            {
-                clients.SendAsync("ReceiveError", MessageMapper.Map(message)).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to send error notification for message {message.Id}: {ex.Message}");
-            }
-        });
-    }
 }

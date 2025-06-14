@@ -14,15 +14,13 @@ public class MessageSyncService
     private readonly ISnackbar _snackbar;
     private readonly StorageService _storageService;
     private readonly ThreadSyncService _threadSyncService;
-    private readonly Func<GenerationService> _generationServiceFactory;
 
-    public MessageSyncService(HttpClient http, ISnackbar snackbar, StorageService storageService, ThreadSyncService threadSyncService, Func<GenerationService> generationServiceFactory)
+    public MessageSyncService(HttpClient http, ISnackbar snackbar, StorageService storageService, ThreadSyncService threadSyncService)
     {
         _http = http;
         _snackbar = snackbar;
         _storageService = storageService;
         _threadSyncService = threadSyncService;
-        _generationServiceFactory = generationServiceFactory;
     }
     
     public async Task<MessageCache> GetMessageCache(int messageId)
