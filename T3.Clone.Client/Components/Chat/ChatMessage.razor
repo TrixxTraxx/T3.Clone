@@ -67,7 +67,7 @@
         </div>
         
         <div class="message-content">
-            <AiResponseContent Message="@Message" OnContentChanged="@OnContentChanged" />
+            <AiResponseContent @key="Message.RenderKey" Message="@Message" OnContentChanged="@OnContentChanged" />
             <div class="message-actions">
                 <button class="action-button" @onclick="() => CopyToClipboard(Message.Message.ModelResponse)"
                         title="Copy message">
@@ -119,6 +119,8 @@
     {
         InvokeAsync(() =>
         {
+            //force C# to rerender the message entirely
+            //Message.RenderKey++;
             StateHasChanged();
             OnContentChanged.InvokeAsync();
         });

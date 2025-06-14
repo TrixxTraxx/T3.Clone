@@ -1,4 +1,5 @@
 using System.ClientModel;
+using System.Text.Json;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Responses;
@@ -91,33 +92,29 @@ public class OpenAiReasoningChat(
                 }
             });
 
-            Console.WriteLine($"[Reasoning] Starting Reasoning Chat!");
-
             //process the response
             await foreach (var update in response)
             {
-                Console.WriteLine($"[Reasoning] Update: {update?.GetType().Name}");
-                /*if (update is StreamingResponseUpdate itemUpdate
-                    && itemUpdate.Item is ReasoningResponseItem reasoningItem)
+                if (update is StreamingResponseInProgressUpdate inProgressUpdate)
                 {
-                    Console.WriteLine($"[Reasoning] ({reasoningItem.Status})");
-                }*/
+                    //Console.WriteLine($"[Reasoning] In Progress: {inProgressUpdate.Response.OutputItems}");
+                }
                 if(update is StreamingResponseOutputItemAddedUpdate itemAddedUpdate)
                 {
                     try
                     {
                         if(itemAddedUpdate.Item is ReasoningResponseItem reasoningItem)
                         {
-                            Console.WriteLine($"[Reasoning] ({reasoningItem.SummaryTextParts})");
+                            //Console.WriteLine($"[Reasoning] ({JsonSerializer.Serialize(reasoningItem.SummaryTextParts)})");
                             foreach (var textPart in reasoningItem.SummaryTextParts)
                             {
                                 entity.ThinkingResponse += textPart;
-                                tokenCallback?.Invoke(textPart);
+                                thinkingTokenCallback?.Invoke(textPart);
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"[Reasoning] Unknown item type: {itemAddedUpdate.Item.GetType().Name}");
+                            //Console.WriteLine($"[Reasoning] Unknown item type: {itemAddedUpdate.Item.GetType().Name}");
                         }
                     }
                     catch (Exception ex)
@@ -126,12 +123,12 @@ public class OpenAiReasoningChat(
                         {
                             //handle error in token callback
                             errorCallback?.Invoke($"Error in token callback: {ex.Message}");
-                            Console.WriteLine($"Error in token callback: {ex.Message}");
+                            //Console.WriteLine($"Error in token callback: {ex.Message}");
                         }
                         catch (Exception innerEx)
                         {
                             //log the error if the error callback fails
-                            Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                            //Console.WriteLine($"Error in error callback: {innerEx.Message}");
                         }
                     }
                 }
@@ -147,12 +144,12 @@ public class OpenAiReasoningChat(
                         try
                         {
                             //handle error in token callback
-                            errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                            //errorCallback?.Invoke($"Error in token callback: {ex.Message}");
                         }
                         catch (Exception innerEx)
                         {
                             //log the error if the error callback fails
-                            Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                            //Console.WriteLine($"Error in error callback: {innerEx.Message}");
                         }
                     }
                 }
@@ -166,7 +163,7 @@ public class OpenAiReasoningChat(
         catch (Exception ex)
         {
             //handle error
-            Console.WriteLine($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
+            //Console.WriteLine($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
             errorCallback?.Invoke($"Error during OpenAI Reasoning Chat generation: {ex.Message}");
             return null;
         }

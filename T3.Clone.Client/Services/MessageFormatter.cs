@@ -1,3 +1,5 @@
+using T3.Clone.Client.Components.MessageParts;
+
 namespace T3.Clone.Client.Models;
 
 using System;
@@ -15,180 +17,176 @@ public class MessageFormatter
 
     public class Segment
     {
-        public SegmentType Type { get; set; }
-
-        public string Content { get; set; }
-
-        // For code blocks, this holds the language if provided; otherwise null
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public SegmentType Type { get; set; } = SegmentType.Markdown;
+        public string FullContent { get; set; } = "";
+        public string Content { get; set; } = "";
         public string? Language { get; set; }
+        public MessagePartComponent? Component { get; set; }
     }
 
-    // Regex to find LaTeX expressions (both inline and block)
-    private static readonly Regex LatexRegex = new Regex(
-        @"(?:\$\$([^$]+?)\$\$|\$([^$]+?)\$|\\begin\{([^}]+)\}(.*?)\\end\{\3\})",
-        RegexOptions.Singleline | RegexOptions.Compiled
-    );
+    public List<Segment> Segments { get; private set; } = new List<Segment>();
 
-    public List<Segment> SplitIntoSegments(string message)
+    public void InitializeSegments(string content)
+    {
+        Segments.Clear();
+        if (string.IsNullOrEmpty(content))
+        {
+            Segments.Add(new Segment());
+            return;
+        }
+
+        Segments = SplitIntoSegments(content);
+    }
+
+    public List<Segment> AddTokenToSegments(string token)
+    {
+        var initialSegmentCount = Segments.Count;
+
+        if (Segments.Count == 0)
+        {
+            Segments.Add(new Segment());
+        }
+
+        var lastSegment = Segments[^1];
+        lastSegment.FullContent += token;
+
+        // Re-parse just the last segment to handle boundaries
+        var newSegments = SplitIntoSegments(lastSegment.FullContent);
+
+        // Replace the last segment with the new segments
+        Segments.RemoveAt(Segments.Count - 1);
+        Segments.AddRange(newSegments);
+
+        return Segments.Skip(Math.Max(0, initialSegmentCount - 1)).ToList();
+    }
+
+    private List<Segment> SplitIntoSegments(string message)
     {
         var segments = new List<Segment>();
         if (string.IsNullOrEmpty(message))
         {
+            segments.Add(new Segment());
             return segments;
         }
 
-        // First, handle code blocks
-        var codeBlockSegments = SplitCodeBlocks(message);
-        
-        // Then, for each non-code segment, check for LaTeX
-        foreach (var segment in codeBlockSegments)
+        var currentSegment = new Segment();
+        bool inCodeBlock = false;
+        string? currentLanguage = null;
+
+        int i = 0;
+        while (i < message.Length)
         {
-            if (segment.Type == SegmentType.CodeBlock)
+            // Check for ``` at current position
+            if (i <= message.Length - 3 && message.Substring(i, 3) == "```")
             {
-                segments.Add(segment);
-            }
-            else
-            {
-                // Process this markdown segment for LaTeX
-                var latexSegments = SplitLatexInMarkdown(segment.Content);
-                segments.AddRange(latexSegments);
-            }
-        }
-
-        return segments;
-    }
-
-    private List<Segment> SplitCodeBlocks(string message)
-    {
-        var segments = new List<Segment>();
-        const string delimiter = "```";
-        var parts = message.Split(
-            new[] { delimiter },
-            StringSplitOptions.None
-        );
-
-        // The loop increments by 2 because each code block is surrounded
-        // by Markdown parts. 'isCodeBlock' toggles state.
-        bool isCodeBlock = message.StartsWith(delimiter);
-
-        for (int i = 0; i < parts.Length; i++)
-        {
-            string currentPart = parts[i];
-            if (string.IsNullOrEmpty(currentPart))
-            {
-                // If a part is empty, we might just be toggling state.
-                // e.g., message starts or ends with ```
-                isCodeBlock = !isCodeBlock;
-                continue;
-            }
-
-            if (isCodeBlock)
-            {
-                // This part is a code block. The language is the first line.
-                var firstNewLine = currentPart.IndexOf('\n');
-                string language = string.Empty;
-                string content = currentPart;
-
-                if (firstNewLine != -1)
+                if (!inCodeBlock)
                 {
-                    language = currentPart.Substring(0, firstNewLine)
-                        .Trim();
-                    content = currentPart.Substring(firstNewLine + 1);
-                }
+                    // Starting a code block
+                    // Finish current markdown segment if it has content
+                    if (currentSegment.FullContent.Length > 0)
+                    {
+                        currentSegment.Content = currentSegment.FullContent;
+                        segments.Add(currentSegment);
+                    }
 
-                segments.Add(
-                    new Segment
+                    // Start new code block segment
+                    currentSegment = new Segment
                     {
                         Type = SegmentType.CodeBlock,
-                        Language = string.IsNullOrWhiteSpace(language)
-                            ? null
-                            : language,
-                        Content = content
+                        FullContent = "```"
+                    };
+
+                    i += 3; // Skip the ```
+                    inCodeBlock = true;
+
+                    // Parse language on the same line
+                    int languageStart = i;
+                    while (i < message.Length && message[i] != '\n')
+                    {
+                        currentSegment.FullContent += message[i];
+                        i++;
                     }
-                );
+
+                    if (i > languageStart)
+                    {
+                        string lang = message.Substring(languageStart, i - languageStart).Trim();
+                        currentLanguage = string.IsNullOrEmpty(lang) ? null : lang;
+                    }
+
+                    currentSegment.Language = currentLanguage;
+
+                    // Add the newline if present
+                    if (i < message.Length && message[i] == '\n')
+                    {
+                        currentSegment.FullContent += message[i];
+                        i++;
+                    }
+                }
+                else
+                {
+                    // Ending a code block
+                    currentSegment.FullContent += "```";
+                    currentSegment.Language = currentLanguage;
+
+                    // Extract content (everything between opening ``` and closing ```)
+                    string fullContent = currentSegment.FullContent;
+                    int firstNewline = fullContent.IndexOf('\n');
+                    if (firstNewline >= 0 && fullContent.EndsWith("```"))
+                    {
+                        int contentStart = firstNewline + 1;
+                        int contentEnd = fullContent.Length - 3;
+                        currentSegment.Content = contentStart < contentEnd
+                            ? fullContent.Substring(contentStart, contentEnd - contentStart)
+                            : "";
+                    }
+
+                    segments.Add(currentSegment);
+
+                    // Start new markdown segment
+                    currentSegment = new Segment();
+                    inCodeBlock = false;
+                    currentLanguage = null;
+
+                    i += 3; // Skip the ```
+                }
             }
             else
             {
-                // This part is standard Markdown text.
-                segments.Add(
-                    new Segment
-                    {
-                        Type = SegmentType.Markdown,
-                        Content = currentPart
-                    }
-                );
-            }
-
-            // Toggle for the next part
-            isCodeBlock = !isCodeBlock;
-        }
-
-        return segments;
-    }
-
-    private List<Segment> SplitLatexInMarkdown(string markdownContent)
-    {
-        var segments = new List<Segment>();
-        if (string.IsNullOrEmpty(markdownContent))
-        {
-            return segments;
-        }
-
-        var matches = LatexRegex.Matches(markdownContent);
-        if (matches.Count == 0)
-        {
-            // No LaTeX found, return as single markdown segment
-            segments.Add(new Segment
-            {
-                Type = SegmentType.Markdown,
-                Content = markdownContent
-            });
-            return segments;
-        }
-
-        int lastIndex = 0;
-        foreach (Match match in matches)
-        {
-            // Add markdown content before this LaTeX match
-            if (match.Index > lastIndex)
-            {
-                var beforeContent = markdownContent.Substring(lastIndex, match.Index - lastIndex);
-                if (!string.IsNullOrEmpty(beforeContent))
+                // Regular character - add to current segment
+                if (i < message.Length)
                 {
-                    segments.Add(new Segment
-                    {
-                        Type = SegmentType.Markdown,
-                        Content = beforeContent
-                    });
+                    currentSegment.FullContent += message[i];
+                    i++;
                 }
             }
-
-            // Add the LaTeX segment
-            var latexContent = match.Groups[1].Success ? match.Groups[1].Value : // $$...$$
-                              match.Groups[2].Success ? match.Groups[2].Value : // $...$
-                              match.Groups[4].Value; // \begin{...}...\end{...}
-
-            segments.Add(new Segment
-            {
-                Type = SegmentType.Latex,
-                Content = latexContent
-            });
-
-            lastIndex = match.Index + match.Length;
         }
 
-        // Add any remaining markdown content after the last LaTeX match
-        if (lastIndex < markdownContent.Length)
+        // Add the final segment
+        if (currentSegment.FullContent.Length > 0 || segments.Count == 0)
         {
-            var afterContent = markdownContent.Substring(lastIndex);
-            if (!string.IsNullOrEmpty(afterContent))
+            if (currentSegment.Type == SegmentType.Markdown)
             {
-                segments.Add(new Segment
-                {
-                    Type = SegmentType.Markdown,
-                    Content = afterContent
-                });
+                currentSegment.Content = currentSegment.FullContent;
             }
+            else if (currentSegment.Type == SegmentType.CodeBlock)
+            {
+                // Incomplete code block
+                string fullContent = currentSegment.FullContent;
+                int firstNewline = fullContent.IndexOf('\n');
+                if (firstNewline >= 0)
+                {
+                    currentSegment.Content = fullContent.Substring(firstNewline + 1);
+                }
+                else
+                {
+                    currentSegment.Content = "";
+                }
+
+                currentSegment.Language = currentLanguage;
+            }
+
+            segments.Add(currentSegment);
         }
 
         return segments;

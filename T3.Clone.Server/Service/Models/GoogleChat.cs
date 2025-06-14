@@ -23,11 +23,12 @@ public class GoogleChat(
             // Initialize Google AI client
             var googleAI = new GoogleAI(apiKey);
             var model = googleAI.GenerativeModel(config.ModelId);
+            bool isReasoningEnabled = entity.ReasoningEffortLevel != ReasoningEffortLevel.None;
             var generationConfig = new GenerationConfig()
             {
                 ThinkingConfig = new ThinkingConfig()
                 {
-                    IncludeThoughts = entity.ReasoningEffortLevel != ReasoningEffortLevel.None,
+                    IncludeThoughts = isReasoningEnabled,
                     ThinkingBudget = entity.ReasoningEffortLevel switch
                     {
                         ReasoningEffortLevel.None => 0,
@@ -90,27 +91,49 @@ public class GoogleChat(
             }
 
             // Generate response using text approach (will implement proper content parts later)
-            var responseText = "";
             await foreach (var chunk in model.GenerateContentStream(parts, generationConfig))
             {
                 if (!string.IsNullOrEmpty(chunk.Text))
                 {
-                    responseText += chunk.Text;
-                    entity.ModelResponse += chunk.Text;
+                    bool finishedThinking = (!isReasoningEnabled) || chunk.UsageMetadata.CandidatesTokenCount != 0;
+                    if (!finishedThinking)
+                    {
+                        entity.ThinkingResponse += chunk.Text;
                     
-                    try
-                    {
-                        tokenCallback?.Invoke(chunk.Text);
-                    }
-                    catch (Exception ex)
-                    {
                         try
                         {
-                            errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                            thinkingTokenCallback?.Invoke(chunk.Text);
                         }
-                        catch (Exception innerEx)
+                        catch (Exception ex)
                         {
-                            Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                            try
+                            {
+                                errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                            }
+                            catch (Exception innerEx)
+                            {
+                                Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        entity.ModelResponse += chunk.Text;
+                    
+                        try
+                        {
+                            tokenCallback?.Invoke(chunk.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            try
+                            {
+                                errorCallback?.Invoke($"Error in token callback: {ex.Message}");
+                            }
+                            catch (Exception innerEx)
+                            {
+                                Console.WriteLine($"Error in error callback: {innerEx.Message}");
+                            }
                         }
                     }
                 }
@@ -118,7 +141,6 @@ public class GoogleChat(
 
             return new ChatModelResponse
             {
-                Response = responseText,
                 IsError = false,
                 ModelName = config.Name,
                 ModelVersion = config.ModelId,

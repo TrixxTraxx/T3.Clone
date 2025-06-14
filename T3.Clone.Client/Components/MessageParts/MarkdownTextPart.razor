@@ -1,6 +1,7 @@
 @using Markdig
 @using T3.Clone.Client.Caches
 @using T3.Clone.Client.Models
+@inherits MessagePartComponent
 
 <div class="markdown-content">
     @(MarkdownContent)
@@ -23,11 +24,12 @@
         MarkdownContent = (MarkupString)Markdown.ToHtml(Content);
     }
 
-    private void OnTokenReceived(string token)
+    public override async Task OnTokenReceived(string token)
     {
+        Console.WriteLine("[Markdown] Adding token: " + token);
         Content += token;
         InitializeMarkdownContent();
         // Only re-render this component when regular tokens are received
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 } 

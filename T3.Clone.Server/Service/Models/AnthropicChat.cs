@@ -87,17 +87,22 @@ public class AnthropicChat(
                 MaxTokens = config.MaxOutputTokens > 0 ? config.MaxOutputTokens : 8000,
                 Model = config.ModelId, // Should be claude-3-7-sonnet-20250101 or similar for thinking
                 Stream = true,
-                Thinking = new ThinkingParameters()
+            };
+            
+            var isThinkingContent = entity.ReasoningEffortLevel != ReasoningEffortLevel.None;
+
+            if (isThinkingContent)
+            {
+                parameters.Thinking = new ThinkingParameters()
                 {
                     BudgetTokens = entity.ReasoningEffortLevel switch
                     {
-                        ReasoningEffortLevel.None => 0,
                         ReasoningEffortLevel.Low => 2048,
                         ReasoningEffortLevel.Medium => 4096,
                         ReasoningEffortLevel.High => 8192,
                     }
-                }
-            };
+                };
+            }
 
             Console.WriteLine($"[Anthropic Reasoning] Starting Reasoning Chat with model: {config.ModelId}");
 
@@ -106,8 +111,7 @@ public class AnthropicChat(
 
             var inputTokens = 0;
             var outputTokens = 0;
-            var isThinkingContent = entity.ReasoningEffortLevel != ReasoningEffortLevel.None;
-
+            
             await foreach (var res in response)
             {
                 Console.WriteLine($"[Anthropic Reasoning] Update: {res.Type}");

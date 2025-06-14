@@ -1,7 +1,7 @@
 @using T3.Clone.Client.Caches
 @using T3.Clone.Client.Models
 @inject IJSRuntime JSRuntime
-@implements IDisposable
+@inherits MessagePartComponent
 
 <pre class="code-block" id="@ElementId">
     <code>@Content</code>
@@ -15,27 +15,17 @@
 
     private DateTime _lastHighlightTime = DateTime.MinValue;
 
-    protected override void OnInitialized()
-    {
-        Message.OnGenerate += OnTokenReceived;
-        Message.OnUpdated += OnMessageUpdated;
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await HighlightDebounced();
     }
 
-    private void OnTokenReceived(string token)
+    public override async Task OnTokenReceived(string token)
     {
+        Console.WriteLine("[Code] Adding token: " + token);
+        Content += token;
         // Only re-render this component when regular tokens are received
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void OnMessageUpdated()
-    {
-        // Update UI when message is updated
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private async Task HighlightDebounced()
@@ -52,11 +42,5 @@
             // Use JS interop to highlight the code block
             await JSRuntime.InvokeVoidAsync("highlightCodeBlock", ElementId);
         }
-    }
-
-    public void Dispose()
-    {
-        Message.OnGenerate -= OnTokenReceived;
-        Message.OnUpdated -= OnMessageUpdated;
     }
 } 

@@ -14,19 +14,19 @@
     @if (!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))
     {
         <div class="model-response">
-            @foreach (var segment in MessageFormatter.SplitIntoSegments(Message.Message.ModelResponse))
+            @foreach (var segment in MessageFormatter.Segments)
             {
                 if (segment.Type == MessageFormatter.SegmentType.Markdown)
                 {
-                    <MarkdownTextPart Message="@Message" Content="@segment.Content"/>
+                    <MarkdownTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content"/>
                 }
                 else if (segment.Type == MessageFormatter.SegmentType.CodeBlock)
                 {
-                    <CodeTextPart Message="@Message" Content="@segment.Content" Language="@segment.Language"/>
+                    <CodeTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content" Language="@segment.Language"/>
                 }
                 else if (segment.Type == MessageFormatter.SegmentType.Latex)
                 {
-                    <LatexTextPart Message="@Message" Content="@segment.Content"/>
+                    <LatexTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content"/>
                 }
             }
         </div>
@@ -62,21 +62,54 @@
     {
         Message.OnGenerate += OnTokenReceived;
         Message.OnReasoningGenerate += OnReasoningTokenReceived;
+        MessageFormatter.InitializeSegments(Message.Message.ModelResponse);
+        Console.WriteLine("Initialized MessageFormatter with segments: " + MessageFormatter.Segments.Count + " segments for response: " + Message.Message.ModelResponse);
     }
 
     private void OnTokenReceived(string token)
     {
-        if (!receivedFirstToken)
+        try
         {
-            thinkingText?.SetThinkingCollapsed(true);
-            receivedFirstToken = true;
+            if (!receivedFirstToken)
+            {
+                thinkingText?.SetThinkingCollapsed(true);
+                receivedFirstToken = true;
+            }
+            AddMessageToken(token);
         }
-        AddMessageToken(token);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing token:");
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+                OnContentChanged.InvokeAsync();
+            });
+        }
     }
 
     private void AddMessageToken(string token)
     {
-        InvokeAsync(StateHasChanged);
+        var effectedSegments = MessageFormatter.AddTokenToSegments(token);
+        Console.WriteLine("Updating segments: " + effectedSegments.Count);
+        effectedSegments[0].Component?.OnTokenReceived(token);
+        if (effectedSegments.Count > 1)
+        {
+            InvokeAsync(async () =>
+            {
+                StateHasChanged();
+                await Task.Yield();
+                foreach (var segment in effectedSegments.Skip(1))
+                {
+                    Console.WriteLine("Adding New Message Segment: " + segment.Type);
+                    segment.Component?.OnTokenReceived(token);
+                }
+            });
+        }
     }
 
     private void OnReasoningTokenReceived(string token)

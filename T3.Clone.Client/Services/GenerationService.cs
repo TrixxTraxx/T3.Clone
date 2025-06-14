@@ -65,8 +65,6 @@ public class GenerationService : IAsyncDisposable
         // Set up event handlers
         _hubConnection.On<string, bool>("ReceiveNewToken", (token, isThinking) =>
         {
-            Console.WriteLine($"Received new token: {token}");
-
             if (isThinking)
             {
                 _currentMessageCache.Message.ThinkingResponse += token;
@@ -84,8 +82,6 @@ public class GenerationService : IAsyncDisposable
 
         _hubConnection.On<MessageDto>("GenerationStopped", (message) =>
         {
-            Console.WriteLine($"Received GenerationStopped for messageId: {message.Id}");
-            
             _currentMessageCache.Message = message;
             _currentMessageCache.LastUpdated = DateTime.UtcNow;
             _currentMessageCache.OnUpdated?.Invoke();
@@ -102,8 +98,6 @@ public class GenerationService : IAsyncDisposable
 
         _hubConnection.On<MessageDto>("NewMessage", (message) =>
         {
-            Console.WriteLine($"Received new message: {message}");
-            
             // Handle new message events
             _currentMessageCache.Message = message;
             _currentMessageCache.LastUpdated = DateTime.UtcNow;

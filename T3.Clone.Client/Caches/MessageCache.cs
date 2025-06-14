@@ -13,6 +13,9 @@ public class MessageCache
     public DateTime LastUpdated { get; set; }
     
     [IgnoreMember]
+    public int RenderKey { get; set; } = 0;
+    
+    [IgnoreMember]
     public Action OnUpdated { get; set; } = () => { };
     
     [IgnoreMember]

@@ -1,6 +1,6 @@
 @using T3.Clone.Client.Caches
 @using T3.Clone.Client.Models
-@implements IDisposable
+@inherits MessagePartComponent
 
 <div class="latex-content">
     @Content
@@ -15,8 +15,6 @@
     protected override void OnInitialized()
     {
         _lastContent = Content;
-        Message.OnGenerate += OnTokenReceived;
-        Message.OnUpdated += OnMessageUpdated;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -28,10 +26,11 @@
         }
     }
 
-    private void OnTokenReceived(string token)
+    public override async Task OnTokenReceived(string token)
     {
+        Console.WriteLine("[Latex] Adding token: " + token);
         // Only re-render this component when regular tokens are received
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private void OnMessageUpdated()
@@ -40,9 +39,4 @@
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
-    {
-        Message.OnGenerate -= OnTokenReceived;
-        Message.OnUpdated -= OnMessageUpdated;
-    }
 } 

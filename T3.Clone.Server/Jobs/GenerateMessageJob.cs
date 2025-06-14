@@ -36,13 +36,12 @@ public class GenerateMessageJob(
             message,
             messageChain,
             message.Model,
-            token => aiGenerationService.SendNewToken(messageId, token, true),
-            thinkingToken => aiGenerationService.SendNewToken(messageId, thinkingToken, false),
+            token => aiGenerationService.SendNewToken(messageId, token, false),
+            thinkingToken => aiGenerationService.SendNewToken(messageId, thinkingToken, true),
             error =>
             {
                 //TODO: handle error
                 Console.WriteLine($"Error during token generation: {error}");
-                aiGenerationService.StopGeneration(messageId);
             }
         );
         
