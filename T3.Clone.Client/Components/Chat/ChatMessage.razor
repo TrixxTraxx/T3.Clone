@@ -120,7 +120,7 @@
         InvokeAsync(() =>
         {
             //force C# to rerender the message entirely
-            Message.RenderKey++;
+            //Message.RenderKey++;
             StateHasChanged();
             OnContentChanged.InvokeAsync();
         });

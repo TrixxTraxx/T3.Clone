@@ -57,12 +57,13 @@ public class MessageFormatter
 
     private void SplitIntoSegments(int tokenLength = 0)
     {
+        var initialLastSegment = Segments.Last();
         if (tokenLength == 0)
         {
             tokenLength = fullContent.Length;
         }
 
-        for (int i = Math.Max(0, fullContent.Length - tokenLength - 4); i < fullContent.Length; i++)
+        for (int i = Math.Max(initialLastSegment.StartIndex, fullContent.Length - tokenLength - 4); i < fullContent.Length; i++)
         {
             var lastSegment = Segments.Last();
             var newSegmentType = HasNewSegmentType(fullContent, i);
@@ -70,7 +71,7 @@ public class MessageFormatter
             {
                 Console.WriteLine("Found new segment Seperator: " + newSegmentType.Value);
                 // If the last segment is of the same type, just append to it
-                lastSegment.EndIndex = Math.Max(0, i - 1);
+                lastSegment.EndIndex = Math.Max(lastSegment.StartIndex, i - 1);
                 Console.WriteLine($"Extracting message from index {lastSegment.StartIndex} to {lastSegment.EndIndex}");
                 lastSegment.FullContent = fullContent.Substring(lastSegment.StartIndex, lastSegment.EndIndex - lastSegment.StartIndex);
                 Console.WriteLine($"Extracting message: {lastSegment.FullContent}");
@@ -81,13 +82,18 @@ public class MessageFormatter
                 {
                     // If the last segment is not of the same type, we need to create a new segment
                     type = SegmentType.Markdown;
-                    i += 2; // Move to the next character after the last segment
                 }
 
                 var content = fullContent
-                    .Substring(i)
-                    .TrimStart('`')
-                    .TrimStart('$');
+                    .Substring(i);
+                if (type == SegmentType.CodeBlock)
+                {
+                    content = content.TrimStart('`');
+                }
+                else if (type == SegmentType.Latex)
+                {
+                    content = content.TrimStart('$');
+                }
                 // Create a new segment
                 Console.WriteLine("Adding new segment: " + type + " with content: " + content);
                 var segment = new Segment
@@ -101,13 +107,17 @@ public class MessageFormatter
                 
                 // Add the segment to the list
                 Segments.Add(segment);
+                if (segment.Type == SegmentType.Markdown && lastSegment.Type == SegmentType.CodeBlock)
+                {
+                    i += 2; // Move past the Seperator
+                }
                 if (segment.Type == SegmentType.CodeBlock)
                 {
-                    i += 2; // Move to the next character after the last segment
+                    i += 2; // Move past the Seperator
                 }
                 else if (segment.Type == SegmentType.Latex)
                 {
-                    i += 1; // Move to the next character after the last segment
+                    i += 1; // Move past the Seperator
                 }
             }
             /*else if (lastSegment.Type != SegmentType.CodeBlock && lastSegment.Language == null &&
@@ -131,9 +141,16 @@ public class MessageFormatter
     {
         lastSegment.Content = lastSegment.FullContent
             .TrimEnd('\r', '\n')
-            .Trim()
-            .Trim('$')
-            .Trim('`');
+            .Trim();
+        if (lastSegment.Type == SegmentType.CodeBlock)
+        {
+            lastSegment.Content = lastSegment.Content.Trim('`');
+        }
+        else if (lastSegment.Type == SegmentType.Latex)
+        {
+            lastSegment.Content = lastSegment.Content.Trim('$');
+        }
+        Console.WriteLine("Finished Block with content: " + lastSegment.Content);
     }
 
     private SegmentType? HasNewSegmentType(string message, int i)
@@ -141,7 +158,7 @@ public class MessageFormatter
         if (message[i] == '`')
         {
             // Check for code block
-            if (i + 1 < message.Length && message[i + 1] == '`' && i + 2 < message.Length && message[i + 2] == '`')
+            if (i + 2 < message.Length && message[i + 1] == '`' && message[i + 2] == '`')
             {
                 // It's a code block
                 return SegmentType.CodeBlock;
