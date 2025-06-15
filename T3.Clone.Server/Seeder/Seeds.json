@@ -264,27 +264,6 @@
       "ThinkingCost": 3.5
     },
     {
-      "Name": "Gemini 2.5 Pro",
-      "Description": "Google's current generation model, optimized for more complex tasks, with a large context window and advanced reasoning capabilities.",
-      "ModelId": "gemini-2.5-pro-preview-06-05",
-      "Provider": "Google",
-      "ApiKey": "{Google}",
-      "RequiredApiKey": "Google",
-      "ApiUrl": "",
-      "SystemPrompt": "You are a Chatbot hosted on the LLM Lab Website available at LLMLab.chat. You are a powerful AI assistant. You are designed to assist users with a wide range of tasks, including answering questions, providing information, and generating creative content.",
-      "HasImageGenerationSupport": false,
-      "HasImageSupport": true,
-      "HasThinkingSupport": true,
-      "ImageGenerationCost": 0,
-      "InputTokenCost": 1.25,
-      "OutputTokenCost": 10,
-      "IsDefault": false,
-      "MaxInputTokens": 1000000,
-      "MaxOutputTokens": 65000,
-      "SupportedContentTypes": "image/jpeg, image/png, image/webp",
-      "ThinkingCost": 3.5
-    },
-    {
       "Name": "Claude Sonnet 3.5",
       "Description": "Antropics last generation model, optimized for speed and efficiency, with advanced reasoning capabilities.",
       "ModelId": "claude-3-5-sonnet-latest",
