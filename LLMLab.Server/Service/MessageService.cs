@@ -9,7 +9,8 @@ namespace LLMLab.Server.Service;
 public class MessageService(
     IHttpContextAccessor httpContextAccessor,
     ApplicationDbContext context,
-    AiGenerationService aiService
+    AiGenerationService aiService,
+    ThreadService threadService
 )
 {
     public async Task<MessageDto> CreateMessageAsync(MessageDto dto)
@@ -69,6 +70,7 @@ public class MessageService(
         //add message to database
         context.Messages.Add(newMessage);
         await context.SaveChangesAsync();
+        threadService.SendThreadUpdate(thread.UserId);
         
         await aiService.StartGeneration(newMessage.Id);
         

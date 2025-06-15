@@ -4,7 +4,8 @@
 @using LLMLab.Client.Caches
 @using LLMLab.Client.Components.Common
 @using LLMLab.Client.Services
-@implements IDisposable
+@implements IAsyncDisposable
+@inject ThreadSignalRService ThreadSignalRService
 
 <div class="chat-history-container">
     <div class="new-chat-section">
@@ -27,28 +28,11 @@
     {
         threads = await ThreadSyncService.GetThreads((caches) =>
         {
-            Console.WriteLine("Received threads from ThreadSyncService");
             threads = caches;
             StateHasChanged();
         });
-        
-        ThreadSyncService.ThreadsUpdated += (caches) =>
-        {
-            InvokeAsync(async () =>
-            {
-                try
-                {
-                    Console.WriteLine("Updating threads from ThreadSyncService");
-                    threads = caches;
-                    StateHasChanged();
-                    await MessageSyncService.UpdateCacheInBackground();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error updating threads: {ex.Message}");
-                }
-            });
-        };
+
+        ThreadSyncService.ThreadsUpdated += UpdateThreads;
 
         // Listen to navigation changes
         NavigationManager.LocationChanged += OnLocationChanged;
@@ -68,6 +52,23 @@
                 Console.WriteLine($"Error in UpdateCacheInBackground: {ex.Message}");
             }
         });
+
+        await ThreadSignalRService.ConnectAsync();
+    }
+
+    private async void UpdateThreads(List<ThreadCache> caches)
+    {
+        try
+        {
+            Console.WriteLine("Updating threads from ThreadSyncService");
+            threads = caches;
+            StateHasChanged();
+            await MessageSyncService.UpdateCacheInBackground();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating threads: {ex.Message}");
+        }
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
@@ -101,14 +102,12 @@
         // Navigation is handled by the ThreadNavigation component
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        ThreadSyncService.ThreadsUpdated -= (caches) =>
-        {
-            threads = caches;
-            StateHasChanged();
-        };
+        ThreadSyncService.ThreadsUpdated -= UpdateThreads;
         
         NavigationManager.LocationChanged -= OnLocationChanged;
+        await ThreadSignalRService.DisposeAsync();
     }
+
 }

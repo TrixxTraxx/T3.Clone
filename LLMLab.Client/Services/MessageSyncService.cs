@@ -184,9 +184,8 @@ public class MessageSyncService
         // Store in local storage
         await _storageService.StoreObjectAsync($"MessageCache_{sentMessage.Id}", cache);
         
-        // refresh the thread cache now and after 3s
+        // refresh the thread cache now
         await _threadSyncService.Update();
-        _ = Task.Delay(3000).ContinueWith(async _ => await _threadSyncService.Update());
         
         return sentMessage;
     }

@@ -2,13 +2,16 @@ using System.Security.Claims;
 using LLMLab.Dtos.Threads;
 using LLMLab.Server.Data;
 using LLMLab.Server.Mappers;
+using LLMLab.Server.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace LLMLab.Server.Service;
 
 public class ThreadService(
     ApplicationDbContext context,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IHubContext<ThreadHub> hubContext
 )
 {
     public async Task<ThreadUpdateDto> GetThreads(int? clientVersion)
@@ -67,7 +70,14 @@ public class ThreadService(
         thread.Version = thread.User.ThreadVersion; // Update thread version
         
         await context.SaveChangesAsync();
+        SendThreadUpdate(userId);
         
         return ThreadMapper.Map(thread);
+    }
+    
+    public void SendThreadUpdate(string userId)
+    {
+        // Notify all clients about the updated thread
+        hubContext.Clients.Group(userId).SendAsync("ThreadsUpdated");
     }
 }

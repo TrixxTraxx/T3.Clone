@@ -243,6 +243,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<MessageHub>("/messageHub");
+app.MapHub<ThreadHub>("/threadHub");
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

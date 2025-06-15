@@ -14,7 +14,8 @@ namespace LLMLab.Server.Jobs;
 public class GenerateThreadTitleJob(
     ApplicationDbContext dbContext,
     AiKeyService keyService,
-    IOptions<Appsettings> appSettings
+    IOptions<Appsettings> appSettings,
+    ThreadService threadService
 )
 {
     public async Task GenerateThreadTitleAsync(int threadId, string newMessageText)
@@ -66,6 +67,7 @@ public class GenerateThreadTitleJob(
             thread.Title = title;
 
             await dbContext.SaveChangesAsync();
+            threadService.SendThreadUpdate(thread.UserId);
         }
         catch (Exception ex)
         {
@@ -86,6 +88,7 @@ public class GenerateThreadTitleJob(
                     thread.Title = fallbackTitle;
 
                     await dbContext.SaveChangesAsync();
+                    threadService.SendThreadUpdate(thread.UserId);
                     Console.WriteLine($"Set emergency fallback title for thread {threadId}: '{thread.Title}'");
                 }
                 catch (Exception saveEx)
