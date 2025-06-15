@@ -3,6 +3,7 @@
 @inject IJSRuntime JSRuntime
 @inject AiModelService AiModelService
 @inject AttachmentService AttachmentService
+@inject SettingsService SettingsService
 
 <div class="hypermodern-chat-input-wrapper">
     <div class="hypermodern-input-container">
@@ -259,11 +260,27 @@
     {
         aiModels = await AiModelService.GetAiModels();
         
-        // Find default model or use first available
-        var defaultModel = aiModels.FirstOrDefault(m => m.IsDefault) ?? aiModels.FirstOrDefault();
-        if (defaultModel != null)
+        // Try to load cached model selection first
+        var cachedModelId = await SettingsService.GetSettingAsync("selectedModelId", 0);
+        
+        // Check if cached model exists and is available
+        var cachedModel = cachedModelId > 0 ? aiModels.FirstOrDefault(m => m.Id == cachedModelId) : null;
+        
+        if (cachedModel != null)
         {
-            selectedModelId = defaultModel.Id;
+            // Use cached model
+            selectedModelId = cachedModel.Id;
+        }
+        else
+        {
+            // Fall back to default model or first available
+            var defaultModel = aiModels.FirstOrDefault(m => m.IsDefault) ?? aiModels.FirstOrDefault();
+            if (defaultModel != null)
+            {
+                selectedModelId = defaultModel.Id;
+                // Save the initial selection to cache
+                await SettingsService.SetSettingAsync("selectedModelId", selectedModelId);
+            }
         }
         
         StateHasChanged();
@@ -413,9 +430,11 @@
         StateHasChanged();
     }
 
-    private void OnModelSelected(int modelId)
+    private async void OnModelSelected(int modelId)
     {
         SelectedModelId = modelId;
+        // Cache the selected model
+        await SettingsService.SetSettingAsync("selectedModelId", modelId);
         StateHasChanged();
     }
 

@@ -139,7 +139,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     overflow: visible;
-    margin-right: 10px;
+    padding-right: 15px;
 }
 
 .login-section{
