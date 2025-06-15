@@ -39,6 +39,17 @@
         OnAttachmentAdded="HandleAttachment"
         IsLoading="isSending"
         IsLastMessageComplete="IsLastMessageComplete" />
+
+    @if (!_wasScrolledToBottom)
+    {
+    <div class="scroll-to-bottom-btn" title="Scroll to bottom" @onclick="ScrollToBottom">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" fill="rgba(32,32,32,0.75)" />
+            <path d="M9 13l5 5 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 7v11" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </div>
+    }
 </div>
 
 @code {
@@ -64,7 +75,9 @@
     [JSInvokable]
     public void SetScrolledToBottom(bool atBottom)
     {
+        if (_wasScrolledToBottom == atBottom) return;
         _wasScrolledToBottom = atBottom;
+        InvokeAsync(StateHasChanged);
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -246,5 +259,9 @@
             await ChatInput.SetText(suggestionText);
         }
     }
-
+    
+    private async Task ScrollToBottom()
+    {
+        await JSRuntime.InvokeVoidAsync("scrollChatToBottom");
+    }
 } 
