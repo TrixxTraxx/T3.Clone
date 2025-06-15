@@ -1,0 +1,178 @@
+@using LLMLab.Client.Caches
+@using LLMLab.Client.Services
+@inject ThreadSyncService ThreadSyncService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="search-modal-overlay @(IsVisible ? "visible" : "")" @onclick="CloseModal" @onkeydown="HandleKeyDown" tabindex="-1">
+    <div class="search-modal-container" @onclick:stopPropagation="true">
+        <div class="search-modal-header">
+            <h3 class="modal-title">Search Chats</h3>
+            <button class="modal-close-btn" @onclick="CloseModal" type="button">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="search-modal-content">
+            <div class="search-input-container">
+                <div class="search-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                </div>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Search chats..."
+                    value="@searchQuery"
+                    @oninput="OnSearchInput"
+                    @onkeydown="HandleInputKeyDown"
+                    @ref="searchInputRef"
+                />
+            </div>
+            
+            <div class="search-results">
+                @if (isLoading)
+                {
+                    <div class="loading-results">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        <span>Searching...</span>
+                    </div>
+                }
+                else if (searchResults.Any())
+                {
+                    @foreach (var result in searchResults)
+                    {
+                        <div class="search-result-item" @onclick="() => NavigateToThread(result.Thread.Id)">
+                            <div class="result-icon">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                                </svg>
+                            </div>
+                            <div class="result-content">
+                                <div class="result-title">@result.Thread.Title</div>
+                            </div>
+                        </div>
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(searchQuery))
+                {
+                    <div class="no-results">
+                        <div class="no-results-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </div>
+                        <span>No results found</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    
+    private string searchQuery = "";
+    private List<ThreadCache> searchResults = new();
+    private bool isLoading = false;
+    private ElementReference searchInputRef;
+    private Timer? searchTimer;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsVisible)
+        {
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("focusElement", searchInputRef);
+        }
+    }
+    
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        await OnSearchQueryChanged();
+    }
+    
+    private async Task HandleInputKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseModal();
+        }
+    }
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseModal();
+        }
+    }
+    
+    private async Task CloseModal()
+    {
+        searchQuery = "";
+        searchResults.Clear();
+        await OnClose.InvokeAsync();
+    }
+    
+    private void NavigateToThread(int threadId)
+    {
+        NavigationManager.NavigateTo($"/chat/{threadId}");
+        _ = CloseModal();
+    }
+    
+    private async Task OnSearchQueryChanged()
+    {
+        if (searchTimer != null)
+        {
+            await searchTimer.DisposeAsync();
+        }
+        
+        searchTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                if (string.IsNullOrWhiteSpace(searchQuery))
+                {
+                    searchResults.Clear();
+                    StateHasChanged();
+                    return;
+                }
+                
+                isLoading = true;
+                StateHasChanged();
+                
+                try
+                {
+                    var threads = await ThreadSyncService.GetThreads();
+                    searchResults = threads
+                        .Where(t => !t.Thread.Deleted && 
+                                  t.Thread.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error searching threads: {ex.Message}");
+                    searchResults.Clear();
+                }
+                
+                isLoading = false;
+                StateHasChanged();
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (searchTimer != null)
+        {
+            await searchTimer.DisposeAsync();
+        }
+    }
+} 
