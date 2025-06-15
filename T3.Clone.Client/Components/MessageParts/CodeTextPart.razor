@@ -33,7 +33,7 @@
 
     protected override void OnInitialized()
     {
-        _displayContent = Content;
+        _displayContent = SanitationHelper.SanitizeHtml(Content);
         _lastHighlightedContent = Content;
     }
     
@@ -69,7 +69,7 @@
             if (string.IsNullOrEmpty(_lastHighlightedContent) || 
                 Content.Length - _lastHighlightedContent.Length > CONTENT_CHUNK_SIZE * 2)
             {
-                _displayContent = Content;
+                _displayContent = SanitationHelper.SanitizeHtml(Content);
                 StateHasChanged();
             }
         }
@@ -104,11 +104,12 @@
         {
             if (!string.IsNullOrWhiteSpace(Content))
             {
-                var highlightedHtml = await JSRuntime.InvokeAsync<string>("getHighlightedHtml", Content, Language);
+                var highlightedHtml = await JSRuntime.InvokeAsync<string>("getHighlightedHtml", Content);
                 
+
                 if (!string.IsNullOrEmpty(highlightedHtml))
                 {
-                    _displayContent = highlightedHtml;
+                    _displayContent = SanitationHelper.SanitizeHtml(highlightedHtml);
                     _lastHighlightedContent = Content;
                     _lastHighlightTime = DateTime.Now;
                     StateHasChanged();
@@ -119,7 +120,7 @@
         {
             Console.WriteLine($"Error highlighting code: {ex.Message}");
             // Fallback to plain text if highlighting fails
-            _displayContent = Content;
+            _displayContent = SanitationHelper.SanitizeHtml(Content);
             StateHasChanged();
         }
     }

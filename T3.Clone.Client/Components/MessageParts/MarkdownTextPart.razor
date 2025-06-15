@@ -23,8 +23,10 @@
     {
         if (!string.IsNullOrEmpty(Content))
         {
+            //escape script tags
+            var replacedString = SanitationHelper.SanitizeHtml(Content);
             //Console.WriteLine("Parse Markdown content: " + Content);
-            MarkdownContent = (MarkupString)Markdown.ToHtml(Content);
+            MarkdownContent = (MarkupString)Markdown.ToHtml(replacedString);
         }
     }
 

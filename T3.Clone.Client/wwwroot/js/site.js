@@ -237,44 +237,12 @@ window.getHighlightedHtml = function(code, language) {
     }
     
     try {
-        if (language && language.trim() !== '') {
-            // Try to highlight with specific language
-            const result = hljs.highlight(code, { language: language.trim() });
-            return result.value;
-        } else {
-            // Auto-detect language
-            const result = hljs.highlightAuto(code);
-            return result.value;
-        }
+        // Auto-detect language
+        const result = hljs.highlightAuto(code);
+        return result.value;
     } catch (error) {
         console.warn('Error highlighting code:', error);
         // Return the original code if highlighting fails
         return code;
-    }
-}
-
-window.highlightCodeBlock = function(elementId) {
-    if (typeof hljs !== 'undefined') {
-        const element = document.getElementById(elementId);
-        if (!element) {
-            console.warn(`Element with ID ${elementId} not found for highlighting`);
-            return;
-        }
-        
-        // Find the code element inside the pre tag
-        const codeElement = element.querySelector('code');
-        if (!codeElement) {
-            console.warn(`Code element not found inside element with ID ${elementId}`);
-            return;
-        }
-        
-        // Clear any existing highlighting
-        codeElement.removeAttribute('data-highlighted');
-        codeElement.className = '';
-        
-        // Apply highlighting to the code element
-        hljs.highlightElement(codeElement);
-    } else {
-        console.warn('Highlight.js is not loaded');
     }
 }
