@@ -1,0 +1,97 @@
+.hypermodern-search-btn {
+    width: 100%;
+    margin-bottom: 8px;
+    height: 42px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--mud-palette-text-primary);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 25%, transparent);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.hypermodern-search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(135deg, 
+            color-mix(in srgb, var(--mud-palette-primary) 6%, transparent) 0%,
+            color-mix(in srgb, var(--mud-palette-primary) 3%, transparent) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.hypermodern-search-btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, 
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 70%, white) 50%,
+        var(--mud-palette-primary) 100%);
+    border-radius: 14px;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
+.hypermodern-search-btn:hover {
+    transform: translateY(-1px);
+    border-color: transparent;
+    color: white;
+    box-shadow: 
+        0 4px 12px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent),
+        0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.hypermodern-search-btn:hover::before {
+    opacity: 1;
+}
+
+.hypermodern-search-btn:hover::after {
+    opacity: 1;
+}
+
+.hypermodern-search-btn:active {
+    transform: translateY(0);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-icon {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.3s ease;
+}
+
+.hypermodern-search-btn:hover .btn-icon {
+    transform: scale(1.05);
+}
+
+.btn-text {
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+} 
