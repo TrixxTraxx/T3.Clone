@@ -25,6 +25,7 @@
                 Messages="currentBranch"
                 OnMessageContentChanged="OnMessageContentChanged"
                 OnRegenerateMessage="RegenerateMessage"
+                OnSuggestionClicked="HandleSuggestionClick"
             />
         }
     </div>
@@ -200,6 +201,14 @@
         //reset current branch up to the message
         currentBranch = messageTree?.GetMessagesForBranch(currentBranchPath) ?? new List<MessageCache>();
         await HandleSendMessage(newMessage);
+    }
+
+    private async Task HandleSuggestionClick(string suggestionText)
+    {
+        if (ChatInput != null)
+        {
+            await ChatInput.SetText(suggestionText);
+        }
     }
 
 } 

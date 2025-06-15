@@ -14,25 +14,6 @@
     scroll-behavior: smooth;
 }
 
-.welcome-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    text-align: center;
-    gap: 1rem;
-}
-
-.welcome-icon {
-    font-size: 4rem !important;
-    margin-bottom: 1rem;
-}
-
-.welcome-text {
-    margin-bottom: 0.5rem;
-}
-
 .chat-loading-container {
     display: flex;
     flex-direction: column;

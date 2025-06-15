@@ -242,6 +242,16 @@
     
     private bool CanSend => !IsLoading && !string.IsNullOrWhiteSpace(message.Text);
 
+    public async Task SetText(string text)
+    {
+        message.Text = text;
+        StateHasChanged();
+        
+        // Focus and auto-resize the textarea
+        await JSRuntime.InvokeVoidAsync("focusElement", TextareaRef);
+        await JSRuntime.InvokeVoidAsync("autoResizeTextarea", TextareaRef);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         aiModels = await AiModelService.GetAiModels();

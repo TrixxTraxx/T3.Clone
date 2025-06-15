@@ -1,10 +1,91 @@
 <div class="welcome-container">
-    <MudIcon Icon="Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Primary" Class="welcome-icon"/>
-    <MudText Typo="Typo.h4" Class="welcome-text"> Start a new conversation</MudText>
-    <MudText Typo="Typo.body1" Color="Color.Secondary"> Ask me anything, and I'll help you!</MudText>
+    <div class="welcome-header">
+        <div class="welcome-icon-container">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Large" Color="Color.Primary" Class="welcome-icon"/>
+            <div class="icon-glow"></div>
+        </div>
+        <MudText Typo="Typo.h3" Class="welcome-title">Welcome to LLM Lab</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="welcome-subtitle">
+            Your AI-powered conversation partner. Ask me anything to get started!
+        </MudText>
+    </div>
+
+    <div class="suggestion-cards">
+        <MudText Typo="Typo.h6" Class="suggestions-title">Try asking about:</MudText>
+        <div class="cards-grid">
+            <div class="suggestion-card" @onclick="@(() => HandleSuggestionClick("Help me debug this JavaScript function that's not working as expected"))">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Code" Color="Color.Info"/>
+                    </div>
+                    <div class="card-title">Code & Programming</div>
+                    <div class="card-description">
+                        "Help me debug this JavaScript function"
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestion-card" @onclick="@(() => HandleSuggestionClick("Brainstorm creative marketing strategies for a new tech startup"))">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Color="Color.Warning"/>
+                    </div>
+                    <div class="card-title">Creative Ideas</div>
+                    <div class="card-description">
+                        "Brainstorm creative marketing strategies"
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestion-card" @onclick="@(() => HandleSuggestionClick("Explain quantum computing in simple terms that a beginner can understand"))">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.School" Color="Color.Success"/>
+                    </div>
+                    <div class="card-title">Learning & Research</div>
+                    <div class="card-description">
+                        "Explain quantum computing simply"
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestion-card" @onclick="@(() => HandleSuggestionClick("Analyze this data trend and provide insights on what it means for our business"))">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Psychology" Color="Color.Tertiary"/>
+                    </div>
+                    <div class="card-title">Analysis & Planning</div>
+                    <div class="card-description">
+                        "Analyze trends and provide insights"
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="welcome-footer">
+        <div class="feature-highlights">
+            <div class="feature-item">
+                <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" Color="Color.Primary"/>
+                <MudText Typo="Typo.caption">Fast responses</MudText>
+            </div>
+            <div class="feature-item">
+                <MudIcon Icon="@Icons.Material.Filled.Memory" Size="Size.Small" Color="Color.Primary"/>
+                <MudText Typo="Typo.caption">Context aware</MudText>
+            </div>
+            <div class="feature-item">
+                <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" Color="Color.Primary"/>
+                <MudText Typo="Typo.caption">File uploads</MudText>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
-
-
+    [Parameter] public EventCallback<string> OnSuggestionClick { get; set; }
+    
+    private async Task HandleSuggestionClick(string suggestion)
+    {
+        await OnSuggestionClick.InvokeAsync(suggestion);
+    }
 }

@@ -18,7 +18,7 @@
     }
     else
     {
-        <EmptyChatComponent/>
+        <EmptyChatComponent OnSuggestionClick="OnSuggestionClicked"/>
     }
 </div>
 
@@ -28,6 +28,7 @@
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
     [Parameter] public EventCallback<MessageCache> OnRegenerateMessage { get; set; }
     [Parameter] public EventCallback OnMessageContentChanged { get; set; }
+    [Parameter] public EventCallback<string> OnSuggestionClicked { get; set; }
     
     private int _lastMessagesCount = 0;
 
