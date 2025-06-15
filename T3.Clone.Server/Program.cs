@@ -178,9 +178,8 @@ var mailgunApiKey = builder.Configuration["Mailgun:ApiKey"];
 var mailgunDomain = builder.Configuration["Mailgun:Domain"];
 var fromAddress = builder.Configuration["Mailgun:From"];
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-//builder.Services.AddSingleton<IEmailSender<ApplicationUser>>(
-    //new MailgunEmailSender(mailgunApiKey, mailgunDomain, fromAddress));
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>>(
+    new MailgunEmailSender(mailgunApiKey, mailgunDomain, fromAddress));
 
 var app = builder.Build();
 

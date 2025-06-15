@@ -1,4 +1,5 @@
 ﻿@page "/Account/ConfirmEmail"
+@layout AuthLayout
 
 @using System.Text
 @using Microsoft.AspNetCore.WebUtilities
@@ -6,10 +7,83 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email</PageTitle>
+<PageTitle>Confirm Email - LLM Lab</PageTitle>
 
-<h1>Confirm email</h1>
-<StatusMessage Message="@statusMessage"/>
+<div class="login-container">
+    <div class="login-card">        
+        <div class="login-brand">
+            <div class="login-brand-title">LLM Lab</div>
+            <div class="login-brand-subtitle">Email Confirmation</div>
+        </div>
+
+        <div class="login-form-section">
+            @if (statusMessage?.Contains("Thank you") == true)
+            {
+                <div class="login-welcome-title">
+                    <MudIcon Icon="Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mr-2"/>
+                    Email Confirmed Successfully
+                </div>
+                <div class="login-welcome-subtitle">
+                    Your email has been verified. You can now access all features of your account.
+                </div>
+                
+                <div class="login-status-message login-status-success">
+                    <MudIcon Icon="Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-2"/>
+                    @statusMessage
+                </div>
+            }
+            else
+            {
+                <div class="login-welcome-title">
+                    <MudIcon Icon="Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" Class="mr-2"/>
+                    Email Confirmation Failed
+                </div>
+                <div class="login-welcome-subtitle">
+                    There was an issue confirming your email address. Please try again or contact support.
+                </div>
+                
+                <div class="login-status-message">
+                    <MudIcon Icon="Icons.Material.Filled.Error" Size="Size.Small" Class="mr-2"/>
+                    @statusMessage
+                </div>
+            }
+        </div>
+
+        <div class="login-links-section">
+            @if (statusMessage?.Contains("Thank you") == true)
+            {
+                <div>
+                    <MudButton Href="Account/Login" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               FullWidth="true" 
+                               Size="Size.Large"
+                               StartIcon="Icons.Material.Filled.Login">
+                        Sign In Now
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <div>
+                    <MudButton Href="Account/ResendEmailConfirmation" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               FullWidth="true" 
+                               Size="Size.Large"
+                               StartIcon="Icons.Material.Filled.Email">
+                        Resend Confirmation Email
+                    </MudButton>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <MudLink Href="Account/Login" Class="login-link">
+                        Return to Sign In
+                    </MudLink>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 @code {
     private string? statusMessage;
@@ -40,5 +114,4 @@
             statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
         }
     }
-
 }
