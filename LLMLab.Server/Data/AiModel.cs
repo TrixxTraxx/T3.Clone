@@ -16,6 +16,7 @@ public class AiModel
     public bool HasImageGenerationSupport { get; set; } = false;
 
     public bool HasThinkingSupport { get; set; } = false;
+    public bool RequireThinking { get; set; } = false;
 
     public string SystemPrompt { get; set; } = string.Empty;
     public string ModelId { get; set; } = string.Empty;

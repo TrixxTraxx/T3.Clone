@@ -20,6 +20,7 @@ public class AiModelDto
     public bool HasImageGenerationSupport { get; set; } = false;
     
     public bool HasThinkingSupport { get; set; } = false;
+    public bool RequireThinking { get; set; } = false;
     
     // Max tokens for input and output
     public int MaxInputTokens { get; set; } = 0;
