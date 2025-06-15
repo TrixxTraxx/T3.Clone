@@ -92,6 +92,7 @@ public class Seeder
                 existingModel.SupportedContentTypes = model.SupportedContentTypes;
                 existingModel.HasImageGenerationSupport = model.HasImageGenerationSupport;
                 existingModel.HasThinkingSupport = model.HasThinkingSupport;
+                existingModel.RequireThinking = model.RequireThinking;
                 
                 existingModel.SystemPrompt = model.SystemPrompt;
                 existingModel.Provider = model.Provider;

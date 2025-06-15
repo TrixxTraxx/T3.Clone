@@ -140,6 +140,10 @@
                                     <div class="reasoning-options">
                                         @foreach (var level in Enum.GetValues<ReasoningEffortLevel>())
                                         {
+                                            if(SelectedModelRequiresThinking() && level == ReasoningEffortLevel.None)
+                                            {
+                                                continue; // Skip "None" if model requires thinking
+                                            }
                                             <button class="reasoning-option @(SelectedReasoningLevel == level ? "selected" : "")"
                                                     @onclick="() => OnReasoningLevelSelected(level)"
                                                     type="button">
@@ -452,6 +456,12 @@
         return model?.HasThinkingSupport == true;
     }
 
+    private bool SelectedModelRequiresThinking()
+    {
+        var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
+        return model?.RequireThinking == true;
+    }
+    
     private bool SelectedModelSupportsImages()
     {
         var model = aiModels.FirstOrDefault(m => m.Id == selectedModelId);
@@ -520,6 +530,11 @@
 
     private string GetSelectedReasoningLevelName()
     {
+        if(SelectedReasoningLevel == ReasoningEffortLevel.None && SelectedModelRequiresThinking())
+        {
+            // If model requires thinking, default to Low
+            SelectedReasoningLevel = ReasoningEffortLevel.Low;
+        }
         return GetReasoningLevelDisplayName(SelectedReasoningLevel);
     }
 
