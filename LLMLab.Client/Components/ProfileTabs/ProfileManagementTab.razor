@@ -1,0 +1,96 @@
+@using LLMLab.Client.Services
+@inject NavigationManager Navigation
+@inject AppsettingsService AppsettingsService
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h6" GutterBottom="true">Profile Management</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+    Manage your account settings and profile information
+</MudText>
+
+<div class="profile-section">
+    @if (User != null)
+    {
+        <div class="profile-avatar-section">
+            <MudAvatar Size="Size.Large" Color="Color.Primary">
+                @if (!string.IsNullOrEmpty(User.ProfilePictureUrl))
+                {
+                    <MudImage Src="@GetProfilePictureUrl(User)" Alt="Profile Avatar" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Person" />
+                }
+            </MudAvatar>
+            
+            <div class="profile-info">
+                <MudText Typo="Typo.h5">@User.DisplayName</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@User.Email</MudText>
+            </div>
+        </div>
+        
+        <MudDivider Class="my-4" />
+        
+        <div class="d-flex flex-column gap-3">
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                StartIcon="@Icons.Material.Filled.ManageAccounts"
+                OnClick="NavigateToManageProfile"
+                FullWidth="true">
+                Manage Profile on Server
+            </MudButton>
+            
+            <MudButton 
+                Variant="Variant.Outlined" 
+                Color="Color.Error" 
+                StartIcon="@Icons.Material.Filled.Logout"
+                OnClick="LogoutUser"
+                FullWidth="true">
+                Logout
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column align-center gap-3">
+            <MudProgressCircular Indeterminate="true" />
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading profile...</MudText>
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
+
+    private void NavigateToManageProfile()
+    {
+        try
+        {
+            Navigation.NavigateTo(AppsettingsService.ServerUrl + "/Account/Manage", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error navigating to profile management: {ex.Message}");
+            Snackbar.Add("Error opening profile management", Severity.Error);
+        }
+    }
+
+    private void LogoutUser()
+    {
+        try
+        {
+            Navigation.NavigateTo(AppsettingsService.ServerUrl + "/LogoutRemote", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during logout: {ex.Message}");
+            Snackbar.Add("Error during logout", Severity.Error);
+        }
+    }
+
+    private string? GetProfilePictureUrl(UserDto user)
+    {
+        return $"{AppsettingsService.ServerUrl}/api/Authentication/profilePicture";
+    }
+} 

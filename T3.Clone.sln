@@ -1,16 +1,16 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.AppHost", "T3.Clone.AppHost\T3.Clone.AppHost.csproj", "{10DED4D6-85DB-4B34-9B06-B533A0006DEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMLab.AppHost", "LLMLab.AppHost\LLMLab.AppHost.csproj", "{10DED4D6-85DB-4B34-9B06-B533A0006DEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Client", "T3.Clone.Client\T3.Clone.Client.csproj", "{5A2A0375-B084-4866-837A-EC0004FDD12D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMLab.Client", "LLMLab.Client\LLMLab.Client.csproj", "{5A2A0375-B084-4866-837A-EC0004FDD12D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Dtos", "T3.Clone.Dtos\T3.Clone.Dtos.csproj", "{C694EB1A-F8C5-46DA-A604-E237CE070CCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMLab.Dtos", "LLMLab.Dtos\LLMLab.Dtos.csproj", "{C694EB1A-F8C5-46DA-A604-E237CE070CCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.ServiceDefaults", "T3.Clone.ServiceDefaults\T3.Clone.ServiceDefaults.csproj", "{3FAE83C6-496B-4C90-ADAF-F6392A439F16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMLab.ServiceDefaults", "LLMLab.ServiceDefaults\LLMLab.ServiceDefaults.csproj", "{3FAE83C6-496B-4C90-ADAF-F6392A439F16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.Server", "T3.Clone.Server\T3.Clone.Server.csproj", "{2050A78B-6099-474E-A098-078A08F7121A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMLab.Server", "LLMLab.Server\LLMLab.Server.csproj", "{2050A78B-6099-474E-A098-078A08F7121A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "T3.Clone.ClientWebServer", "T3.Clone.ClientWebServer\T3.Clone.ClientWebServer.csproj", "{E5445695-65FE-44D8-B659-5DD495427484}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMLab.ClientWebServer", "LLMLab.ClientWebServer\LLMLab.ClientWebServer.csproj", "{E5445695-65FE-44D8-B659-5DD495427484}"
 EndProject
 Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution

@@ -1,0 +1,68 @@
+﻿@using LLMLab.Client.Components.Chat
+@using LLMLab.Client.Services
+@using LLMLab.Client.Components.Common
+@inherits LayoutComponentBase
+@inject ClientAuthenticationService ClientAuthenticationService
+@inject IJSRuntime JSRuntime
+
+<MyMudThemeProvider />
+<MudPopoverProvider />
+<MudSnackbarProvider />
+<MudDialogProvider />
+
+<CascadingValue Value="@User" Name="User">
+    <MudLayout>
+        <MudDrawer
+            @bind-Open="@_drawerOpen"
+            Elevation="0"
+            ClipMode="DrawerClipMode.Always"
+            Variant="@(_isMobile ? DrawerVariant.Temporary : DrawerVariant.Responsive)"
+            Class="drawer-custom">
+            <div class="sidebar-region sidebar-header">
+                <div class="header-content">
+                    <img src="LLMLab-Logo.png" alt="LLM Lab Logo" class="header-logo" />
+                    <h3 class="header-title">LLM Lab</h3>
+                </div>
+            </div>
+
+            <div class="history-region">
+                <ChatHistory/>
+            </div>
+
+            <div class="login-section">
+                <LoginDisplay/>
+            </div>
+        </MudDrawer>
+        <MudMainContent Class="pt-0 px-0">
+            <MudContainer MaxWidth="MaxWidth.Medium">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
+</CascadingValue>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isMobile = false;
+
+    private UserDto? User;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await ClientAuthenticationService.GetCurrentUser();
+        _isMobile = await IsMobileDevice();
+        _drawerOpen = !_isMobile; // Open drawer on desktop, closed on mobile
+    }
+
+    private async Task<bool> IsMobileDevice()
+    {
+        var width = await JSRuntime.InvokeAsync<int>("getWindowWidth");
+        return width < 768;
+    }
+
+    private void StartNewChat()
+    {
+        // TODO: Implement new chat functionality
+    }
+
+}

@@ -1,0 +1,177 @@
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject AiModelService AiModelService
+@inject GenerationService GenerationService
+@using LLMLab.Client.Caches
+@using LLMLab.Client.Components.MessageParts
+@using LLMLab.Client.Models
+@using LLMLab.Client.Services
+@implements IAsyncDisposable
+
+<div class="chat-message-container">
+
+    @if (!string.IsNullOrWhiteSpace(Message.Message.Text))
+    {
+        <!-- User Message -->
+        <div class="message-bubble user-message">
+            <div class="message-header">
+                <div class="message-avatar user-avatar">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <div class="message-info">
+                    <span class="message-author">You</span>
+                    <span class="message-time">@Message.Message.CreatedAt.ToString("HH:mm")</span>
+                </div>
+            </div>
+            <div class="message-content">
+                <div class="message-text">@Message.Message.Text</div>
+                @if (Message.Message.AttachmentIds.Any())
+                {
+                    <div class="message-attachments">
+                        @foreach (var attachmentId in Message.Message.AttachmentIds)
+                        {
+                            <AttachmentDisplay AttachmentId="@attachmentId" />
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- AI Response Message -->
+    <div class="message-bubble ai-message">
+        <div class="message-header">
+            <div class="message-avatar ai-avatar">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>
+                </svg>
+            </div>
+            <div class="message-info">
+                <span class="message-author">@GetModelName()</span>
+                <span class="message-time">@Message.Message.CreatedAt.ToString("HH:mm")</span>
+                @if (!Message.Message.Complete)
+                {
+                    <div class="typing-indicator">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <button class="stop-generation-btn" @onclick="StopGeneration" title="Stop generation">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 6h12v12H6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="message-content">
+            <AiResponseContent @key="Message.RenderKey" Message="@Message" OnContentChanged="@OnContentChanged" />
+            <div class="message-actions">
+                <button class="action-button" @onclick="() => CopyToClipboard(Message.Message.ModelResponse)"
+                        title="Copy message">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                </button>
+                <button class="action-button" @onclick="() => OnRegenerateMessage.InvokeAsync(Message)"
+                        title="Regenerate response">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public MessageTreeDto? MessageTree { get; set; }
+    [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
+    [Parameter] public EventCallback<MessageCache> OnRegenerateMessage { get; set; }
+    [Parameter] public EventCallback OnContentChanged { get; set; }
+
+    private List<AiModelDto> aiModels = new List<AiModelDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Message.OnUpdated += OnMessageUpdated;
+            aiModels = await AiModelService.GetAiModels();
+
+            if (!Message.Message.Complete)
+            {
+                await GenerationService.StartGenerationSession(Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load AI models: {ex.Message}");
+        }
+    }
+
+    private void OnMessageUpdated()
+    {
+        InvokeAsync(() =>
+        {
+            //force C# to rerender the message entirely
+            Message.RenderKey++;
+            StateHasChanged();
+            OnContentChanged.InvokeAsync();
+        });
+    }
+
+    private string GetModelName()
+    {
+        if (Message.Message.ModelId == 0 || !aiModels.Any())
+        {
+            return "Assistant";
+        }
+
+        var model = aiModels.FirstOrDefault(m => m.Id == Message.Message.ModelId);
+        return model?.Name ?? "Assistant";
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            Snackbar.Add("Copied to clipboard", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to copy to clipboard: {ex.Message}");
+        }
+    }
+
+    private async Task StopGeneration()
+    {
+        try
+        {
+            // Check if this GenerationService is connected to the current message
+            if (GenerationService.CurrentMessageId == Message.Message.Id && GenerationService.IsConnected)
+            {
+                await GenerationService.StopGeneration();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to stop generation: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (GenerationService != null) await GenerationService.DisposeAsync();
+    }
+} 

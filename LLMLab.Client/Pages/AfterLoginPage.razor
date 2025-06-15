@@ -1,0 +1,22 @@
+@page "/afterLogin"
+@using LLMLab.Client.Services
+@inject StorageService StorageService
+@inject NavigationManager NavigationManager
+@inject ThreadSyncService ThreadSyncService
+
+<div>clearing cache...</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var keys = await StorageService.GetKeysAsync();
+        foreach (var key in keys)
+        {
+            await StorageService.RemoveObjectAsync(key);
+        }
+        ThreadSyncService.ClearMemoryCache();
+        await ThreadSyncService.Update();
+        NavigationManager.NavigateTo("/chat");
+    }
+
+}

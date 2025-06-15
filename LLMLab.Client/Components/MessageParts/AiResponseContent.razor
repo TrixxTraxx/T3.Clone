@@ -1,0 +1,142 @@
+@inject IJSRuntime JSRuntime
+@using LLMLab.Client.Caches
+@using LLMLab.Client.Services
+@implements IDisposable
+
+<div class="ai-response-content">
+    @if (Message.Message.ReasoningEffortLevel != ReasoningEffortLevel.None)
+    {
+        <ThinkingTextPart
+            @ref="thinkingText"
+            Message="@Message"
+            IsThinkingCollapsed="@(!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))"
+        />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Message.Message.ModelResponse))
+    {
+        <div class="model-response">
+            @foreach (var segment in MessageFormatter.Segments)
+            {
+                if (segment.Type == MessageFormatter.SegmentType.Markdown)
+                {
+                    <MarkdownTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content"/>
+                }
+                else if (segment.Type == MessageFormatter.SegmentType.CodeBlock)
+                {
+                    <CodeTextPart @ref="segment.Component" @key="segment.Id" Message="@Message" Content="@segment.Content" Language="@segment.Language"/>
+                }
+            }
+        </div>
+    }
+    else if (Message.Message.Complete)
+    {
+        @if (!Message.Message.Error)
+        {
+            <div class="no-response">
+                <span class="no-response-text">No response generated</span>
+            </div>
+        }
+        else if (Message.Message.Error && !string.IsNullOrWhiteSpace(Message.Message.ErrorMessage))
+        {
+            <div class="error-message">
+                <div class="error-header">
+                    <svg class="error-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    <span class="error-title">Error</span>
+                </div>
+                <div class="error-content">
+                    @Message.Message.ErrorMessage
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="loading-response">
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public EventCallback OnContentChanged { get; set; }
+    
+    private ThinkingTextPart? thinkingText;
+    private bool receivedFirstToken = false;
+    
+    private MessageFormatter MessageFormatter = new MessageFormatter();
+
+    protected override void OnInitialized()
+    {
+        Message.OnGenerate += OnTokenReceived;
+        Message.OnReasoningGenerate += OnReasoningTokenReceived;
+        MessageFormatter.InitializeSegments(Message.Message.ModelResponse);
+        //Console.WriteLine("Initialized MessageFormatter with segments: " + MessageFormatter.Segments.Count + " segments for response: " + Message.Message.ModelResponse);
+        //Console.WriteLine("Message Segments: " + string.Join(", ", MessageFormatter.Segments.Select(s => $"{s.Type} ({s.Content})")));
+    }
+
+    private void OnTokenReceived(string token)
+    {
+        try
+        {
+            if (!receivedFirstToken)
+            {
+                thinkingText?.SetThinkingCollapsed(true);
+                receivedFirstToken = true;
+            }
+            AddMessageToken(token);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing token:");
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+                OnContentChanged.InvokeAsync();
+            });
+        }
+    }
+
+    private void AddMessageToken(string token)
+    {
+        var effectedSegments = MessageFormatter.AddTokenToSegments(token);
+        //Console.WriteLine("Updating segments: " + effectedSegments.Count);
+        effectedSegments[0].Component?.OnTokenReceived(effectedSegments[0].Content);
+        if (effectedSegments.Count > 1)
+        {
+            InvokeAsync(async () =>
+            {
+                StateHasChanged();
+                await Task.Yield();
+                foreach (var segment in effectedSegments.Skip(1))
+                {
+                    //Console.WriteLine("Adding New Message Segment: " + segment.Type);
+                    segment.Component?.OnTokenReceived(segment.Content);
+                }
+            });
+        }
+    }
+
+    private void OnReasoningTokenReceived(string token)
+    {
+        thinkingText?.OnTokenReceived(token);
+    }
+
+    public void Dispose()
+    {
+        Message.OnGenerate -= OnTokenReceived;
+        Message.OnReasoningGenerate -= OnReasoningTokenReceived;
+    }
+
+} 

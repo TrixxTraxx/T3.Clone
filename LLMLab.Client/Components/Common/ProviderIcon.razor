@@ -1,0 +1,83 @@
+@inject IJSRuntime JSRuntime
+@inject SettingsService SettingsService
+@inject ThemeService ThemeService
+@using LLMLab.Client.Services
+@implements IDisposable
+
+@if (!string.IsNullOrEmpty(ImagePath))
+{
+    <div class="provider-icon-container" style="width: @Size; height: @Size;">
+        <img src="@ImagePath" alt="@AltText" class="provider-icon tinted-logo" />
+    </div>
+}
+else
+{
+    <MudIcon Icon="@Icon" Color="@Color" />
+}
+
+@code {
+    [Parameter] public string? ImagePath { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public Color Color { get; set; } = Color.Default;
+    [Parameter] public string AltText { get; set; } = "";
+    [Parameter] public string Size { get; set; } = "40px";
+    
+    private string currentPrimaryColor = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.ThemeChanged += OnThemeChanged;
+        await UpdateLogoTint();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrEmpty(ImagePath))
+        {
+            await UpdateLogoTint();
+        }
+    }
+
+    private void OnThemeChanged()
+    {
+        InvokeAsync(async () => await UpdateLogoTint());
+    }
+
+    private async Task UpdateLogoTint()
+    {
+        if (string.IsNullOrEmpty(ImagePath)) return;
+
+        try
+        {
+            var primaryColor = await SettingsService.GetSettingAsync("PrimaryColor", "#6366f1");
+            
+            if (currentPrimaryColor != primaryColor)
+            {
+                currentPrimaryColor = primaryColor;
+                await ApplyColorTint(primaryColor);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating logo tint: {ex.Message}");
+        }
+    }
+
+    private async Task ApplyColorTint(string hexColor)
+    {
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("updateLogoColor", hexColor);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error applying color tint: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        ThemeService.ThemeChanged -= OnThemeChanged;
+    }
+} 

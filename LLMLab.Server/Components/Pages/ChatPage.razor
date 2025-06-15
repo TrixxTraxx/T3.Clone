@@ -1,0 +1,18 @@
+@page "/~/chat"
+@using LLMLab.Server.Components.Layout
+@using LLMLab.Server.Configuration
+@using Microsoft.Extensions.Options
+@layout AuthLayout
+@inject IOptions<Appsettings> AppSettings
+@inject NavigationManager NavigationManager
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        //redirect to client chat url
+        var clientChatUrl = AppSettings.Value.ClientUrl + "/chat";
+        Console.WriteLine("Redirecting to client chat URL: " + clientChatUrl);
+        NavigationManager.NavigateTo(clientChatUrl, forceLoad: true);
+    }
+}

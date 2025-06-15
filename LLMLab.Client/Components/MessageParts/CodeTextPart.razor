@@ -1,0 +1,171 @@
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inherits MessagePartComponent
+@using LLMLab.Client.Caches
+@using LLMLab.Client.Services
+@implements IDisposable
+
+<div class="code-block-container" id="@ContainerId">
+    <pre class="code-block" id="@ElementId">
+        <code>@((MarkupString)_displayContent)</code>
+    </pre>
+    <button class="copy-code-button" @onclick="CopyCode" title="Copy code">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/>
+        </svg>
+    </button>
+</div>
+
+@code {
+    public Guid ElementId { get; set; } = Guid.NewGuid();
+    public Guid ContainerId { get; set; } = Guid.NewGuid();
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public string Content { get; set; } = string.Empty;
+    [Parameter] public string? Language { get; set; }
+
+    private string _displayContent = string.Empty;
+    private string _lastHighlightedContent = string.Empty;
+    private DateTime _lastHighlightTime = DateTime.MinValue;
+    private bool _isStreaming = false;
+    private System.Threading.Timer? _finalHighlightTimer;
+    private const int HIGHLIGHT_INTERVAL_MS = 500; // Highlight every 500ms during streaming
+    private const int CONTENT_CHUNK_SIZE = 100; // Highlight after 100 new characters
+
+    protected override void OnInitialized()
+    {
+        _displayContent = SanitationHelper.SanitizeHtml(Content);
+        _lastHighlightedContent = Content;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!string.IsNullOrWhiteSpace(Content))
+            {
+                await HighlightContent();
+            }
+        }
+    }
+
+
+    public override async Task OnTokenReceived(string fullContent)
+    {
+        Content = fullContent;
+        _isStreaming = true;
+        
+        // Determine if we should highlight now
+        var shouldHighlight = ShouldHighlightNow();
+        
+        if (shouldHighlight)
+        {
+            // Highlight and update display
+            await HighlightContent();
+        }
+        else
+        {
+            // Only show plain text if we don't have a recent highlighted version
+            // This prevents the flash when we have highlighted content that's still mostly valid
+            if (string.IsNullOrEmpty(_lastHighlightedContent) || 
+                Content.Length - _lastHighlightedContent.Length > CONTENT_CHUNK_SIZE * 2)
+            {
+                _displayContent = SanitationHelper.SanitizeHtml(Content);
+                StateHasChanged();
+            }
+        }
+        
+        // Cancel any pending final highlight timer
+        _finalHighlightTimer?.Dispose();
+        
+        // Set a timer for final highlighting when streaming stops
+        _finalHighlightTimer = new System.Threading.Timer(async _ => await FinalHighlight(), null, 1000, Timeout.Infinite);
+    }
+
+    private bool ShouldHighlightNow()
+    {
+        // Always highlight if we haven't highlighted yet
+        if (string.IsNullOrEmpty(_lastHighlightedContent))
+            return true;
+        
+        // Highlight if enough time has passed
+        if ((DateTime.Now - _lastHighlightTime).TotalMilliseconds >= HIGHLIGHT_INTERVAL_MS)
+            return true;
+        
+        // Highlight if enough new content has been added
+        if (Content.Length - _lastHighlightedContent.Length >= CONTENT_CHUNK_SIZE)
+            return true;
+        
+        return false;
+    }
+
+    private async Task HighlightContent()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(Content))
+            {
+                var highlightedHtml = await JSRuntime.InvokeAsync<string>("getHighlightedHtml", Content);
+                
+
+                if (!string.IsNullOrEmpty(highlightedHtml))
+                {
+                    _displayContent = SanitationHelper.SanitizeHtml(highlightedHtml);
+                    _lastHighlightedContent = Content;
+                    _lastHighlightTime = DateTime.Now;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error highlighting code: {ex.Message}");
+            // Fallback to plain text if highlighting fails
+            _displayContent = SanitationHelper.SanitizeHtml(Content);
+            StateHasChanged();
+        }
+    }
+
+    private async Task FinalHighlight()
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                _isStreaming = false;
+                
+                // Only highlight if content has changed since last highlight
+                if (_lastHighlightedContent != Content)
+                {
+                    await HighlightContent();
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in final highlight: {ex.Message}");
+        }
+        finally
+        {
+            _finalHighlightTimer?.Dispose();
+        }
+    }
+
+    private async Task CopyCode()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", Content);
+            Snackbar.Add("Code copied to clipboard", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to copy code: {ex.Message}");
+            Snackbar.Add("Failed to copy code", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        _finalHighlightTimer?.Dispose();
+    }
+} 

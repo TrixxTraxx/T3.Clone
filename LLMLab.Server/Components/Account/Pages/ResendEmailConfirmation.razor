@@ -1,0 +1,92 @@
+﻿@page "/Account/ResendEmailConfirmation"
+@layout AuthLayout
+@using System.Text
+@using System.Text.Encodings.Web
+@using LLMLab.Server.Components.Layout
+@using LLMLab.Server.Data
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Resend Email Confirmation - LLM Lab</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">        
+        <div class="login-brand">
+            <div class="login-brand-title">LLM Lab</div>
+            <div class="login-brand-subtitle">Email Verification</div>
+        </div>
+
+        <div class="login-form-section">
+            <div class="login-welcome-title">Resend email confirmation</div>
+            <div class="login-welcome-subtitle">Enter your email address to resend the confirmation link</div>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="login-status-message login-status-success">
+                    @message
+                </div>
+            }
+
+            <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+                <DataAnnotationsValidator/>
+
+                <div class="login-form-field">
+                    <MudStaticTextField For="@(() => Input.Email)" @bind-Value="Input.Email"
+                                        Label="Email" Placeholder="name@example.com" Variant="Variant.Outlined"
+                                        UserAttributes="@(new() { { "autocomplete", "username" }, { "aria-required", "true" } })"/>
+                </div>
+                
+                <div class="login-form-field">
+                    <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                                     FormAction="FormAction.Submit" Size="Size.Large">
+                        Resend Confirmation
+                    </MudStaticButton>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="login-links-section">
+            <div>
+                <MudLink Href="Account/Login" Class="login-link">Return to Sign In</MudLink>
+            </div>
+            <div>
+                <MudLink Href="Account/Register" Class="login-link">Need an account? Sign up</MudLink>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? message;
+
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+
+    private async Task OnValidSubmitAsync()
+    {
+        var user = await UserManager.FindByEmailAsync(Input.Email!);
+        if (user is null)
+        {
+            message = "Verification email sent. Please check your email.";
+            return;
+        }
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        message = "Verification email sent. Please check your email.";
+    }
+
+    private sealed class InputModel
+    {
+        [Required] [EmailAddress] public string Email { get; set; } = "";
+    }
+}

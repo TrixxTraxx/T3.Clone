@@ -1,0 +1,40 @@
+@using LLMLab.Client.Caches
+@using LLMLab.Client.Services
+@using Markdig
+@inherits MessagePartComponent
+
+<div class="markdown-content">
+    @(MarkdownContent)
+</div>
+
+@code {
+    [Parameter] public MessageCache Message { get; set; } = new();
+    [Parameter] public string Content { get; set; } = string.Empty;
+
+    public MarkupString MarkdownContent;
+
+
+    protected override void OnInitialized()
+    {
+        InitializeMarkdownContent();
+    }
+
+    private void InitializeMarkdownContent()
+    {
+        if (!string.IsNullOrEmpty(Content))
+        {
+            //escape script tags
+            var replacedString = SanitationHelper.SanitizeHtml(Content);
+            //Console.WriteLine("Parse Markdown content: " + Content);
+            MarkdownContent = (MarkupString)Markdown.ToHtml(replacedString);
+        }
+    }
+
+    public override async Task OnTokenReceived(string fullContent)
+    {
+        Content = fullContent;
+        InitializeMarkdownContent();
+        // Only re-render this component when regular tokens are received
+        StateHasChanged();
+    }
+} 

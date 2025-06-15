@@ -1,0 +1,128 @@
+@using LLMLab.Client.Services
+@inject IJSRuntime JSRuntime
+@inject AttachmentService AttachmentService
+@inject ImageModalService ModalService
+
+<div class="attachment-display">
+    @if (Attachment != null)
+    {
+        @if (IsImageAttachment())
+        {
+            <div class="image-attachment">
+                <img src="@GetAttachmentUrl()"
+                     alt="@Attachment.FileName"
+                     class="attachment-image"
+                     style="cursor:zoom-in;"
+                     @onclick="() => ModalService.Show(GetAttachmentUrl())" />
+                <div class="attachment-info">
+                    <div class="attachment-details">
+                        <MudText Typo="Typo.caption" Class="attachment-filename">@Attachment.FileName</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="attachment-date">@GetFormattedDate()</MudText>
+                    </div>
+                    <div class="attachment-actions">
+                        <button class="download-btn" @onclick="DownloadFile" title="Download image" type="button">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 20H19V18H5M19 9H15V3H9V9H5L12 16L19 9Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="file-attachment">
+                <MudCard Class="attachment-card">
+                    <MudCardContent>
+                        <div class="file-info">
+                            <MudIcon Icon="@GetFileIcon()" Size="Size.Large" Color="Color.Primary" />
+                            <div class="file-details">
+                                <MudText Typo="Typo.body1">@Attachment.FileName</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @Attachment.ContentType • @GetFormattedDate()
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton StartIcon="Icons.Material.Filled.Download" 
+                                   Size="Size.Small" 
+                                   OnClick="DownloadFile"
+                                   Color="Color.Primary">
+                            Download
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="attachment-loading">
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            <MudText Typo="Typo.caption">Loading attachment...</MudText>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int AttachmentId { get; set; }
+    
+    private AttachmentDto? Attachment { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AttachmentId > 0)
+        {
+            Attachment = await AttachmentService.GetAttachment(AttachmentId);
+            StateHasChanged();
+        }
+    }
+
+    private bool IsImageAttachment()
+    {
+        return Attachment?.ContentType.StartsWith("image/") == true;
+    }
+
+    private string GetAttachmentUrl()
+    {
+        return AttachmentService.GetAttachmentContentUrl(Attachment!.Id);
+    }
+
+    private string GetFormattedDate()
+    {
+        return Attachment?.CreatedAt.ToString("MMM dd, yyyy") ?? "";
+    }
+
+    private string GetFileIcon()
+    {
+        return Attachment?.ContentType.ToLower() switch
+        {
+            string ct when ct.StartsWith("image/") => Icons.Material.Filled.Image,
+            string ct when ct.StartsWith("video/") => Icons.Material.Filled.VideoFile,
+            string ct when ct.StartsWith("audio/") => Icons.Material.Filled.AudioFile,
+            "application/pdf" => Icons.Material.Filled.PictureAsPdf,
+            string ct when ct.Contains("word") => Icons.Material.Filled.Description,
+            string ct when ct.Contains("excel") || ct.Contains("spreadsheet") => Icons.Material.Filled.TableChart,
+            string ct when ct.Contains("powerpoint") || ct.Contains("presentation") => Icons.Material.Filled.Slideshow,
+            string ct when ct.Contains("zip") || ct.Contains("archive") => Icons.Material.Filled.Archive,
+            string ct when ct.StartsWith("text/") => Icons.Material.Filled.TextSnippet,
+            _ => Icons.Material.Filled.AttachFile
+        };
+    }
+
+    private async Task DownloadFile()
+    {
+        if (Attachment == null) return;
+
+        try
+        {
+            var url = GetAttachmentUrl();
+            await JSRuntime.InvokeVoidAsync("downloadFile", url, Attachment.FileName);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading file: {ex.Message}");
+        }
+    }
+} 
