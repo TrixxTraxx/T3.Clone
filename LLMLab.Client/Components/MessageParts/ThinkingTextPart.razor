@@ -16,7 +16,9 @@
     @if (!IsThinkingCollapsed)
     {
         <div class="thinking-content">
-            <div class="thinking-text">@Message.Message.ThinkingResponse</div>
+            <div class="thinking-text">
+                <MarkdownTextPart @ref="markdownText" Content="@Message.Message.ThinkingResponse" Message="Message"></MarkdownTextPart>
+            </div>
         </div>
     }
 </div>
@@ -25,6 +27,7 @@
     [Parameter] public MessageCache Message { get; set; } = new();
     [Parameter] public bool IsThinkingCollapsed { get; set; }
     [Parameter] public EventCallback<bool> IsThinkingCollapsedChanged { get; set; }
+    private MarkdownTextPart markdownText;
 
     private async Task ToggleThinkingDisplay()
     {
@@ -43,7 +46,10 @@
     
     public void OnTokenReceived(string token)
     {
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(async () =>
+        {
+            await markdownText.OnTokenReceived(Message.Message.ThinkingResponse);
+        });
     }
 
 } 

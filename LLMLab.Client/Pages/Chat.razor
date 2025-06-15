@@ -116,8 +116,15 @@
 
             try
             {
+                var oldMessageid = currentBranchPath;
                 messageTree = await MessageSyncService.GetMessageTree(ThreadId.Value);
                 InitializeBranchPath();
+                if (oldMessageid == currentBranchPath)
+                {
+                    isLoading = false;
+                    //nothing changed
+                    return;
+                }
             }
             catch (Exception ex)
             {
@@ -147,7 +154,7 @@
     private void InitializeBranchPath()
     {
         if (messageTree == null) return;
-
+        
         currentBranchPath = messageTree.StartMessageId;
         
         // Build the path from start to end
