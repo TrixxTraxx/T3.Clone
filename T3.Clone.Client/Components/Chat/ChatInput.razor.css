@@ -907,3 +907,11 @@
         width: 160px;
     }
 }
+
+.attachment-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;        /* Ensures it takes up a full line */
+    max-width: 160px;      /* Set max width as you prefer (adjust to your design) */
+}

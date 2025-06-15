@@ -11,7 +11,8 @@
     <div class="threads-scroll-section">
         <ThreadNavigation Threads="threads" 
                           CurrentThreadId="currentThreadId" 
-                          OnThreadSelected="OnThreadSelected" />
+                          OnThreadSelected="OnThreadSelected"
+                          OnDeleteThread="DeleteThreadAsync" />
     </div>
 </div>
 
@@ -82,5 +83,16 @@
         };
         
         NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+    
+    // TODO instead of just delete, put a modal with "Are you sure?"
+    private async Task DeleteThreadAsync(int threadId)
+    {
+        // Remove from cache and update UI
+        threads = threads.Where(t => t.Thread.Id != threadId).ToList();
+        StateHasChanged();
+        
+        // Delete from backend
+        await ThreadSyncService.DeleteThread(threadId);
     }
 }
