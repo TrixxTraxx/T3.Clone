@@ -1,0 +1,69 @@
+---
+config:
+  theme: redux-dark-color
+---
+erDiagram
+    "AspNetUsers" {
+        string Id PK
+        string UserName
+        string Email
+        string DisplayName
+        string ProfilePictureUrl
+    }
+    "MessageThreads" {
+        int Id PK
+        string UserId FK
+        string Title
+        datetime CreatedAt
+        datetime UpdatedAt
+        boolean Deleted
+        int Version
+    }
+    "Messages" {
+        int Id PK
+        int ThreadId FK
+        int AiModelId FK
+        int ParentMessageId FK "Nullable"
+        string Text "Nullable"
+        string ModelResponse "Nullable"
+        string ThinkingResponse "Nullable"
+        enum ReasoningEffortLEvel
+        datetime CreatedAt
+        bool IsComplete
+        bool Error
+        string ErrorMessage
+    }
+    "AiModels" {
+        int Id PK
+        string Name
+        string Provider
+        string Description
+        bool HasThinkingSupport
+        bool HasImageSupport "..."
+    }
+    "Attachments" {
+        int Id PK
+        int MessageId FK
+        int UserId FK
+        string FileName
+        string ContentType
+    }
+    "AttachmentContent" {
+        int Id PK
+        int AttachmentId FK
+        byte[] Content
+    }
+    "AiModelKeys" {
+        int Id PK
+        string Identifier
+        string UserId FK
+        string EncryptedKey
+    }
+    "AspNetUsers" ||--o{ "MessageThreads" : "Creates"
+    "AspNetUsers" ||--o{ "AiModelKeys" : "Owns"
+    "MessageThreads" ||--o{ "Messages" : "Contains"
+    "Messages" }o--o{ "Messages" : "Replies to"
+    "AiModels" ||--o{ "Messages" : "Generates"
+    "Messages" ||--|{ "Attachments" : "Has"
+    "AspNetUsers" ||--|{ "Attachments" : "Has"
+    "Attachments" ||--|{ "AttachmentContent" : "Has"

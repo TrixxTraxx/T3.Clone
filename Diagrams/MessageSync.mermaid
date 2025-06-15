@@ -1,0 +1,30 @@
+---
+config:
+  theme: redux-dark-color
+---
+sequenceDiagram
+    participant Client
+    participant Server (HTTP)
+    participant Background Job (AI)
+    participant MessageHub (SignalR)
+    alt User Creates New Message
+        Client->>Server (HTTP): POST /api/messages (with message content)
+        Server (HTTP)->>Server (HTTP): Store initial message as 'incomplete'
+        Server (HTTP)->>Background Job (AI): Start AI generation for messageId
+        Server (HTTP)-->>Client: Returns new messageId
+    else Message Synced from Thread
+        Client->>Client: Renders incomplete message from thread sync
+    end
+    Note over Client, MessageHub (SignalR): When an incomplete message is rendered...
+    Client->>MessageHub (SignalR): Connects with specific messageId
+    MessageHub (SignalR)-->>Client: Initial Message Update (sends current state)
+    Background Job (AI)->>Background Job (AI): Generation process begins
+    loop Generation is in progress
+        Background Job (AI)-->>MessageHub (SignalR): Sends generated token(s)
+        MessageHub (SignalR)-->>Client: Streams token(s) to client
+        Note right of Background Job (AI): Server saves message progress periodically (e.g., every second)
+    end
+    Background Job (AI)-->>MessageHub (SignalR): Generation finished, sends final message state
+    MessageHub (SignalR)-->>Client: "Message Stop" event (final, complete update)
+    MessageHub (SignalR)->>MessageHub (SignalR): Mark message as 'complete' in DB
+    Client->>Client: Persists the final, complete message

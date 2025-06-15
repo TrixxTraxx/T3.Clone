@@ -1,0 +1,18 @@
+---
+config:
+  theme: redux-dark-color
+  look: neo
+---
+sequenceDiagram
+    participant Client
+    participant Server
+    participant ThreadHub (SignalR)
+    Client->>ThreadHub (SignalR): Connects to WebSocket
+    Note over ThreadHub (SignalR): Connection established for user
+    alt A thread is updated on the server
+        Server-->>ThreadHub (SignalR): Trigger thread update notification for user
+        ThreadHub (SignalR)-->>Client: "ThreadsUpdated" event
+    end
+    Client->>Server: HTTP GET /api/threads?clientVersion={version}
+    Server-->>Client: Returns { updatedThreads: [...], newVersion: ... }
+    Client->>Client: Updates local threads
