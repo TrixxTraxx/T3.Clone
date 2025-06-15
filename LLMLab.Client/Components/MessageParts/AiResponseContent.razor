@@ -131,6 +131,7 @@
     private void OnReasoningTokenReceived(string token)
     {
         thinkingText?.OnTokenReceived(token);
+        OnContentChanged.InvokeAsync();
     }
 
     public void Dispose()
