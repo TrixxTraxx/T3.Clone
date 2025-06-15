@@ -27,7 +27,9 @@
     align-items: center;
     justify-content: center;
     width: calc(100% - 16px);
-    height: 45px;
+    height: auto;
+    min-height: 65px;
+    padding: 12px 8px;
     background: 
         linear-gradient(135deg, 
             color-mix(in srgb, var(--mud-palette-primary) 20%, transparent) 0%,
@@ -46,7 +48,7 @@
         0 1px 3px rgba(0, 0, 0, 0.06),
         inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 30%, transparent);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -93,6 +95,51 @@
     text-shadow: 0 0 15px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.header-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.header-logo:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.header-title {
+    margin: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    font-style: italic;
+    background: linear-gradient(135deg, 
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 70%, white) 50%,
+        var(--mud-palette-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 15px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    overflow: visible;
+    margin-right: 10px;
 }
 
 .login-section{
