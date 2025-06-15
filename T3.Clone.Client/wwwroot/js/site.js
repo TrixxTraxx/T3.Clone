@@ -278,37 +278,3 @@ window.highlightCodeBlock = function(elementId) {
         console.warn('Highlight.js is not loaded');
     }
 }
-
-// Setup click outside handler for dropdowns
-window.setupDropdownClickOutside = function(chatInputRef) {
-    document.addEventListener('click', function(event) {
-        // Check if click is outside thinking dropdown
-        const thinkingSelector = event.target.closest('.thinking-selector-wrapper');
-        const modelSelector = event.target.closest('.model-selector-wrapper');
-        
-        if (!thinkingSelector && !modelSelector) {
-            chatInputRef.invokeMethodAsync('CloseDropdowns');
-        }
-    });
-};
-
-// Initialize dropdown close handler
-window.initializeDropdownCloseHandler = function(dotNetRef) {
-    // Remove existing listener if any
-    if (window.dropdownCloseHandler) {
-        document.removeEventListener('click', window.dropdownCloseHandler);
-    }
-    
-    // Add new listener
-    window.dropdownCloseHandler = function(event) {
-        // Check if click is outside any dropdown
-        const modelDropdown = event.target.closest('.model-selector-wrapper');
-        const reasoningDropdown = event.target.closest('.reasoning-selector-wrapper');
-        
-        if (!modelDropdown && !reasoningDropdown) {
-            dotNetRef.invokeMethodAsync('CloseDropdowns');
-        }
-    };
-    
-    document.addEventListener('click', window.dropdownCloseHandler);
-};

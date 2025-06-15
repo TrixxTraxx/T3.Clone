@@ -518,24 +518,4 @@
         };
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JSRuntime.InvokeVoidAsync("initializeTextareaAutoResize", TextareaRef);
-            await JSRuntime.InvokeVoidAsync("initializeDropdownCloseHandler", DotNetObjectReference.Create(this));
-        }
-    }
-
-    [JSInvokable]
-    public void CloseDropdowns()
-    {
-        if (showModelModal || showReasoningModal)
-        {
-            showModelModal = false;
-            showReasoningModal = false;
-            StateHasChanged();
-        }
-    }
-
 } 

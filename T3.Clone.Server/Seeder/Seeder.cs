@@ -90,6 +90,7 @@ public class Seeder
                 existingModel.Provider = model.Provider;
                 existingModel.ApiUrl = model.ApiUrl;
                 existingModel.ApiKey = model.ApiKey;
+                existingModel.RequiredApiKey = model.RequiredApiKey;
                 
                 existingModel.InputTokenCost = model.InputTokenCost;
                 existingModel.OutputTokenCost = model.OutputTokenCost;
