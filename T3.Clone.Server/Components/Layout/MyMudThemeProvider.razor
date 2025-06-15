@@ -1,5 +1,6 @@
 @rendermode InteractiveServer
 @inject ServerSettingsService SettingsService
+@using Microsoft.EntityFrameworkCore
 @using T3.Clone.Client.Services
 
 <MudThemeProvider Theme="@currentTheme" IsDarkMode="@isDarkMode" />
@@ -8,41 +9,38 @@
     private bool isDarkMode = true;
     private MudTheme currentTheme;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("Initializing MyMudThemeProvider");
-        InvokeAsync(async () => await UpdateThemeAsync());
-        return base.OnInitializedAsync();
+        await UpdateThemeAsync();
     }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        Console.WriteLine("Updating Theme");
-        if (firstRender)
-        {
-            InvokeAsync(async () => await UpdateThemeAsync());
-        }
-    }
     private async Task UpdateThemeAsync()
     {
-        isDarkMode = await SettingsService.GetSettingAsync("IsDarkMode", true);
-        currentTheme = await GetThemeAsync();
-        
-        StateHasChanged();
+        try
+        {
+            isDarkMode = false;
+            currentTheme = await GetThemeAsync();
+
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error updating theme: " + e.Message);
+        }
     }
     
     public async Task<MudTheme> GetThemeAsync()
     {
-        var primaryColor = await SettingsService.GetSettingAsync("PrimaryColor", Defaults.PrimaryColor);
-        var secondaryColor = await SettingsService.GetSettingAsync("SecondaryColor", Defaults.SecondaryColor);
-        var backgroundColor = await SettingsService.GetSettingAsync("BackgroundColor", Defaults.BackgroundColor);
-        var surfaceColor = await SettingsService.GetSettingAsync("SurfaceColor", Defaults.SurfaceColor);
-        var textColor = await SettingsService.GetSettingAsync("TextColor", Defaults.TextColor);
-        var secondaryTextColor = await SettingsService.GetSettingAsync("SecondaryTextColor", Defaults.SecondaryTextColor);
-        var successColor = await SettingsService.GetSettingAsync("SuccessColor", Defaults.SuccessColor);
-        var errorColor = await SettingsService.GetSettingAsync("ErrorColor", Defaults.ErrorColor);
-        var warningColor = await SettingsService.GetSettingAsync("WarningColor", Defaults.WarningColor);
-        var infoColor = await SettingsService.GetSettingAsync("InfoColor", Defaults.InfoColor);
+        var primaryColor = Defaults.PrimaryColor; 
+        var secondaryColor = Defaults.SecondaryColor; 
+        var backgroundColor = Defaults.BackgroundColor; 
+        var surfaceColor = Defaults.SurfaceColor; 
+        var textColor = Defaults.TextColor; 
+        var secondaryTextColor = Defaults.SecondaryTextColor; 
+        var successColor = Defaults.SuccessColor; 
+        var errorColor = Defaults.ErrorColor; 
+        var warningColor = Defaults.WarningColor; 
+        var infoColor = Defaults.InfoColor; 
 
         // Determine if we should use dark mode based on background brightness
         isDarkMode = IsColorDark(backgroundColor);

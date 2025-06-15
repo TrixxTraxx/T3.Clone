@@ -65,6 +65,7 @@ public class ServerSettingsService
         if (await _localStorage.ContainKeyAsync(SettingsKey))
         {
             var settings = await _localStorage.GetItemAsync<Dictionary<string, object>>(SettingsKey);
+            Console.WriteLine("Read settings from local storage: " + JsonSerializer.Serialize(settings));
             if (settings != null)
             {
                 cachedSettings = settings;
