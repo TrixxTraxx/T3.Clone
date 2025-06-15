@@ -4,6 +4,7 @@
 @if (isOpen)
 {
     <div class="image-modal-backdrop" @onclick="CloseModal">
+        <button class="close-modal-btn" @onclick="CloseModal" title="Close" type="button">&#10005;</button>
         <div class="image-modal-content"
              tabindex="0"
              @onclick:stopPropagation
@@ -17,12 +18,6 @@
                  @onmousedown="OnStartDrag"
                  draggable="false"
                  alt="Expanded image"/>
-            <button class="close-modal-btn" @onclick="CloseModal" title="Close" type="button">&#10005;</button>
-            <div class="zoom-controls">
-                <button @onclick="() => SetZoom(zoom + 0.1)">+</button>
-                <button @onclick="() => SetZoom(1.0)">Reset</button>
-                <button @onclick="() => SetZoom(zoom - 0.1)">-</button>
-            </div>
         </div>
     </div>
 }
