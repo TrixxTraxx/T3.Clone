@@ -6,6 +6,8 @@ public class Appsettings
     public string CookieDomain { get; set; } = string.Empty;
     public string[] AllowedOrigins { get; set; }
     
+    public bool EnableModelSeeding { get; set; } = true;
+    
     //settings to generate thread titles
     //currently only supports OpenRouter and OpenAi
     public string ThreadTitleModel { get; set; } = "gpt-4.1-nano";

@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
+using LLMLab.Server.Configuration;
 using LLMLab.Server.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 namespace LLMLab.Server.Seeder;
 
@@ -9,13 +11,15 @@ public class Seeder
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IOptions<Appsettings> _appSettings;
     private readonly Seeds _seeds;
 
-    public Seeder(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public Seeder(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IOptions<Appsettings> appSettings)
     {
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
+        _appSettings = appSettings;
         var seedFileContent = File.ReadAllText("./Seeder/Seeds.json");
         _seeds = JsonSerializer.Deserialize<Seeds>(seedFileContent, new JsonSerializerOptions() {
             AllowTrailingCommas = true
@@ -27,7 +31,10 @@ public class Seeder
     {
         SeedRoles();
         SeedAdminUser();
-        SeedModels();
+        if (_appSettings.Value.EnableModelSeeding)
+        {
+            SeedModels();
+        }
     }
 
     private void SeedRoles()
