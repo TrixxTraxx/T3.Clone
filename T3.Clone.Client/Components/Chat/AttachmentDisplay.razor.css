@@ -28,6 +28,59 @@
 
 .attachment-info {
     padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.attachment-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.attachment-filename,
+.attachment-date {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.attachment-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.attachment-actions .download-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+    color: var(--mud-palette-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.attachment-actions .download-btn:hover {
+    background: color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+    color: var(--mud-palette-primary);
+    transform: scale(1.05);
+}
+
+.attachment-actions .download-btn:active {
+    transform: scale(0.95);
+}
+
+.attachment-actions .download-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 .file-attachment {
@@ -92,6 +145,16 @@
     .attachment-image {
         max-height: 150px;
     }
+    
+    .attachment-info {
+        padding: 6px 10px;
+        gap: 6px;
+    }
+    
+    .attachment-actions .download-btn {
+        width: 28px;
+        height: 28px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -101,5 +164,16 @@
     
     .attachment-info {
         padding: 6px 10px;
+        gap: 4px;
+    }
+    
+    .attachment-filename,
+    .attachment-date {
+        font-size: 11px;
+    }
+    
+    .attachment-actions .download-btn {
+        width: 24px;
+        height: 24px;
     }
 } 

@@ -14,8 +14,17 @@
                      style="cursor:zoom-in;"
                      @onclick="() => ModalService.Show(GetAttachmentUrl())" />
                 <div class="attachment-info">
-                    <MudText Typo="Typo.caption">@Attachment.FileName</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">@GetFormattedDate()</MudText>
+                    <div class="attachment-details">
+                        <MudText Typo="Typo.caption" Class="attachment-filename">@Attachment.FileName</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="attachment-date">@GetFormattedDate()</MudText>
+                    </div>
+                    <div class="attachment-actions">
+                        <button class="download-btn" @onclick="DownloadFile" title="Download image" type="button">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 20H19V18H5M19 9H15V3H9V9H5L12 16L19 9Z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         }
