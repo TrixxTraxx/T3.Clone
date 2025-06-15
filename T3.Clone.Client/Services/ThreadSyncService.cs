@@ -182,4 +182,24 @@ public class ThreadSyncService
         _threadCaches.Clear();
         _threadCacheCollection = null;
     }
+    
+    public async Task DeleteThread(int threadId)
+    {
+        var response = await _http.DeleteAsync($"api/Thread/{threadId}");
+        if (response.IsSuccessStatusCode)
+        {
+            _threadCaches = _threadCaches.Where(tc => tc.Thread.Id != threadId).ToList();
+            // Remove from storage as well if needed
+            await _storageService.RemoveObjectAsync($"ThreadCache_{threadId}");
+            // Update thread collection (remove id)
+            if (_threadCacheCollection != null)
+                _threadCacheCollection.ThreadIds.Remove(threadId);
+
+            ThreadsUpdated?.Invoke(_threadCaches);
+        }
+        else
+        {
+            _snackbar.Add("Failed to delete thread.", Severity.Error);
+        }
+    }
 }

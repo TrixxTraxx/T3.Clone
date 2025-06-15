@@ -4,28 +4,47 @@
 <div class="thread-navigation">
     @foreach(var cache in Threads)
     {
-        <a href="@($"/chat/{cache.Thread.Id}")" 
-           class="thread-nav-link @(IsActive(cache.Thread.Id) ? "active" : "")"
-           @onclick="@(() => OnThreadSelected.InvokeAsync(cache.Thread.Id))">
-            <div class="thread-content">
-                <div class="thread-icon">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-                    </svg>
-                </div>
-                <span class="thread-title">@cache.Thread.Title</span>
+    <a href="@($"/chat/{cache.Thread.Id}")"
+       class="thread-nav-link @(IsActive(cache.Thread.Id) ? "active" : "")"
+       @onclick="@(() => OnThreadSelected.InvokeAsync(cache.Thread.Id))">
+        <div class="thread-content">
+            <div class="thread-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                </svg>
             </div>
-        </a>
+            <span class="thread-title">@cache.Thread.Title</span>
+            <button
+                type="button"
+                class="thread-icon thread-delete-btn"
+                title="Delete thread"
+                @onclick:stopPropagation="true"
+                @onclick:preventDefault="true"
+                @onclick="() => OnDeleteThreadClicked(cache.Thread.Id)">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+            </button>
+        </div>
+    </a>
     }
 </div>
+
 
 @code {
     [Parameter] public List<ThreadCache> Threads { get; set; } = new();
     [Parameter] public EventCallback<int> OnThreadSelected { get; set; }
     [Parameter] public int? CurrentThreadId { get; set; }
+    [Parameter] public EventCallback<int> OnDeleteThread { get; set; }
 
     private bool IsActive(int threadId)
     {
         return CurrentThreadId == threadId;
+    }
+    
+    
+    private void OnDeleteThreadClicked(int threadId)
+    {
+        OnDeleteThread.InvokeAsync(threadId);
     }
 } 
