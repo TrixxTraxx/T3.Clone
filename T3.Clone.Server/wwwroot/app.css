@@ -321,10 +321,14 @@ h1:focus {
 .manage-header {
     margin-bottom: 3rem;
     flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .manage-brand {
     text-align: center;
+    flex: 1;
 }
 
 .manage-brand-title {
@@ -601,4 +605,10 @@ h1:focus {
         min-width: auto;
         text-align: left;
     }
+}
+
+.manage-return {  
+    position: absolute;
+    top: 20px;
+    left: 20px;
 }
