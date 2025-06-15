@@ -1,8 +1,24 @@
 .thread-navigation {
-    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.thread-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.thread-group-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mud-palette-text-secondary);
+    padding: 0 16px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
 }
 
 .thread-nav-link {

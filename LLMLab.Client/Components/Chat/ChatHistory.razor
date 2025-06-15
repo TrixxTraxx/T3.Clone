@@ -10,6 +10,7 @@
 <div class="chat-history-container">
     <div class="new-chat-section">
         <NewChatButton OnClick="StartNewChat" />
+        <SearchButton OnClick="StartSearch" />
     </div>
     
     <div class="threads-scroll-section">
@@ -20,9 +21,12 @@
     </div>
 </div>
 
+<SearchModal IsVisible="isSearchModalVisible" OnClose="CloseSearchModal" />
+
 @code {
     private List<ThreadCache> threads = new List<ThreadCache>();
     private int? currentThreadId;
+    private bool isSearchModalVisible;
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,6 +101,18 @@
         NavigationManager.NavigateTo("/");
     }
 
+    private void StartSearch()
+    {
+        isSearchModalVisible = true;
+        StateHasChanged();
+    }
+
+    private void CloseSearchModal()
+    {
+        isSearchModalVisible = false;
+        StateHasChanged();
+    }
+
     private void OnThreadSelected(int threadId)
     {
         // Navigation is handled by the ThreadNavigation component
@@ -109,5 +125,4 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
         await ThreadSignalRService.DisposeAsync();
     }
-
 }
