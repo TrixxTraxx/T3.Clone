@@ -137,7 +137,9 @@ var connectionString = builder.Configuration.GetConnectionString("t3CloneDb") ??
                        throw new InvalidOperationException("Connection string 't3CloneDb' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString + ";MultipleActiveResultSets=true;"));
+{
+    options.UseSqlServer(connectionString + ";MultipleActiveResultSets=true;");
+});
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

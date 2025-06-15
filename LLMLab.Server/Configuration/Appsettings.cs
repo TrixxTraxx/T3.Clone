@@ -19,4 +19,7 @@ public class Appsettings
     public int MaxTitleInputLenght { get; set; } = 1000;
     public string ThreadTitleGenerationPrompt { get; set; } = 
         "Generate a short and descriptive title for the following conversation:\n\n{0}\n\nThe title should be concise, informative, and relevant to the content of the conversation. It should not exceed 20 Charcters in length. The content of the first message of this thread is: ```{MessageContent}```";
+    
+    
+    public string EncryptionKey { get; set; } = string.Empty;
 }

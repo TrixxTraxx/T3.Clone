@@ -82,7 +82,8 @@ you can add the -o option to specify the output directory for the published file
     "AllowedOrigins": [
       "https://llmlab.chat",
       "https://login.llmlab.chat"
-    ]
+    ],
+    "EncryptionKey": "mu8Q97mF2jYiAZc8AfdK1w=="
   },
   "Authentication": {
     "Google": {
@@ -97,6 +98,9 @@ you can add the -o option to specify the output directory for the published file
   }
 }
 ```
+
+Generate The EncryptionKey here https://generate-random.org/encryption-key-generator?count=1&bytes=8&cipher=aes-128-cbc&string=&password=
+
 2. You also need to configure the `appsettings.json` file in the `LLMLab.Client` project to set up the client URL and other settings. Here is an example configuration:
 ```json
 {
