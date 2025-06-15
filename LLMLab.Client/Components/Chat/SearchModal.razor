@@ -43,9 +43,12 @@
                 }
                 else if (searchResults.Any())
                 {
-                    @foreach (var result in searchResults)
+                    @for (int i = 0; i < searchResults.Count; i++)
                     {
-                        <div class="search-result-item" @onclick="() => NavigateToThread(result.Thread.Id)">
+                        var index = i; // Capture for closure
+                        var result = searchResults[i];
+                        <div class="search-result-item @(selectedResultIndex == index ? "selected" : "")" 
+                             @onclick="() => NavigateToThread(result.Thread.Id)">
                             <div class="result-icon">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
@@ -82,6 +85,7 @@
     private bool isLoading = false;
     private ElementReference searchInputRef;
     private Timer? searchTimer;
+    private int selectedResultIndex = -1;  // Add selected result index tracking
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -103,6 +107,31 @@
         if (e.Key == "Escape")
         {
             await CloseModal();
+            return;
+        }
+        
+        // Handle keyboard navigation
+        if (searchResults.Any())
+        {
+            if (e.Key == "ArrowDown")
+            {
+                selectedResultIndex = selectedResultIndex < searchResults.Count - 1 
+                    ? selectedResultIndex + 1 
+                    : 0; // Wrap to first item
+                StateHasChanged();
+            }
+            else if (e.Key == "ArrowUp")
+            {
+                selectedResultIndex = selectedResultIndex > 0 
+                    ? selectedResultIndex - 1 
+                    : searchResults.Count - 1; // Wrap to last item
+                StateHasChanged();
+            }
+            else if (e.Key == "Enter" && selectedResultIndex >= 0 && selectedResultIndex < searchResults.Count)
+            {
+                var selectedResult = searchResults[selectedResultIndex];
+                NavigateToThread(selectedResult.Thread.Id);
+            }
         }
     }
     
@@ -118,6 +147,7 @@
     {
         searchQuery = "";
         searchResults.Clear();
+        selectedResultIndex = -1;  // Reset selection
         await OnClose.InvokeAsync();
     }
     
@@ -137,6 +167,7 @@
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
             searchResults.Clear();
+            selectedResultIndex = -1;  // Reset selection when clearing results
             StateHasChanged();
             return;
         }
@@ -151,11 +182,15 @@
                 .Where(t => !t.Thread.Deleted && 
                           t.Thread.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
                 .ToList();
+            
+            // Reset selection when results change, select first item if results exist
+            selectedResultIndex = searchResults.Any() ? 0 : -1;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error searching threads: {ex.Message}");
             searchResults.Clear();
+            selectedResultIndex = -1;
         }
         
         isLoading = false;

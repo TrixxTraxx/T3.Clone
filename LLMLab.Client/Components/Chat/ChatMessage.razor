@@ -3,6 +3,7 @@
 @inject AiModelService AiModelService
 @inject GenerationService GenerationService
 @inject AppsettingsService AppsettingsService
+@using System.Globalization
 @using LLMLab.Client.Caches
 @using LLMLab.Client.Components.MessageParts
 @using LLMLab.Client.Components.Common
@@ -124,7 +125,6 @@
     [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
-    private string? _userLocale;
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,8 +132,7 @@
         {
             Message.OnUpdated += OnMessageUpdated;
             aiModels = await AiModelService.GetAiModels();
-            _userLocale = await JSRuntime.InvokeAsync<string>("navigator.language");
-
+            
             if (!Message.Message.Complete)
             {
                 await GenerationService.StartGenerationSession(Message);
@@ -141,7 +140,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to load AI models: {ex.Message}");
+            Console.WriteLine($"Failed to load Chat Message: {ex.Message}");
         }
     }
 
@@ -241,7 +240,7 @@
     {
         var localTime = utcTime.ToLocalTime();
         // Use the user's locale to format the time
-        return localTime.ToString("t", new System.Globalization.CultureInfo(_userLocale ?? "en-US"));
+        return localTime.ToString("t", CultureInfo.CurrentCulture);
     }
 
     public async ValueTask DisposeAsync()

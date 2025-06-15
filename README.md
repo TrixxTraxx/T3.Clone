@@ -15,6 +15,7 @@ This Project was written for the T3 Chat Cloneathon https://t3.gg/chat-cloneatho
 -   **Model Selection**: Choose from various AI models to interact with.
 -   **Theme Support**: Light and dark themes for the user interface including a custom theme editor.
 -   **Bring Your Own Keys**: Use your own API keys for different AI models.
+-   **Encryption**: All your Api Keys and messages are encrypted in the browser using AES-128-CBC encryption, ensuring that your data is secure.
 
 ## Tech Stack
 
