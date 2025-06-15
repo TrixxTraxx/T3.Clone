@@ -2,6 +2,17 @@ window.getWindowWidth = function() {
     return window.innerWidth;
 };
 
+// Focus an element by reference and select text if it's an input
+window.focusElementAndSelect = function(element) {
+    if (element) {
+        element.focus();
+        // Also select all text if it's an input
+        if (element.tagName === 'INPUT' && element.type === 'text') {
+            element.select();
+        }
+    }
+};
+
 // Copy text to clipboard
 window.copyToClipboard = async function(text) {
     try {
@@ -187,12 +198,6 @@ window.triggerFileInput = function(supportedContentTypes) {
         console.error('Failed to trigger file input:', err);
     }
 }
-
-window.focusElement = function (element) {
-    if (element) {
-        element.focus();
-    }
-};
 
 window.setupChatInputAutoFocus = function (element) {
     if (!element) return;

@@ -1,6 +1,7 @@
 @using T3.Clone.Client.Caches
 @inject NavigationManager NavigationManager
 @inject ThreadSyncService ThreadSyncService
+@inject IJSRuntime JSRuntime
 
 <div class="thread-navigation">
     @foreach(var cache in Threads.Where(x => !x.Thread.Deleted))
@@ -15,51 +16,223 @@
                     </svg>
                 </div>
                 <span class="thread-title">@cache.Thread.Title</span>
-                <button
-                    type="button"
-                    class="thread-icon thread-delete-btn"
-                    title="Delete thread"
-                    @onclick:stopPropagation="true"
-                    @onclick:preventDefault="true"
-                    @onclick="() => DeleteThreadAsync(cache)">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                    </svg>
-                </button>
+                <div class="thread-actions">
+                    <button
+                        type="button"
+                        class="thread-action-btn thread-edit-btn"
+                        title="Edit thread title"
+                        @onclick:stopPropagation="true"
+                        @onclick:preventDefault="true"
+                        @onclick="() => OpenEditModal(cache)">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75z"/>
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        class="thread-action-btn thread-delete-btn"
+                        title="Delete thread"
+                        @onclick:stopPropagation="true"
+                        @onclick:preventDefault="true"
+                        @onclick="() => OpenDeleteConfirmation(cache)">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </a>
     }
 </div>
 
+<!-- Edit Title Modal -->
+<div class="edit-modal-overlay @(editingThread != null ? "visible" : "")" @onclick="@(() => CloseEditModal())" @onkeydown="@HandleEditModalKeyDown" tabindex="-1">
+    <div class="edit-modal-container" @onclick:stopPropagation="true">
+        <div class="edit-modal-header">
+            <h3 class="modal-title">Edit Thread Title</h3>
+            <button class="modal-close-btn" @onclick="CloseEditModal" type="button">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="edit-modal-content">
+            <div class="edit-form">
+                <label class="edit-label">Thread Title</label>
+                <input 
+                    @ref="editTitleInput"
+                    type="text" 
+                    class="edit-input" 
+                    @bind="editingTitle" 
+                    @onkeydown="HandleEditInputKeyDown"
+                    placeholder="Enter thread title..."
+                    maxlength="100"
+                />
+                <div class="edit-actions">
+                    <button class="edit-btn-cancel" @onclick="CloseEditModal" type="button">
+                        Cancel
+                    </button>
+                    <button class="edit-btn-save" @onclick="SaveEditTitle" type="button" disabled="@(string.IsNullOrWhiteSpace(editingTitle))">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="delete-modal-overlay @(threadToDelete != null ? "visible" : "")" @onclick="@(() => CloseDeleteModal())" @onkeydown="@HandleDeleteModalKeyDown" tabindex="-1">
+    <div class="delete-modal-container" @onclick:stopPropagation="true">
+        <div class="delete-modal-header">
+            <h3 class="modal-title">Delete Thread</h3>
+            <button class="modal-close-btn" @onclick="CloseDeleteModal" type="button">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="delete-modal-content">
+            <div class="delete-confirmation">
+                <div class="delete-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <div class="delete-message">
+                    <h4>Are you sure you want to delete this thread?</h4>
+                    <p class="thread-title-preview">"@(threadToDelete?.Thread.Title)"</p>
+                    <p class="delete-warning">This action cannot be undone.</p>
+                </div>
+                <div class="delete-actions">
+                    <button class="delete-btn-cancel" @onclick="CloseDeleteModal" type="button">
+                        Cancel
+                    </button>
+                    <button class="delete-btn-confirm" @onclick="ConfirmDeleteThread" type="button">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                        Delete Thread
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
     [Parameter] public List<ThreadCache> Threads { get; set; } = new();
     [Parameter] public EventCallback<int> OnThreadSelected { get; set; }
     [Parameter] public int? CurrentThreadId { get; set; }
 
+    private ThreadCache? editingThread = null;
+    private ThreadCache? threadToDelete = null;
+    private string editingTitle = "";
+    private ElementReference editTitleInput;
+
     private bool IsActive(int threadId)
     {
         return CurrentThreadId == threadId;
     }
     
+    private void OpenEditModal(ThreadCache cache)
+    {
+        editingThread = cache;
+        editingTitle = cache.Thread.Title;
+        StateHasChanged();
+        
+        // Focus the input after render
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("focusElementAndSelect", editTitleInput);
+        });
+    }
+    
+    private void CloseEditModal()
+    {
+        editingThread = null;
+        editingTitle = "";
+        StateHasChanged();
+    }
+    
+    private async Task SaveEditTitle()
+    {
+        if (editingThread == null || string.IsNullOrWhiteSpace(editingTitle)) return;
+        
+        await EditThreadName(editingThread, editingTitle.Trim());
+        CloseEditModal();
+    }
+    
+    private void OpenDeleteConfirmation(ThreadCache cache)
+    {
+        threadToDelete = cache;
+        StateHasChanged();
+    }
+    
+    private void CloseDeleteModal()
+    {
+        threadToDelete = null;
+        StateHasChanged();
+    }
+    
+    private async Task ConfirmDeleteThread()
+    {
+        if (threadToDelete == null) return;
+
+        var threadToDeleteCopy = threadToDelete;
+        CloseDeleteModal();
+        
+        await DeleteThreadAsync(threadToDeleteCopy);
+    }
+    
+    private async Task HandleEditModalKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CloseEditModal();
+        }
+    }
+    
+    private async Task HandleEditInputKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(editingTitle))
+        {
+            await SaveEditTitle();
+        }
+        else if (e.Key == "Escape")
+        {
+            CloseEditModal();
+        }
+    }
+    
+    private async Task HandleDeleteModalKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CloseDeleteModal();
+        }
+    }
     
     private async Task EditThreadName(ThreadCache cache, string name)
     {
-        // Remove from cache and update UI
+        // Update cache and UI optimistically
         cache.Thread.Title = name;
         StateHasChanged();
         
-        // Delete from backend
+        // Update backend
         await ThreadSyncService.UpdateThread(cache);
     }
     
     private async Task DeleteThreadAsync(ThreadCache cache)
     {
-        // Remove from cache and update UI
+        // Update cache and UI optimistically
         cache.Thread.Deleted = true;
         StateHasChanged();
         
-        // Delete from backend
+        // Update backend
         await ThreadSyncService.UpdateThread(cache);
     }
 } 

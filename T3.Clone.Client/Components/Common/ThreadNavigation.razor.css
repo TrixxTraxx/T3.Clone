@@ -42,15 +42,15 @@
 }
 
 .thread-nav-link:hover {
-    transform: translateX(4px) scale(1.01);
+    transform: translateX(4px);
     background:
             linear-gradient(135deg,
             color-mix(in srgb, var(--mud-palette-primary) 15%, transparent) 0%,
             color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 100%);
     border-color: color-mix(in srgb, var(--mud-palette-primary) 25%, transparent);
     box-shadow:
-            0 4px 12px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent),
-            0 2px 6px rgba(0, 0, 0, 0.08),
+            0 2px 8px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent),
+            0 1px 4px rgba(0, 0, 0, 0.08),
             inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
 
@@ -59,15 +59,15 @@
 }
 
 .thread-nav-link.active {
-    transform: translateX(4px) scale(1.01);
+    transform: translateX(4px);
     background:
             linear-gradient(135deg,
             color-mix(in srgb, var(--mud-palette-primary) 20%, transparent) 0%,
             color-mix(in srgb, var(--mud-palette-primary) 12%, transparent) 100%);
     border-color: color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
     box-shadow:
-            0 3px 8px color-mix(in srgb, var(--mud-palette-primary) 10%, transparent),
-            0 1px 3px rgba(0, 0, 0, 0.06),
+            0 2px 8px color-mix(in srgb, var(--mud-palette-primary) 10%, transparent),
+            0 1px 4px rgba(0, 0, 0, 0.06),
             inset 0 1px 0 color-mix(in srgb, var(--mud-palette-primary) 20%, transparent),
             0 0 0 1px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
 }
@@ -139,7 +139,7 @@
 
 .thread-nav-link:hover .thread-title,
 .thread-nav-link:focus-within .thread-title {
-    max-width: calc(100% - 32px); /* Shrink when trash can is visible */
+    max-width: calc(100% - 70px); /* Shrink when action buttons are visible */
 }
 
 .thread-nav-link:hover .thread-title {
@@ -154,35 +154,385 @@
     text-shadow: 0 0 2px color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
 
+/* ---- Thread Actions ---- */
+.thread-actions {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    flex-shrink: 0;
+    max-height: 10px;
+}
 
+.thread-nav-link:hover .thread-actions,
+.thread-nav-link:focus-within .thread-actions {
+    display: flex;
+}
 
-/* ---- Trash Button ---- */
-.thread-delete-btn {
+.thread-action-btn {
     background: none;
     border: none;
     outline: none;
-    margin-left: 12px;
-    padding: 0;
-    display: none;
+    padding: 4px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
     color: var(--mud-palette-text-secondary);
     cursor: pointer;
-    transition: color 0.18s, transform 0.18s;
-    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
-.thread-nav-link:hover .thread-delete-btn,
-.thread-nav-link:focus-within .thread-delete-btn {
-    display: flex;
+.thread-action-btn svg {
+    width: 14px;
+    height: 14px;
+    transition: all 0.2s ease;
+}
+
+.thread-edit-btn:hover,
+.thread-edit-btn:focus {
+    background: color-mix(in srgb, var(--mud-palette-info) 20%, transparent);
+    color: var(--mud-palette-info);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--mud-palette-info) 25%, transparent);
 }
 
 .thread-delete-btn:hover,
 .thread-delete-btn:focus {
-    color: #e53935 !important; /* Red on hover/focus */
-    transform: scale(1.15);
+    background: color-mix(in srgb, var(--mud-palette-error) 20%, transparent);
+    color: var(--mud-palette-error);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--mud-palette-error) 25%, transparent);
+}
+
+.thread-delete-btn.deleting {
+    animation: deleteSpinner 1s linear infinite;
+    color: var(--mud-palette-error);
+    background: color-mix(in srgb, var(--mud-palette-error) 15%, transparent);
+}
+
+@keyframes deleteSpinner {
+    0% { transform: rotate(0deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1.1); }
+}
+
+/* ---- Modal Overlays (shared styles) ---- */
+.edit-modal-overlay,
+.delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.edit-modal-overlay.visible,
+.delete-modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ---- Modal Containers (shared styles) ---- */
+.edit-modal-container,
+.delete-modal-container {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 95%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 85%, transparent) 100%);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 color-mix(in srgb, var(--mud-palette-surface) 40%, transparent);
+    width: 90vw;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.edit-modal-overlay.visible .edit-modal-container,
+.delete-modal-overlay.visible .delete-modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* ---- Modal Headers (shared styles) ---- */
+.edit-modal-header,
+.delete-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+}
+
+.modal-title {
+    color: var(--mud-palette-text-primary);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-close-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--mud-palette-error) 10%, transparent);
+    color: var(--mud-palette-error);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.modal-close-btn:hover,
+.modal-close-btn:focus {
+    background: color-mix(in srgb, var(--mud-palette-error) 20%, transparent);
+    transform: scale(1.05);
+}
+
+.modal-close-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ---- Edit Modal Specific Styles ---- */
+.edit-modal-content {
+    padding: 24px;
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.edit-label {
+    color: var(--mud-palette-text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid color-mix(in srgb, var(--mud-palette-primary) 15%, transparent);
+    border-radius: 12px;
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-surface) 90%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-surface) 70%, transparent) 100%);
+    color: var(--mud-palette-text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.edit-input:focus {
+    border-color: var(--mud-palette-primary);
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 8%, transparent) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 4%, transparent) 100%);
+    box-shadow: 
+        0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 15%, transparent),
+        0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.edit-input::placeholder {
+    color: var(--mud-palette-text-secondary);
+    opacity: 0.7;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.edit-btn-cancel,
+.edit-btn-save {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.edit-btn-cancel {
+    background: color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+    color: var(--mud-palette-text-secondary);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-text-secondary) 20%, transparent);
+}
+
+.edit-btn-cancel:hover {
+    background: color-mix(in srgb, var(--mud-palette-text-secondary) 10%, transparent);
+    color: var(--mud-palette-text-primary);
+    border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 30%, transparent);
+    transform: translateY(-1px);
+}
+
+.edit-btn-save {
+    background: linear-gradient(135deg, 
+        var(--mud-palette-primary) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 80%, white) 100%);
+    color: white;
+    border: 2px solid var(--mud-palette-primary);
+}
+
+.edit-btn-save:hover:not(:disabled) {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-primary) 90%, black) 0%,
+        color-mix(in srgb, var(--mud-palette-primary) 70%, white) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent);
+}
+
+.edit-btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---- Delete Modal Specific Styles ---- */
+.delete-modal-content {
+    padding: 24px;
+}
+
+.delete-confirmation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+}
+
+.delete-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mud-palette-error) 15%, transparent);
+    color: var(--mud-palette-error);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.delete-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.delete-message h4 {
+    color: var(--mud-palette-text-primary);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.thread-title-preview {
+    color: var(--mud-palette-text-secondary);
+    font-size: 14px;
+    font-style: italic;
+    margin: 0 0 8px 0;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--mud-palette-surface) 50%, transparent);
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+}
+
+.delete-warning {
+    color: var(--mud-palette-error);
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+}
+
+.delete-btn-cancel,
+.delete-btn-confirm {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-btn-cancel {
+    background: color-mix(in srgb, var(--mud-palette-surface) 20%, transparent);
+    color: var(--mud-palette-text-secondary);
+    border: 2px solid color-mix(in srgb, var(--mud-palette-text-secondary) 20%, transparent);
+}
+
+.delete-btn-cancel:hover {
+    background: color-mix(in srgb, var(--mud-palette-text-secondary) 10%, transparent);
+    color: var(--mud-palette-text-primary);
+    border-color: color-mix(in srgb, var(--mud-palette-text-secondary) 30%, transparent);
+    transform: translateY(-1px);
+}
+
+.delete-btn-confirm {
+    background: linear-gradient(135deg, 
+        var(--mud-palette-error) 0%,
+        color-mix(in srgb, var(--mud-palette-error) 80%, black) 100%);
+    color: white;
+    border: 2px solid var(--mud-palette-error);
+}
+
+.delete-btn-confirm:hover {
+    background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--mud-palette-error) 90%, black) 0%,
+        color-mix(in srgb, var(--mud-palette-error) 70%, black) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--mud-palette-error) 25%, transparent);
+}
+
+.delete-btn-confirm svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* Responsive Design */
@@ -193,9 +543,45 @@
     .thread-title {
         font-size: 12px;
     }
-    .thread-delete-btn {
-        margin-left: 6px;
-        width: 18px;
-        height: 18px;
+    .thread-action-btn {
+        width: 20px;
+        height: 20px;
+    }
+    .thread-action-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .edit-modal-container,
+    .delete-modal-container {
+        width: 95vw;
+        border-radius: 16px;
+    }
+    
+    .edit-modal-header,
+    .delete-modal-header {
+        padding: 16px 20px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+    }
+    
+    .edit-modal-content,
+    .delete-modal-content {
+        padding: 20px;
+    }
+    
+    .edit-actions,
+    .delete-actions {
+        flex-direction: column;
+    }
+    
+    .edit-btn-cancel,
+    .edit-btn-save,
+    .delete-btn-cancel,
+    .delete-btn-confirm {
+        width: 100%;
+        justify-content: center;
     }
 }
