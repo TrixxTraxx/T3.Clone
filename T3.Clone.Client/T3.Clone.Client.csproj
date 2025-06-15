@@ -5,12 +5,12 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <Configurations>Debug;Release;Configuration</Configurations>
-        <Platforms>AnyCPU</Platforms>
-        
-<!--        <PublishTrimmed>true</PublishTrimmed>-->
-<!--        <RunAOTCompilation>true</RunAOTCompilation>-->
-<!--        <WasmEnableSIMD>false</WasmEnableSIMD>-->
+
+        <PublishTrimmed>true</PublishTrimmed>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+        <WasmStripILAfterAOT>false</WasmStripILAfterAOT>
+        <WasmEnableSIMD>false</WasmEnableSIMD>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,13 +33,4 @@
     <ItemGroup>
       <ProjectReference Include="..\T3.Clone.Dtos\T3.Clone.Dtos.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="wwwroot\lib\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\sample-data\weather.json" />
-    </ItemGroup>
-
 </Project>
