@@ -134,38 +134,32 @@
             await searchTimer.DisposeAsync();
         }
         
-        searchTimer = new Timer(async _ =>
+        if (string.IsNullOrWhiteSpace(searchQuery))
         {
-            await InvokeAsync(async () =>
-            {
-                if (string.IsNullOrWhiteSpace(searchQuery))
-                {
-                    searchResults.Clear();
-                    StateHasChanged();
-                    return;
-                }
-                
-                isLoading = true;
-                StateHasChanged();
-                
-                try
-                {
-                    var threads = await ThreadSyncService.GetThreads();
-                    searchResults = threads
-                        .Where(t => !t.Thread.Deleted && 
-                                  t.Thread.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error searching threads: {ex.Message}");
-                    searchResults.Clear();
-                }
-                
-                isLoading = false;
-                StateHasChanged();
-            });
-        }, null, 300, Timeout.Infinite);
+            searchResults.Clear();
+            StateHasChanged();
+            return;
+        }
+        
+        isLoading = true;
+        StateHasChanged();
+        
+        try
+        {
+            var threads = await ThreadSyncService.GetThreads();
+            searchResults = threads
+                .Where(t => !t.Thread.Deleted && 
+                          t.Thread.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching threads: {ex.Message}");
+            searchResults.Clear();
+        }
+        
+        isLoading = false;
+        StateHasChanged();
     }
     
     public async ValueTask DisposeAsync()

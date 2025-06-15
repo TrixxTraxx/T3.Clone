@@ -8,8 +8,9 @@
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 8vh;
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
@@ -47,6 +48,9 @@
     justify-content: space-between;
     padding: 20px 24px;
     border-bottom: 1px solid color-mix(in srgb, var(--mud-palette-primary) 8%, transparent);
+    background: color-mix(in srgb, var(--mud-palette-surface) 80%, var(--mud-palette-background-grey) 20%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .modal-title {
@@ -152,7 +156,7 @@
 
 .search-result-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
     padding: 12px;
     border-radius: 12px;
@@ -182,6 +186,10 @@
     padding: 8px;
     border-radius: 8px;
     background: color-mix(in srgb, var(--mud-palette-primary) 5%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .result-icon svg {
@@ -192,15 +200,19 @@
 .result-content {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;
+    min-height: 20px;
 }
 
 .result-title {
     font-weight: 600;
     color: var(--mud-palette-text-primary);
-    margin-bottom: 4px;
+    margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .result-preview {

@@ -124,15 +124,12 @@
     {
         if (ThreadId.HasValue)
         {
-            isLoading = true;
-            StateHasChanged();
-
             try
             {
-                var oldMessageid = currentBranchPath;
+                var oldMessageId = currentBranchPath;
                 messageTree = await MessageSyncService.GetMessageTree(ThreadId.Value);
                 InitializeBranchPath();
-                if (oldMessageid == currentBranchPath && !isLoading)
+                if (oldMessageId == currentBranchPath && !isLoading)
                 {
                     //nothing changed
                     return;
