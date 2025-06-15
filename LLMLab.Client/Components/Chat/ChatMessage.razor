@@ -2,8 +2,10 @@
 @inject ISnackbar Snackbar
 @inject AiModelService AiModelService
 @inject GenerationService GenerationService
+@inject AppsettingsService AppsettingsService
 @using LLMLab.Client.Caches
 @using LLMLab.Client.Components.MessageParts
+@using LLMLab.Client.Components.Common
 @using LLMLab.Client.Models
 @using LLMLab.Client.Services
 @implements IAsyncDisposable
@@ -16,10 +18,17 @@
         <div class="message-bubble user-message">
             <div class="message-header">
                 <div class="message-avatar user-avatar">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                    </svg>
+                    @if (User != null && !string.IsNullOrEmpty(User.ProfilePictureUrl))
+                    {
+                        <img src="@GetProfilePictureUrl(User)" alt="Profile Picture" class="avatar-image" />
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    }
                 </div>
                 <div class="message-info">
                     <span class="message-author">You</span>
@@ -45,9 +54,23 @@
     <div class="message-bubble ai-message">
         <div class="message-header">
             <div class="message-avatar ai-avatar">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>
-                </svg>
+                @{
+                    var providerInfo = GetProviderInfo();
+                }
+                @if (!string.IsNullOrEmpty(providerInfo.LogoPath))
+                {
+                    <ProviderIcon ImagePath="@providerInfo.LogoPath"
+                                  Icon="@providerInfo.Icon"
+                                  Color="@providerInfo.Color"
+                                  AltText="@providerInfo.ProviderName"
+                                  Size="24px" />
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>
+                    </svg>
+                }
             </div>
             <div class="message-info">
                 <span class="message-author">@GetModelName()</span>
@@ -98,6 +121,7 @@
     [Parameter] public EventCallback<int> OnBranchSelected { get; set; }
     [Parameter] public EventCallback<MessageCache> OnRegenerateMessage { get; set; }
     [Parameter] public EventCallback OnContentChanged { get; set; }
+    [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
 
@@ -139,6 +163,47 @@
 
         var model = aiModels.FirstOrDefault(m => m.Id == Message.Message.ModelId);
         return model?.Name ?? "Assistant";
+    }
+
+    private string? GetProfilePictureUrl(UserDto user)
+    {
+        return $"{AppsettingsService.ServerUrl}/api/Authentication/profilePicture";
+    }
+
+    private (string LogoPath, string Icon, Color Color, string ProviderName) GetProviderInfo()
+    {
+        var model = aiModels.FirstOrDefault(m => m.Id == Message.Message.ModelId);
+        if (model == null)
+        {
+            return ("", Icons.Material.Filled.SmartToy, MudBlazor.Color.Primary, "Assistant");
+        }
+
+        var category = GetModelCategory(model);
+        
+        return category.ToLower() switch
+        {
+            "default" => ("", Icons.Material.Filled.Stars, MudBlazor.Color.Primary, "Default"),
+            "openai" => ("images/logos/openai-logo.svg", Icons.Material.Filled.Psychology, MudBlazor.Color.Success, "OpenAI"),
+            "anthropic" => ("images/logos/anthropic-logo.svg", Icons.Material.Filled.SmartToy, MudBlazor.Color.Warning, "Anthropic"),
+            "google" => ("images/logos/google-logo.svg", Icons.Material.Filled.Search, MudBlazor.Color.Error, "Google"),
+            _ => ("", Icons.Material.Filled.SmartToy, MudBlazor.Color.Default, "Assistant")
+        };
+    }
+
+    private string GetModelCategory(AiModelDto model)
+    {
+        // Models without RequiredApiKey go to Default category (top)
+        if (string.IsNullOrEmpty(model.Provider))
+            return "Default";
+            
+        // Use RequiredApiKey directly, but format it nicely
+        return model.Provider switch
+        {
+            "OpenAi" => "OpenAI",
+            "Anthropic" => "Anthropic", 
+            "Google" => "Google",
+            _ => model.Provider
+        };
     }
 
     private async Task CopyToClipboard(string text)

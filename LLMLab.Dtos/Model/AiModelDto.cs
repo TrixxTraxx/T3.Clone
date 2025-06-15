@@ -8,6 +8,7 @@ public class AiModelDto
     public string Category { get; set; } = string.Empty;
 
     public string RequiredApiKey { get; set; } = string.Empty;
+    public string Provider { get; set; } = string.Empty;
     public bool HasRequiredApiKey { get; set; } = true;
 
     public bool IsDefault { get; set; } = false;

@@ -119,9 +119,8 @@
                 var oldMessageid = currentBranchPath;
                 messageTree = await MessageSyncService.GetMessageTree(ThreadId.Value);
                 InitializeBranchPath();
-                if (oldMessageid == currentBranchPath)
+                if (oldMessageid == currentBranchPath && !isLoading)
                 {
-                    isLoading = false;
                     //nothing changed
                     return;
                 }
