@@ -57,6 +57,9 @@ public class MessageService(
                 Title = "New Thread" // Default title, can be changed later
             };
             context.MessageThreads.Add(thread);
+            await context.SaveChangesAsync();
+            // Generate a Thread Title based on the first message in the background
+            await aiService.GenerateThreadTitle(thread.Id, newMessage.Text);
         }
         newMessage.Thread = thread;
         user.ThreadVersion++;
@@ -66,9 +69,6 @@ public class MessageService(
         //add message to database
         context.Messages.Add(newMessage);
         await context.SaveChangesAsync();
-        
-        // Generate a Thread Title based on the first message in the background
-        await aiService.GenerateThreadTitle(thread.Id, newMessage.Text);
         
         await aiService.StartGeneration(newMessage.Id);
         

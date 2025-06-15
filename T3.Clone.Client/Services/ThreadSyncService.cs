@@ -130,6 +130,7 @@ public class ThreadSyncService
                 }
                 else
                 {
+                    Console.WriteLine($"Updated thread with Id: {threadCache.Thread.Id}");
                     //update existing thread cache
                     threadCache.Thread = thread;
                     threadCache.LastUpdated = DateTime.Now;
