@@ -4,7 +4,7 @@
 @inject IJSRuntime JSRuntime
 
 <div class="thread-navigation">
-    @foreach(var cache in Threads.Where(x => !x.Thread.Deleted))
+    @foreach(var cache in Threads.Where(x => !x.Thread.Deleted).OrderByDescending(x => x.Thread.UpdatedAt))
     {
         <a href="@($"/chat/{cache.Thread.Id}")"
            class="thread-nav-link @(IsActive(cache.Thread.Id) ? "active" : "")"

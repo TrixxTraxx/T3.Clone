@@ -128,7 +128,7 @@
         if (string.IsNullOrWhiteSpace(message.Text)) return;
 
         isSending = true;
-        StateHasChanged();
+        //StateHasChanged();
         
         message.ThreadId = ThreadId ?? 0;
         message.PreviousMessageId = currentBranchPath;

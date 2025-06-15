@@ -2,6 +2,11 @@ window.getWindowWidth = function() {
     return window.innerWidth;
 };
 
+window.focusElement = function(element) {
+    if (element) {
+        element.focus();
+    }
+};
 // Focus an element by reference and select text if it's an input
 window.focusElementAndSelect = function(element) {
     if (element) {

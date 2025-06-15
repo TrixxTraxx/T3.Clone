@@ -60,6 +60,7 @@ public class MessageService(
         }
         newMessage.Thread = thread;
         user.ThreadVersion++;
+        thread.UpdatedAt = DateTime.UtcNow;
         thread.Version = user.ThreadVersion; // Increment thread version
         
         //add message to database
