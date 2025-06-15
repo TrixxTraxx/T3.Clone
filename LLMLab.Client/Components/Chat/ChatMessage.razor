@@ -32,7 +32,7 @@
                 </div>
                 <div class="message-info">
                     <span class="message-author">You</span>
-                    <span class="message-time">@Message.Message.CreatedAt.ToString("HH:mm")</span>
+                    <span class="message-time">@GetLocalTime(Message.Message.CreatedAt)</span>
                 </div>
             </div>
             <div class="message-content">
@@ -74,7 +74,7 @@
             </div>
             <div class="message-info">
                 <span class="message-author">@GetModelName()</span>
-                <span class="message-time">@Message.Message.CreatedAt.ToString("HH:mm")</span>
+                <span class="message-time">@GetLocalTime(Message.Message.CreatedAt)</span>
                 @if (!Message.Message.Complete)
                 {
                     <div class="typing-indicator">
@@ -124,6 +124,7 @@
     [CascadingParameter(Name = "User")] public UserDto? User { get; set; }
 
     private List<AiModelDto> aiModels = new List<AiModelDto>();
+    private string? _userLocale;
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,6 +132,7 @@
         {
             Message.OnUpdated += OnMessageUpdated;
             aiModels = await AiModelService.GetAiModels();
+            _userLocale = await JSRuntime.InvokeAsync<string>("navigator.language");
 
             if (!Message.Message.Complete)
             {
@@ -233,6 +235,13 @@
         {
             Console.WriteLine($"Failed to stop generation: {ex.Message}");
         }
+    }
+
+    private string GetLocalTime(DateTime utcTime)
+    {
+        var localTime = utcTime.ToLocalTime();
+        // Use the user's locale to format the time
+        return localTime.ToString("t", new System.Globalization.CultureInfo(_userLocale ?? "en-US"));
     }
 
     public async ValueTask DisposeAsync()
