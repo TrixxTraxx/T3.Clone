@@ -32,4 +32,9 @@ public class AiModelService
         }
         return _models;
     }
+
+    public void ClearCache()
+    {
+        _models = null;
+    }
 }

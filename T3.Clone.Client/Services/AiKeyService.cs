@@ -7,11 +7,13 @@ public class AiKeyService
 {
     private readonly HttpClient _httpClient;
     private readonly ISnackbar _snackbar;
+    private readonly AiModelService _aiModelService;
 
-    public AiKeyService(HttpClient httpClient, ISnackbar snackbar)
+    public AiKeyService(HttpClient httpClient, ISnackbar snackbar, AiModelService aiModelService)
     {
         _httpClient = httpClient;
         _snackbar = snackbar;
+        _aiModelService = aiModelService;
     }
 
     public async Task<List<string>> GetKeysAsync()
@@ -45,6 +47,7 @@ public class AiKeyService
             
             if (response.IsSuccessStatusCode)
             {
+                _aiModelService.ClearCache();
                 _snackbar.Add($"{identifier} API key updated successfully", Severity.Success);
                 return true;
             }
