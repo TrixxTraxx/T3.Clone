@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using T3.Clone.Server.Data;
 
@@ -11,9 +12,11 @@ using T3.Clone.Server.Data;
 namespace T3.Clone.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250615074945_DeleteThreads")]
+    partial class DeleteThreads
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,7 +233,7 @@ namespace T3.Clone.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AiModels", (string)null);
+                    b.ToTable("AiModels");
                 });
 
             modelBuilder.Entity("T3.Clone.Server.Data.AiModelKeys", b =>
@@ -257,7 +260,7 @@ namespace T3.Clone.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AiModelKeys", (string)null);
+                    b.ToTable("AiModelKeys");
                 });
 
             modelBuilder.Entity("T3.Clone.Server.Data.ApplicationUser", b =>
@@ -356,7 +359,7 @@ namespace T3.Clone.Server.Migrations
                     b.HasIndex("AttachmentId")
                         .IsUnique();
 
-                    b.ToTable("AttachementContent", (string)null);
+                    b.ToTable("AttachementContent");
                 });
 
             modelBuilder.Entity("T3.Clone.Server.Data.Message", b =>
@@ -410,7 +413,7 @@ namespace T3.Clone.Server.Migrations
 
                     b.HasIndex("ThreadId");
 
-                    b.ToTable("Messages", (string)null);
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("T3.Clone.Server.Data.MessageAttachment", b =>
@@ -445,7 +448,7 @@ namespace T3.Clone.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MessageAttachments", (string)null);
+                    b.ToTable("MessageAttachments");
                 });
 
             modelBuilder.Entity("T3.Clone.Server.Data.MessageThread", b =>
@@ -480,7 +483,7 @@ namespace T3.Clone.Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("MessageThreads", (string)null);
+                    b.ToTable("MessageThreads");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

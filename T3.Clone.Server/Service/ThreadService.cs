@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using T3.Clone.Dtos.Threads;
 using T3.Clone.Server.Data;
 using T3.Clone.Server.Mappers;
@@ -40,5 +41,33 @@ public class ThreadService(
             UpdatedThreads = threadDtos.ToList(),
             UpdatedVersion = threads.Any() ? threads.Max(x => x.Thread.Version) : clientVersion ?? 0
         };
+    }
+
+    public async Task<ThreadDto?> UpdateThread(ThreadDto threadDto)
+    {
+        var userId = httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException("User not authenticated");
+        }
+
+        var thread = await context.MessageThreads
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(t => t.Id == threadDto.Id && t.UserId == userId);
+        
+        if (thread == null)
+        {
+            return null; // Thread not found or does not belong to the user
+        }
+
+        thread.User.ThreadVersion += 1; // Increment user's thread version
+        thread.Title = threadDto.Title;
+        thread.UpdatedAt = DateTime.UtcNow;
+        thread.Deleted = threadDto.Deleted;
+        thread.Version = thread.User.ThreadVersion; // Update thread version
+        
+        await context.SaveChangesAsync();
+        
+        return ThreadMapper.Map(thread);
     }
 }

@@ -17,4 +17,5 @@ public class MessageThread
     
     // The date and time when the thread was last updated
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public bool Deleted { get; set; }
 }

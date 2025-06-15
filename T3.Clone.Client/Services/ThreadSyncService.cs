@@ -95,8 +95,8 @@ public class ThreadSyncService
     {
         var threadCacheCollection = await GetThreadCollection();
         
-        // call /api/Thread/threads?clientVersion=threadCacheCollection.ClientVersion
-        var response = await _http.GetAsync($"api/Thread/threads?clientVersion={threadCacheCollection.ClientVersion}");
+        // call /api/Threads?clientVersion=threadCacheCollection.ClientVersion
+        var response = await _http.GetAsync($"api/Threads?clientVersion={threadCacheCollection.ClientVersion}");
 
         if (!response.IsSuccessStatusCode)
         {
@@ -183,22 +183,20 @@ public class ThreadSyncService
         _threadCacheCollection = null;
     }
     
-    public async Task DeleteThread(int threadId)
+    public async Task UpdateThread(ThreadCache cache)
     {
-        var response = await _http.DeleteAsync($"api/Thread/{threadId}");
+        var response = await _http.PutAsync($"api/Threads",
+            new StringContent(JsonSerializer.Serialize(cache.Thread), System.Text.Encoding.UTF8, "application/json"));
         if (response.IsSuccessStatusCode)
         {
-            _threadCaches = _threadCaches.Where(tc => tc.Thread.Id != threadId).ToList();
-            // Remove from storage as well if needed
-            await _storageService.RemoveObjectAsync($"ThreadCache_{threadId}");
-            // Update thread collection (remove id)
-            if (_threadCacheCollection != null)
-                _threadCacheCollection.ThreadIds.Remove(threadId);
-
-            ThreadsUpdated?.Invoke(_threadCaches);
+            // Update the thread cache in memory
+            await Update();
         }
         else
         {
+            //update to get back the old thread
+            _threadCaches.Remove(cache);
+            await Update();
             _snackbar.Add("Failed to delete thread.", Severity.Error);
         }
     }

@@ -26,4 +26,7 @@ public class ThreadDto
     
     [Key(6)]
     public int Version { get; set; } = 1;
+    
+    [Key(7)]
+    public bool Deleted { get; set; }
 }
