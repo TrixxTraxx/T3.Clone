@@ -2,6 +2,7 @@
 @inject SettingsService SettingsService
 @using LLMLab.Client.Services
 @implements IDisposable
+@inject IJSRuntime JSRuntime
 
 <MudThemeProvider Theme="@currentTheme" IsDarkMode="@isDarkMode" />
 
@@ -122,6 +123,7 @@
                 AppbarHeight = "0px"
             }
         };
+        await JSRuntime.InvokeVoidAsync("updateLogoColor", primaryColor);
         return MyTheme;
     }
     

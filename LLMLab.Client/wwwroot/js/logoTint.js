@@ -71,7 +71,7 @@ function convertRgbToHsl(r, g, b) {
 
 // Function to calculate CSS filter to transform source color to target color
 function calculateLogoFilter(targetColor) {
-    const sourceColor = '#b59090'; // Original logo color
+    const sourceColor = '#6366f1'; // Original logo color
 
     const sourceRgb = hexToRgb(sourceColor);
     const targetRgb = parseRgbaColor(targetColor.trim());
@@ -91,17 +91,13 @@ function calculateLogoFilter(targetColor) {
     // Avoid division by zero
     const saturateAmount = sourceHsl.s > 0 ? targetHsl.s / sourceHsl.s : 1;
     const brightnessAmount = sourceHsl.l > 0 ? targetHsl.l / sourceHsl.l : 1;
-
-    console.log(`Hue rotate: ${hueRotate}deg, Saturate: ${saturateAmount}, Brightness: ${brightnessAmount}`);
-
     // Build filter string
     const filters = [];
 
     filters.push(`hue-rotate(${Math.round(hueRotate)}deg)`);
     filters.push(`saturate(${saturateAmount.toFixed(2)})`);
-    filters.push(`brightness(${brightnessAmount.toFixed(2)})`);
-
-    console.log(`Filters array:`, filters);
+    //always apply brightness to ensure visibility
+    filters.push(`brightness(1)`);
 
     return filters.length > 0 ? filters.join(' ') : 'none';
 }
