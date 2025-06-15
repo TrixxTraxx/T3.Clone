@@ -33,7 +33,8 @@
         @ref="ChatInput"
         OnSendMessage="HandleSendMessage" 
         OnAttachmentAdded="HandleAttachment"
-        IsLoading="isSending" />
+        IsLoading="isSending"
+        IsLastMessageComplete="IsLastMessageComplete" />
 </div>
 
 @code {
@@ -52,6 +53,9 @@
     
     private bool _wasScrolledToBottom = true;
     private DotNetObjectReference<Chat>? _chatRef; // replace with your component name!
+    
+    private bool IsLastMessageComplete => currentBranch.Count == 0 || currentBranch[0].Message.Complete;
+    
     [JSInvokable]
     public void SetScrolledToBottom(bool atBottom)
     {
