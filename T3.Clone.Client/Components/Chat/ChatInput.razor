@@ -240,7 +240,7 @@
         }
     }
     
-    private bool CanSend => !IsLoading && (!string.IsNullOrWhiteSpace(message.Text) || uploadedAttachments.Any());
+    private bool CanSend => !IsLoading && !string.IsNullOrWhiteSpace(message.Text);
 
     protected override async Task OnInitializedAsync()
     {
