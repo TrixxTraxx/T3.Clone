@@ -4,6 +4,7 @@
 @inject AiModelService AiModelService
 @inject AttachmentService AttachmentService
 @inject SettingsService SettingsService
+@inject ISnackbar Snackbar
 
 <div class="hypermodern-chat-input-wrapper">
     <div class="hypermodern-input-container">
@@ -329,7 +330,7 @@
                 // Check file size (1MB limit)
                 if (file.Size > 1024 * 1024)
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"File {file.Name} is too large. Maximum size is 1MB.");
+                    Snackbar.Add($"File {file.Name} is too large. Maximum size is 1MB.", Severity.Error);
                     pendingUploads--;
                     continue;
                 }
@@ -337,7 +338,7 @@
                 // Check if file already exists
                 if (uploadedAttachments.Any(a => a.FileName == file.Name))
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"File {file.Name} is already uploaded.");
+                    Snackbar.Add($"File {file.Name} is already uploaded.", Severity.Warning);
                     pendingUploads--;
                     continue;
                 }
@@ -345,7 +346,7 @@
                 // Check if current model supports the file type for images
                 if (IsImageAttachment(file.ContentType) && !SelectedModelSupportsImages())
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"The selected model '{GetSelectedModelName()}' does not support image files. Please select a different model or remove the image.");
+                    Snackbar.Add($"The selected model '{GetSelectedModelName()}' does not support image files. Please select a different model or remove the image.", Severity.Error);
                     pendingUploads--;
                     continue;
                 }
@@ -353,7 +354,7 @@
                 // Additional validation: Check if file type is in supported content types
                 if (!IsFileTypeSupported(file.ContentType))
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"File type '{file.ContentType}' is not supported by the selected model '{GetSelectedModelName()}'.");
+                    Snackbar.Add($"File type '{file.ContentType}' is not supported by the selected model '{GetSelectedModelName()}'", Severity.Error);
                     pendingUploads--;
                     continue;
                 }
@@ -371,6 +372,7 @@
             catch (Exception ex)
             {
                 Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
+                Snackbar.Add($"Error uploading file {file.Name}: {ex.Message}", Severity.Error);
                 pendingUploads--;
             }
         }
