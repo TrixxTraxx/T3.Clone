@@ -246,3 +246,70 @@ window.getHighlightedHtml = function(code, language) {
         return code;
     }
 }
+
+window.addClickOutsideHandler = function(elementId, dotNetRef) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const clickHandler = function(event) {
+        // Check if the click is outside the element
+        if (!element.contains(event.target)) {
+            // Add a small delay to ensure the click event on the button has been processed
+            setTimeout(() => {
+                dotNetRef.invokeMethodAsync('HandleClickOutside');
+            }, 0);
+        }
+    };
+
+    // Store the handler on the element so we can remove it later
+    element._clickOutsideHandler = clickHandler;
+    document.addEventListener('click', clickHandler);
+};
+
+window.removeClickOutsideHandler = function(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element || !element._clickOutsideHandler) return;
+
+    document.removeEventListener('click', element._clickOutsideHandler);
+    delete element._clickOutsideHandler;
+};
+
+// Store Blazor component references
+window._blazorComponents = window._blazorComponents || {};
+
+// Function to register a component reference
+window.registerBlazorComponent = function(name, dotNetRef) {
+    window._blazorComponents[name] = dotNetRef;
+};
+
+// Function to unregister a component reference
+window.unregisterBlazorComponent = function(name) {
+    delete window._blazorComponents[name];
+};
+
+// Document click handler
+window.handleDocumentClick = function(event) {
+    const reasoningWrapper = document.getElementById('reasoning-selector-wrapper');
+    const reasoningDropdown = document.querySelector('.reasoning-dropdown');
+    
+    if (reasoningWrapper && reasoningDropdown) {
+        // Check if the click is outside both the wrapper and dropdown
+        if (!reasoningWrapper.contains(event.target) && !reasoningDropdown.contains(event.target)) {
+            // Find the Blazor component and invoke the close method
+            const dotNetRef = window._blazorComponents?.reasoningMenu;
+            if (dotNetRef) {
+                dotNetRef.invokeMethodAsync('HandleDocumentClick');
+            }
+        }
+    }
+};
+
+// Add document click handler
+window.addDocumentClickHandler = function() {
+    document.addEventListener('click', window.handleDocumentClick);
+};
+
+// Remove document click handler
+window.removeDocumentClickHandler = function() {
+    document.removeEventListener('click', window.handleDocumentClick);
+};

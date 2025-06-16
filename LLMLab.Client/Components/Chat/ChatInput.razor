@@ -118,9 +118,9 @@
                     @if (SelectedModelSupportsThinking())
                     {
                         <!-- Reasoning Effort Level Selector Button -->
-                        <div class="reasoning-selector-wrapper">
+                        <div id="reasoning-selector-wrapper" class="reasoning-selector-wrapper">
                             <button class="hypermodern-reasoning-btn @(showReasoningModal ? "active" : "")"
-                                    @onclick="OpenReasoningModal"
+                                    @onclick="ToggleReasoningModal"
                                     disabled="@IsLoading"
                                     type="button">
                                 <div class="reasoning-btn-content">
@@ -136,7 +136,7 @@
                             
                             @if (showReasoningModal)
                             {
-                                <div class="reasoning-dropdown">
+                                <div class="reasoning-dropdown" @onclick:stopPropagation>
                                     <div class="reasoning-options">
                                         @foreach (var level in Enum.GetValues<ReasoningEffortLevel>())
                                         {
@@ -508,9 +508,9 @@
         });
     }
 
-    private void OpenReasoningModal()
+    private void ToggleReasoningModal()
     {
-        showReasoningModal = true;
+        showReasoningModal = !showReasoningModal; // Toggle the modal
         StateHasChanged();
     }
 
@@ -562,4 +562,27 @@
         };
     }
 
-} 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("addDocumentClickHandler");
+            await JSRuntime.InvokeVoidAsync("registerBlazorComponent", "reasoningMenu", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public void HandleDocumentClick()
+    {
+        if (showReasoningModal)
+        {
+            CloseReasoningModal();
+        }
+    }
+
+    public void Dispose()
+    {
+        JSRuntime.InvokeVoidAsync("removeDocumentClickHandler");
+        JSRuntime.InvokeVoidAsync("unregisterBlazorComponent", "reasoningMenu");
+    }
+}
